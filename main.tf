@@ -16,6 +16,11 @@ provider "proxmox" {
   endpoint  = var.endpoint
   api_token = var.api_token
   insecure  = true
+  ssh {
+    agent       = false
+    username    = "terraform"
+    private_key = file(var.ssh_private_key)
+  }
 }
 
 data "local_file" "ssh_public_key" {
