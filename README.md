@@ -12,8 +12,8 @@
 - In setup, on the "Management Network Configuration" page:
   - For management interface, pick the network card that is being used for ethernet
   - For Hostname (FQDN), put proxmox.lan
-  - For IP address (CIDR), pick an IP address that is not assigned by your router and that you can reserve for your server
-  - For gateway, put the IP address of your router, let's suppose it's `1.2.3.4`
+  - For IP address (CIDR), pick an IP address that is not assigned by your router and that you can reserve for your server, let's suppose it's `1.2.3.4`
+  - For gateway, put the IP address of your router
   - For DNS server, put either your router's IP address or use a public DNS server like `1.1.1.1` (Cloudflare) `8.8.8.8` (Google)
 - Verify that from another computer you can `ping 1.2.3.4` and access `https://1.2.3.4:8006`.
 - Add an `ssh` key so you can access a pseudo-terminal of your server from another computer.
