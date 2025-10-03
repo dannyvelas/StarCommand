@@ -39,7 +39,6 @@
     APIVER 12
     APIAGE 3
     ```
-- `ssh` into your server and create the `/mnt/media` directory
 - Create a file in this directory called `terraform.tfvars` it should look like this:
 ```
 endpoint        = "https://1.2.3.4:8006/"
@@ -48,4 +47,5 @@ ssh_public_key  = "/path/to/your/public/.ssh/key"
 ssh_private_key = "/path/to/your/private/.ssh/key"
 node            = "whatever-node-name-you-chose-earlier"
 ```
+- `ssh` into your server and create the `/mnt/media` directory
 - Run `terraform apply`. This should create an Ubuntu VM that has a shared mount to the `/mnt/media` directory of its host.
