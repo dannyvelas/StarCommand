@@ -112,14 +112,14 @@ EOF
 '"
 
 echo "Verifying SSH access for dannyvelasquez user..."
-if ssh -o BatchMode=yes -o StrictHostKeyChecking=no -i "$PRIVATE_KEY_PATH" "dannyvelasquez@$IP" "echo 'SSH access successful for dannyvelasquez'"; then
+if ssh -o BatchMode=yes -o StrictHostKeyChecking=no -i "$PRIVATE_KEY_PATH" -p "$PORT" "dannyvelasquez@$IP" "echo 'SSH access successful for dannyvelasquez'"; then
   echo "dannyvelasquez SSH access verified"
 else
   echo "Error: Unable to verify SSH access for dannyvelasquez"
 fi
 
 echo "Verifying SSH access and privileges for terraform user..."
-if ssh -o BatchMode=yes -o StrictHostKeyChecking=no -i "$PRIVATE_KEY_PATH" "terraform@$HOST" "sudo pvesm apiinfo"; then
+if ssh -o BatchMode=yes -o StrictHostKeyChecking=no -i "$PRIVATE_KEY_PATH" -p "$PORT" "terraform@$HOST" "sudo pvesm apiinfo"; then
   echo "terraform SSH access and privileges verified"
 else
   echo "Error: Unable to verify SSH access or privileges for terraform user"
