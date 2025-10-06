@@ -1,0 +1,120 @@
+---
+- name: Setup Proxmox Server
+  hosts: all
+  become: yes
+  vars:
+    ssh_port: "{{ lookup('env', 'RANDOM') | int % 64512 + 1024 }}"
+    ssh_public_key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
+    tailscale_key: "{{ lookup('env', 'TAILSCALE_KEY') }}"
+
+  tasks:
+    - name: Add Tailscale GPG key
+      apt_key:
+        url: https://pkgs.tailscale.com/stable/debian/trixie.noarmor.gpg
+        keyring: /usr/share/keyrings/tailscale-archive-keyring.gpg
+        state: present
+
+    - name: Add Tailscale repository
+      apt_repository:
+        repo: deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg] https://pkgs.tailscale.com/stable/debian trixie main
+        filename: tailscale
+        state: present
+
+    - name: Install required packages
+      apt:
+        name:
+          - sudo
+          - tailscale
+        state: present
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Create dannyvelasquez user
+      user:
+        name: dannyvelasquez
+        shell: /bin/bash
+        groups: sudo
+        append: yes
+        state: present
+
+    - name: Set up SSH for dannyvelasquez
+      authorized_key:
+        user: dannyvelasquez
+        state: present
+        key: "{{ ssh_public_key }}"
+
+    - name: Create terraform user in Proxmox
+      shell: pveum user add terraform@pve
+      register: terraform_user_result
+      failed_when: terraform_user_result.rc != 0 and 'user already exists' not in terraform_user_result.stderr
+      changed_when: terraform_user_result.rc == 0
+
+    - name: Create Terraform role
+      shell: >
+        pveum role add Terraform -privs "Realm.AllocateUser, VM.PowerMgmt, VM.GuestAgent.Unrestricted,
+        Sys.Console, Sys.Audit, Sys.AccessNetwork, VM.Config.Cloudinit, VM.Replicate, Pool.Allocate,
+        SDN.Audit, Realm.Allocate, SDN.Use, Mapping.Modify, VM.Config.Memory, VM.GuestAgent.FileSystemMgmt,
+        VM.Allocate, SDN.Allocate, VM.Console, VM.Clone, VM.Backup, Datastore.AllocateTemplate,
+        VM.Snapshot, VM.Config.Network, Sys.Incoming, Sys.Modify, VM.Snapshot.Rollback, VM.Config.Disk,
+        Datastore.Allocate, VM.Config.CPU, VM.Config.CDROM, Group.Allocate, Datastore.Audit, VM.Migrate,
+        VM.GuestAgent.FileWrite, Mapping.Use, Datastore.AllocateSpace, Sys.Syslog, VM.Config.Options,
+        Pool.Audit, User.Modify, VM.Config.HWType, VM.Audit, Sys.PowerMgmt, VM.GuestAgent.Audit,
+        Mapping.Audit, VM.GuestAgent.FileRead, Permissions.Modify"
+      register: terraform_role_result
+      failed_when: terraform_role_result.rc != 0 and 'role already exists' not in terraform_role_result.stderr
+      changed_when: terraform_role_result.rc == 0
+
+    - name: Assign role to terraform user
+      shell: pveum aclmod / -user terraform@pve -role Terraform
+      register: role_assign_result
+      failed_when: role_assign_result.rc != 0 and 'ACL entry already exists' not in role_assign_result.stderr
+      changed_when: role_assign_result.rc == 0
+
+    - name: Create local terraform user
+      user:
+        name: terraform
+        state: present
+
+    - name: Set up sudo permissions for terraform
+      copy:
+        dest: /etc/sudoers.d/terraform
+        content: |
+          terraform ALL=(root) NOPASSWD: /sbin/pvesm
+          terraform ALL=(root) NOPASSWD: /sbin/qm
+          terraform ALL=(root) NOPASSWD: /usr/bin/tee /var/lib/vz/*
+        mode: "0440"
+        validate: /usr/sbin/visudo -cf %s
+
+    - name: Set up SSH for terraform user
+      authorized_key:
+        user: terraform
+        state: present
+        key: "{{ ssh_public_key }}"
+
+    - name: Configure SSH hardening
+      ansible.posix.sshd_config:
+        backup: yes
+        sshd_config: /etc/ssh/sshd_config.d/10-hardening.conf
+        settings:
+          Port: "{{ ssh_port }}"
+          PasswordAuthentication: "no"
+          PermitRootLogin: "no"
+      notify: Restart sshd
+
+    - name: Create media directory
+      file:
+        path: /mnt/media
+        state: directory
+        mode: "0755"
+
+    - name: Start Tailscale
+      shell: tailscale up --authkey={{ tailscale_key }}
+      args:
+        creates: /var/lib/tailscale/tailscaled.state
+      when: tailscale_key is defined
+
+  handlers:
+    - name: Restart sshd
+      service:
+        name: sshd
+        state: restarted
