@@ -10,18 +10,18 @@
 - Flash [Proxmox](https://www.proxmox.com/en/downloads) ISO onto a USB or SSD or disk and then connect that to your server so that you can boot your server with the Proxmox VE OS.
 - In the setup, you'll be given an option to name your default proxmox node, pick a name but remember it because you will need it later.
 - In setup, on the "Management Network Configuration" page:
-  - For management interface, pick the network card that is being used for ethernet
-  - For Hostname (FQDN), put proxmox.lan
-  - For IP address (CIDR), pick an IP address that is not assigned by your router and that you can reserve for your server, let's suppose it's `1.2.3.4`
-  - For gateway, put the IP address of your router
-  - For DNS server, put either your router's IP address or use a public DNS server like `1.1.1.1` (Cloudflare) `8.8.8.8` (Google)
+  - For management interface, pick the network card that is being used for ethernet.
+  - For Hostname (FQDN), put proxmox.lan.
+  - For IP address (CIDR), pick an IP address that is not assigned by your router and that you can reserve for your server, let's suppose it's `1.2.3.4`.
+  - For gateway, put the IP address of your router.
+  - For DNS server, put either your router's IP address or use a public DNS server like `1.1.1.1` (Cloudflare) `8.8.8.8` (Google).
 - Verify that from another computer you can `ping 1.2.3.4` and access `https://1.2.3.4:8006`.
 - Add an `ssh` key so you have remote access to your server from another computer.
 - Run `./setup_proxmox.sh root@1.2.3.4 /path/to/your/public/.ssh/key`. This script will:
-  - Create a `dannyvelasquez` user with full `sudo` permissions and SSH access using `/path/to/your/public/.ssh/key`
-  - Create a `terraform` user with partial `sudo` permissions and SSH access `/path/to/your/public/.ssh/key`
+  - Create a `dannyvelasquez` user with full `sudo` permissions and SSH access using `/path/to/your/public/.ssh/key`.
+  - Create a `terraform` user with partial `sudo` permissions and SSH access `/path/to/your/public/.ssh/key`.
   - Create a Proxmox `terraform` user with an API token with limited permissions.
-  - Create a `/mnt/media` directory that will be used for mounting
+  - Create a `/mnt/media` directory that will be used for mounting.
 - The script in the step above will prompt you for a password, enter the password and save it in Bitwarden.
 - The script in the step above will show you the API token that was created for the Terraform Proxmox user. Save this in Bitwarden.
 - Run `./verify_proxmox.sh` to verify that the SSH access is set-up correctly.
