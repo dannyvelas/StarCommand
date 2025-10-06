@@ -1,14 +1,15 @@
 #!/bin/bash
 
 # Check if required arguments are provided
-if [ $# -ne 2 ]; then
-  echo "Usage: $0 <ip-addr> <path_to_public_key>"
-  echo "Example: $0 192.168.1.100 ~/.ssh/id_ed25519.pub"
+if [ $# -ne 3 ]; then
+  echo "Usage: $0 <ip-addr> <path-to-public_key> <path-to-private-key>"
+  echo "Example: $0 192.168.1.100 ~/.ssh/id_ed25519.pub ~/.ssh/id_ed25519"
   exit 1
 fi
 
 IP=$1
 PUBLIC_KEY_PATH=$2
+PRIVATE_KEY_PATH=$2
 
 # Check if public key file exists
 if [ ! -f "$PUBLIC_KEY_PATH" ]; then
@@ -35,9 +36,15 @@ PORT=$((RANDOM % 64512 + 1024))
 ssh root@"$IP" bash -c "'
     # stop if there is an error
     set -e
+    
+    # Add Tailscales GPG key and repository
+    mkdir -p --mode=0755 /usr/share/keyrings
+    curl -fsSL https://pkgs.tailscale.com/stable/debian/trixie.noarmor.gpg | tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+    curl -fsSL https://pkgs.tailscale.com/stable/debian/trixie.tailscale-keyring.list | tee /etc/apt/sources.list.d/tailscale.list
 
-    # Install sudo
+    # Install sudo and tailscale
     apt update && apt upgrade && apt install -y sudo
+    apt-get install tailscale
 
     # Create dannyvelasquez user
     useradd -G sudo -m dannyvelasquez -s /bin/bash
@@ -98,5 +105,22 @@ EOF
     # Create media directory
     mkdir -p /mnt/media
 
+    # Start Tailscale!
+    sudo tailscale up
+
     echo \"Setup completed successfully!\"
 '"
+
+echo "Verifying SSH access for dannyvelasquez user..."
+if ssh -o BatchMode=yes -o StrictHostKeyChecking=no -i "$PRIVATE_KEY_PATH" "dannyvelasquez@$IP" "echo 'SSH access successful for dannyvelasquez'"; then
+  echo "dannyvelasquez SSH access verified"
+else
+  echo "Error: Unable to verify SSH access for dannyvelasquez"
+fi
+
+echo "Verifying SSH access and privileges for terraform user..."
+if ssh -o BatchMode=yes -o StrictHostKeyChecking=no -i "$PRIVATE_KEY_PATH" "terraform@$HOST" "sudo pvesm apiinfo"; then
+  echo "terraform SSH access and privileges verified"
+else
+  echo "Error: Unable to verify SSH access or privileges for terraform user"
+fi
