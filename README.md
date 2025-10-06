@@ -24,12 +24,7 @@
   - Create a `/mnt/media` directory that will be used for mounting
 - The script in the step above will prompt you for a password, enter the password and save it in Bitwarden.
 - The script in the step above will show you the API token that was created for the Terraform Proxmox user. Save this in Bitwarden.
-- Verify that you have `ssh` access to the `dannyvelasquez` user by running this from your local computer: `ssh -i /path/to/your/private/.ssh/key dannyvelasquez@1.2.3.4`
-- Verify that you have `ssh` access to the `terraform` user by running this from your local computer: `ssh -i /path/to/your/private/.ssh/key terraform@1.2.3.4 sudo pvesm apiinfo`. You should see something like this:
-  ```
-  APIVER 12
-  APIAGE 3
-  ```
+- Run `./verify_proxmox.sh` to verify that the SSH access is set-up correctly.
 - Create a file in this directory called `terraform.tfvars` it should look like this:
 ```
 endpoint        = "https://1.2.3.4:8006/"
