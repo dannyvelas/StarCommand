@@ -25,6 +25,12 @@
 - The script in the step above will prompt you for a password, enter the password and save it in Bitwarden.
 - The script in the step above will show you the API token that was created for the Terraform Proxmox user. Save this in Bitwarden.
 - Run `./verify_proxmox.sh` to verify that the SSH access is set-up correctly.
+- Disable root and password login:
+  - `ssh` with your `root` user and go into `/etc/sshd/sshd_config` and:
+    - Change the `Port 22` to some random port between 1024 and 65535 like `Port 61196`.
+    - Change `PasswordAuthentication yes` to be `PasswordAuthentication no`. Uncomment it if necessary.
+    - Change `PermitRootLogin yes` to `PermitRootLogin no`.
+  - Exit the file and run `systemctl restart sshd`.
 - Create a file in this directory called `terraform.tfvars` it should look like this:
 ```
 endpoint        = "https://1.2.3.4:8006/"
