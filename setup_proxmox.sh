@@ -36,7 +36,7 @@ PORT=$((RANDOM % 64512 + 1024))
 ssh root@"$IP" bash -c "'
     # stop if there is an error
     set -e
-    
+
     # Add Tailscales GPG key and repository
     mkdir -p --mode=0755 /usr/share/keyrings
     curl -fsSL https://pkgs.tailscale.com/stable/debian/trixie.noarmor.gpg | tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
