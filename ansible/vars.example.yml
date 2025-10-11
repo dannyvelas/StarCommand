@@ -1,0 +1,3 @@
+---
+tailscale_key: "sensitive-key"
+ssh_port: 22
