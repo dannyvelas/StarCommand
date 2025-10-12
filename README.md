@@ -23,7 +23,7 @@
   ```
 
 ## Ansible
-### Run create admin playbook
+### create admin playbook
 - If your public key is anything other than `~/.ssh/id_ed25519.pub`, change it in the playbooks in `./ansible/`.
 - Add the following to your `~/.ssh/config` file, this will be used by the `create_admin.yml` playbook:
   ```
@@ -38,13 +38,11 @@
   - Install `sudo`.
   - Create an `admin` user with full `sudo` permissions, that can log-in via SSH with the same key as root.
 
-### Get port and set vars
+### Setup playbook
 - `cp ansible/vars.example.yml /var/homelab.yml`.
 - Pick a random port: `echo $RANDOM | jq '. + 1024 | . % 65535'`, this will be used in future steps. Let's suppose it's `1234`.
 - Save this port into `/var/homelab.yml`.
 - [Generate a Tailscale auth key](https://login.tailscale.com/admin/settings/keys), save it in Bitwarden and put it in `/var/homelab.yml`.
-
-### Setup playbook
 - Run `ansible-playbook -i ansible/inventory.ini ansible/harden_and_setup.yml`, this will:
   - Harden SSH access so that root and password logins become not permitted.
   - Create a `terraform` user with partial `sudo` permissions and SSH access `/path/to/your/public/.ssh/key`.
