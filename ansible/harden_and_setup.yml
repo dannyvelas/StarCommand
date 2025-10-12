@@ -1,7 +1,12 @@
 ---
 - name: Harden SSH, setup terraform and tailscale
   hosts: proxmox
-  become: yes
+  become: true
+  vars:
+    ssh_public_key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
+  vars_files:
+    - /var/homelab.yml
+
   tasks:
     - name: Configure SSH hardening
       become: yes
@@ -39,7 +44,7 @@
     - name: Create terraform user in Proxmox
       shell: pveum user add terraform@pve
       register: terraform_user_result
-      failed_when: terraform_user_result.rc != 0 and 'user already exists' not in terraform_user_result.stderr
+      failed_when: terraform_user_result.rc != 0 and 'already exists' not in terraform_user_result.stderr
       changed_when: terraform_user_result.rc == 0
 
     - name: Create Terraform role
@@ -54,7 +59,7 @@
         Pool.Audit, User.Modify, VM.Config.HWType, VM.Audit, Sys.PowerMgmt, VM.GuestAgent.Audit,
         Mapping.Audit, VM.GuestAgent.FileRead, Permissions.Modify"
       register: terraform_role_result
-      failed_when: terraform_role_result.rc != 0 and 'role already exists' not in terraform_role_result.stderr
+      failed_when: terraform_role_result.rc != 0 and 'already exists' not in terraform_role_result.stderr
       changed_when: terraform_role_result.rc == 0
 
     - name: Assign role to terraform user
@@ -66,6 +71,8 @@
     - name: Create Terraform API token
       command: pveum user token add terraform@pve provider --privsep=0
       register: token_output
+      failed_when: token_output.rc != 0 and 'Token already exists' not in token_output.stderr
+      changed_when: token_output.rc == 0
 
     - name: Display Terraform API token
       debug:
@@ -75,17 +82,23 @@
           {{ token_output.stdout }}
           ===============================
 
-    - name: Add Tailscale GPG key
-      apt_key:
-        url: https://pkgs.tailscale.com/stable/debian/trixie.noarmor.gpg
-        keyring: /usr/share/keyrings/tailscale-archive-keyring.gpg
-        state: present
+    - name: Disable Proxmox enterprise repo and enable no-subscription repo
+      ansible.builtin.blockinfile:
+        path: /etc/apt/sources.list.d/pve-no-subscription.list
+        create: true
+        block: |
+          deb http://download.proxmox.com/debian/pve bookworm pve-no-subscription
 
-    - name: Add Tailscale repository
-      apt_repository:
-        repo: deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg] https://pkgs.tailscale.com/stable/debian trixie main
-        filename: tailscale
+    - name: Add tailscale
+      ansible.builtin.deb822_repository:
+        name: tailscale
+        types: [deb]
+        uris: "https://pkgs.tailscale.com/stable/debian"
+        suites: [trixie]
+        components: [main]
+        signed_by: https://pkgs.tailscale.com/stable/debian/trixie.noarmor.gpg
         state: present
+        enabled: true
 
     - name: Install required packages
       apt:
