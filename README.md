@@ -23,7 +23,7 @@
   ```
 
 ## Ansible
-### create admin playbook
+### Create admin playbook
 - If your public key is anything other than `~/.ssh/id_ed25519.pub`, change it in the playbooks in `./ansible/`.
 - Add the following to your `~/.ssh/config` file, this will be used by the `create_admin.yml` playbook:
   ```
@@ -51,7 +51,7 @@
   - Create a `/mnt/media` directory that will be used for mounting.
 - After running this playbook, it will show you the API token that was created for the Terraform Proxmox user. Save this in Bitwarden.
 - After running this playbook, ssh logins with the `root` user or port 22 will no longer work, so update the `User` in `~/.ssh/config` to be `admin` instead of `root`. Also update the `Port` to be the port from before.
-- You should be able to run this playbook again and everything should say that there are no changes.
+- You should be able to run this playbook again and every task should say that there are no changes.
 
 ## Terraform
 - Create a file in this directory called `terraform.tfvars`. It should look like this:
