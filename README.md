@@ -20,31 +20,43 @@
   - For DNS server, put either your router's IP address or use a public DNS server like `1.1.1.1` (Cloudflare) `8.8.8.8` (Google).
 - Verify that from another computer you can `ping 1.2.3.4` and access `https://1.2.3.4:8006`.
 - Add an `ssh` key to your proxmox server and verify afterward that you have remote `ssh` access to your server from your other computer.
-- Pick a random port: `echo $RANDOM | jq '. + 1024 | . % 65535'`, this will be used in future steps. Let's suppose it's `1234`.
-- Add the following to your `~/.ssh/config` file, and put the port that you picked in the previous step:
-  ```
-  Host proxmox
-    Hostname 1.2.3.4
-    User dannyvelasquez
-    IdentityFile /path/to/your/private/.ssh/key
-    Port 1234
   ```
 
 ## Ansible
-- `cp ansible/vars.example.yml ansible/vars.yml`
-- [Generate a Tailscale auth key](https://login.tailscale.com/admin/settings/keys), save it in Bitwarden and put it in `./ansible/vars.yml`.
-- Save the port from before into `./ansible/vars.yml`.
-- Run `ansible-playbook -i ansible/inventory.ini ansible/proxmox_setup.yml`, this will:
-  - Install `sudo` and `tailscale`
-  - Create a `dannyvelasquez` user with full `sudo` permissions and SSH access using `/path/to/your/public/.ssh/key`.
+### Run create admin playbook
+- If your public key is anything other than `~/.ssh/id_ed25519.pub`, change it in the playbooks in `./ansible/`.
+- Add the following to your `~/.ssh/config` file, this will be used by the `create_admin.yml` playbook:
+  ```
+  Host proxmox
+    Hostname 1.2.3.4
+    User root
+    IdentityFile /path/to/your/private/.ssh/key
+    Port 22
+  ```
+
+- Run `ansible-playbook -i ansible/inventory.ini ansible/create_admin.yml`, this will:
+  - Install `sudo`.
+  - Create an `admin` user with full `sudo` permissions, that can log-in via SSH with the same key as root.
+
+### Get port and set vars
+- `cp ansible/vars.example.yml /var/homelab.yml`.
+- Pick a random port: `echo $RANDOM | jq '. + 1024 | . % 65535'`, this will be used in future steps. Let's suppose it's `1234`.
+- Save this port into `/var/homelab.yml`.
+- [Generate a Tailscale auth key](https://login.tailscale.com/admin/settings/keys), save it in Bitwarden and put it in `/var/homelab.yml`.
+
+### Setup playbook
+- Run `ansible-playbook -i ansible/inventory.ini ansible/harden_and_setup.yml`, this will:
+  - Harden SSH access so that root and password logins become not permitted.
   - Create a `terraform` user with partial `sudo` permissions and SSH access `/path/to/your/public/.ssh/key`.
   - Create a Proxmox `terraform` user with an API token with limited permissions.
-  - Harden SSH access so that root and password logins become not permitted. Also, makes `ssh` use a random port instead of `22` to reduce attempted logins.
+  - Install `tailscale`.
   - Create a `/mnt/media` directory that will be used for mounting.
-- After running the playbook, it will show you the API token that was created for the Terraform Proxmox user. Save this in Bitwarden.
+- After running this playbook, it will show you the API token that was created for the Terraform Proxmox user. Save this in Bitwarden.
+- After running this playbook, ssh logins with the `root` user or port 22 will no longer work, so update the `User` in `~/.ssh/config` to be `admin` instead of `root`. Also update the `Port` to be the port from before.
+- You should be able to run this playbook again and everything should say that there are no changes.
 
 ## Terraform
-- Create a file in this directory called `terraform.tfvars` it should look like this:
+- Create a file in this directory called `terraform.tfvars`. It should look like this:
 ```
 endpoint        = "https://1.2.3.4:8006/"
 api_token       = "terraform@pve!provider=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
