@@ -10,7 +10,7 @@
   tasks:
     - name: Configure SSH hardening
       become: yes
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: "/etc/ssh/sshd_config.d/00-user.conf"
         create: true
         marker: "# {mark} ANSIBLE MANAGED SSH CONFIG"
@@ -81,13 +81,44 @@
           SAVE THIS TERRAFORM API TOKEN:
           {{ token_output.stdout }}
           ===============================
+      when: token_output.rc == 0
 
-    - name: Disable Proxmox enterprise repo and enable no-subscription repo
+    - name: enable no-subscription repo
       ansible.builtin.blockinfile:
-        path: /etc/apt/sources.list.d/pve-no-subscription.list
+        path: /etc/apt/sources.list.d/pve-no-subscription.sources
         create: true
         block: |
-          deb http://download.proxmox.com/debian/pve bookworm pve-no-subscription
+          Types: deb
+          URIs: http://download.proxmox.com/debian/pve
+          Suites: trixie
+          Components: pve-no-subscription
+          Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg
+
+    - name: delete enterprise repo
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/pve-enterprise.sources
+        state: absent
+
+    - name: delete ceph enterprise repo
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/ceph.sources
+        state: absent
+
+    - name: create no-subscription ceph repo
+      ansible.builtin.blockinfile:
+        path: /etc/apt/sources.list.d/ceph.sources
+        block: |
+          Types: deb
+          URIs: http://download.proxmox.com/debian/ceph-squid
+          Suites: trixie
+          Components: no-subscription
+          Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg
+        create: yes
+        owner: root
+        group: root
+        mode: "0644"
+      notify:
+        - apt update
 
     - name: Add tailscale key and repository
       ansible.builtin.deb822_repository:
@@ -126,3 +157,6 @@
       service:
         name: sshd
         state: restarted
+    - name: apt update
+      ansible.builtin.apt:
+        update_cache: yes
