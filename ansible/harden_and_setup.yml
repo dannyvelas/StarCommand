@@ -120,6 +120,41 @@
       notify:
         - apt update
 
+    - name: Add tailscale key and repository
+      ansible.builtin.deb822_repository:
+        name: tailscale
+        types: [deb]
+        uris: "https://pkgs.tailscale.com/stable/debian"
+        suites: [trixie]
+        components: [main]
+        signed_by: https://pkgs.tailscale.com/stable/debian/trixie.noarmor.gpg
+        state: present
+        enabled: true
+
+    - name: Install tailscale
+      apt:
+        name:
+          - tailscale
+        state: present
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Start Tailscale
+      command: tailscale up --authkey={{ tailscale_key }}
+      register: tailscale_output
+      args:
+        creates: /var/lib/tailscale/tailscaled.state
+      when: tailscale_key is defined
+
+    - name: Display Tailscale running message
+      debug:
+        msg: |
+          =================
+          TAILSCALE RUNNING
+          {{ tailscale_output.stdout }}
+          =================
+      when: tailscale_output.rc == 0
+
     # this is the directory that will be used as a mount point for VMs
     - name: Create media directory
       file:
