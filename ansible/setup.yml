@@ -8,6 +8,38 @@
     - /var/homelab.yml
 
   tasks:
+    ### Create Admin
+    - name: Install sudo
+      apt:
+        name:
+          - sudo
+        state: present
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Create admin user
+      user:
+        name: admin
+        shell: /bin/bash
+        groups: sudo
+        append: yes
+        state: present
+
+    - name: Allow admin user passwordless sudo
+      copy:
+        dest: /etc/sudoers.d/admin
+        content: "admin ALL=(ALL) NOPASSWD:ALL\n"
+        owner: root
+        group: root
+        mode: "0440"
+
+    - name: Set up SSH for admin
+      authorized_key:
+        user: admin
+        state: present
+        key: "{{ ssh_public_key }}"
+
+    ### Harden SSH
     - name: Configure SSH hardening
       become: yes
       ansible.builtin.blockinfile:
@@ -20,6 +52,7 @@
           PermitRootLogin no
       notify: restart sshd
 
+    ### Terraform
     - name: Create local terraform user
       user:
         name: terraform
@@ -83,6 +116,7 @@
           ===============================
       when: token_output.rc == 0
 
+    ### APT
     - name: enable no-subscription repo
       ansible.builtin.blockinfile:
         path: /etc/apt/sources.list.d/pve-no-subscription.sources
@@ -120,6 +154,7 @@
       notify:
         - apt update
 
+    ### Tailscale
     - name: Add tailscale key and repository
       ansible.builtin.deb822_repository:
         name: tailscale
@@ -155,7 +190,7 @@
           =================
       when: tailscale_output.rc == 0
 
-    # this is the directory that will be used as a mount point for VMs
+    ### Mount point for VMs
     - name: Create media directory
       file:
         path: /mnt/media
