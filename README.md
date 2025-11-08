@@ -20,7 +20,6 @@
   - For DNS server, put either your router's IP address or use a public DNS server like `1.1.1.1` (Cloudflare) `8.8.8.8` (Google).
 - Verify that from another computer you can `ping 1.2.3.4` and access `https://1.2.3.4:8006`.
 - Add an `ssh` key to your proxmox server and verify afterward that you have remote `ssh` access to your server from your other computer.
-  ```
 
 ## Ansible
 ### Variables set up
