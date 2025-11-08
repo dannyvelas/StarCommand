@@ -23,9 +23,15 @@
   ```
 
 ## Ansible
-### Create admin playbook
-- If your public key is anything other than `~/.ssh/id_ed25519.pub`, change it in the playbooks in `./ansible/`.
-- Add the following to your `~/.ssh/config` file, this will be used by the `create_admin.yml` playbook:
+### Variables set up
+- `cp ansible/vars.example.yml /var/homelab.yml`.
+- Pick a random port: `echo $RANDOM | jq '. + 1024 | . % 65535'`, this will be used in future steps. Let's suppose it's `1234`.
+- Save this port into `/var/homelab.yml`.
+- [Generate a Tailscale auth key](https://login.tailscale.com/admin/settings/keys), save it in Bitwarden and put it in `/var/homelab.yml`.
+
+### Main playbook
+- If your public key is anything other than `~/.ssh/id_ed25519.pub`, change it `./ansible/setup.yml`.
+- Add the following to your `~/.ssh/config` file, this will be used by the `./ansible/setup.yml` playbook:
   ```
   Host proxmox
     Hostname 1.2.3.4
@@ -33,17 +39,9 @@
     IdentityFile /path/to/your/private/.ssh/key
     Port 22
   ```
-
 - Run `ansible-playbook -i ansible/inventory.ini ansible/create_admin.yml -u root`, this will:
   - Install `sudo`.
   - Create an `admin` user with full `sudo` permissions, that can log-in via SSH with the same key as root.
-
-### Setup playbook
-- `cp ansible/vars.example.yml /var/homelab.yml`.
-- Pick a random port: `echo $RANDOM | jq '. + 1024 | . % 65535'`, this will be used in future steps. Let's suppose it's `1234`.
-- Save this port into `/var/homelab.yml`.
-- [Generate a Tailscale auth key](https://login.tailscale.com/admin/settings/keys), save it in Bitwarden and put it in `/var/homelab.yml`.
-- Run `ansible-playbook -i ansible/inventory.ini ansible/harden_and_setup.yml -u admin`, this will:
   - Harden SSH access so that root and password logins become not permitted.
   - Create a `terraform` user with partial `sudo` permissions and SSH access `/path/to/your/public/.ssh/key`.
   - Create a Proxmox `terraform` user with an API token with limited permissions.
@@ -51,7 +49,7 @@
   - Create a `/mnt/media` directory that will be used for mounting.
 - After running this playbook, it will show you the API token that was created for the Terraform Proxmox user. Save this in Bitwarden.
 - After running this playbook, ssh logins with the `root` user or port 22 will no longer work, so update the `User` in `~/.ssh/config` to be `admin` instead of `root`. Also update the `Port` to be the port from before.
-- You should be able to run this playbook again and every task should say that there are no changes.
+- You should be able to run this playbook as many times as you want, except as admin (`-u admin`) and not as root as we did above.
 
 ## Terraform
 - Create a file in this directory called `terraform.tfvars`. It should look like this:
