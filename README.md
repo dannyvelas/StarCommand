@@ -29,8 +29,8 @@
 - [Generate a Tailscale auth key](https://login.tailscale.com/admin/settings/keys), save it in Bitwarden and put it in `/var/homelab.yml`.
 
 ### Run playbook
-- If your public key is anything other than `~/.ssh/id_ed25519.pub`, change it in `./ansible/setup.yml`.
-- Add the following to your `~/.ssh/config` file, this will be used by the `./ansible/setup.yml` playbook:
+- If your public key is anything other than `~/.ssh/id_ed25519.pub`, change it in `./ansible/setup-proxmox.yml`.
+- Add the following to your `~/.ssh/config` file, this will be used by the `./ansible/setup-proxmox.yml` playbook:
   ```
   Host proxmox
     Hostname 1.2.3.4
@@ -38,7 +38,7 @@
     IdentityFile /path/to/your/private/.ssh/key
     Port 22
   ```
-- Run `ansible-playbook -i ansible/inventory.ini ansible/create_admin.yml -u root`, this will:
+- Run `ansible-playbook -i ansible/inventory.ini ansible/setup-proxmox.yml -u root`, this will:
   - Install `sudo`.
   - Create an `admin` user with full `sudo` permissions, that can log-in via SSH with the same key as root.
   - Harden SSH access so that root and password logins become not permitted.
