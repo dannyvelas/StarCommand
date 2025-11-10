@@ -1,0 +1,23 @@
+---
+- name: Setup Plex VM
+  hosts: plex
+  become: true
+  vars:
+    ssh_public_key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
+  vars_files:
+    - /var/homelab.yml
+
+  tasks:
+    - name: Ensure media mount point exists
+      file:
+        path: /mnt/media
+        state: directory
+        mode: "0755"
+
+    - name: Configure media mount in fstab
+      mount:
+        path: /mnt/media
+        src: media_mount
+        fstype: virtiofs
+        opts: defaults
+        state: mounted
