@@ -11,12 +11,12 @@
 
 ### Set up proxmox manually
 - Flash [Proxmox](https://www.proxmox.com/en/downloads) ISO onto a USB or SSD or disk and then connect that to your server so that you can boot your server with the Proxmox VE OS.
-- In the setup, you'll be given an option to name your default proxmox node, pick a name but remember it because you will need it later.
+- In the setup, you'll be given an option to name your default proxmox node, name it "proxmox".
 - In setup, on the "Management Network Configuration" page:
   - For management interface, pick the network card that is being used for ethernet.
   - For Hostname (FQDN), put proxmox.lan.
-  - For IP address (CIDR), pick an IP address that is not assigned by your router and that you can reserve for your server, let's suppose it's `1.2.3.4`.
-  - For gateway, put the IP address of your router.
+  - For IP address (CIDR), pick an IP address that is not assigned by your router and that you can reserve for your server. This will be used a lot. From here on, we will use the special value `1.2.3.4` to represent your server's IP address.
+  - For gateway, put the IP address of your router. From here on, we will use the special value `10.0.0.1` to represent your router's IP address.
   - For DNS server, put either your router's IP address or use a public DNS server like `1.1.1.1` (Cloudflare) `8.8.8.8` (Google).
 - Verify that from another computer you can `ping 1.2.3.4` and access `https://1.2.3.4:8006`.
 - Add an `ssh` key to your proxmox server and verify afterward that you have remote `ssh` access to your server from your other computer.
@@ -56,14 +56,16 @@
 ## Terraform
 - Create a file in this directory called `terraform.tfvars`. It should look like this:
 ```
+node            = "proxmox"
+router_ip       = "10.0.0.1"
 endpoint        = "https://1.2.3.4:8006/"
 api_token       = "terraform@pve!provider=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 ssh_address     = "1.2.3.4"
 ssh_port        = 1234
 ssh_public_key  = "/path/to/your/public/.ssh/key"
 ssh_private_key = "/path/to/your/private/.ssh/key"
-node            = "whatever-node-name-you-chose-earlier"
 ```
+- If you chose a name other than "proxmox" for your default node, when you were manually setting up Proxmox in the first step, set the "node" key to that value.
 - The x's in `api_token` should be replaced with the api token you received in the step before.
 - Run `terraform apply`. This should create an Ubuntu VM on IP that can mount to `/mnt/media` on the proxmox host.
 - At this point, you should be able to ssh into the ubuntu VM: `ssh ubuntu@10.0.0.84 -i /path/to/your/private/.ssh/key`.
