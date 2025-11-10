@@ -116,7 +116,7 @@ resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
 
     ip_config {
       ipv4 {
-        address = "10.0.0.84/24"
+        address = "${var.plex_vm_ip}/24"
         gateway = var.router_ip
       }
     }

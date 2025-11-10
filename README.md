@@ -24,9 +24,10 @@
 ## Ansible
 ### Variables set up
 - `cp ansible/vars.example.yml /var/homelab.yml`.
-- Pick a random port: `echo $RANDOM | jq '. + 1024 | . % 65535'`, this will be used in future steps. Let's suppose it's `1234`.
+- Pick a random port: `echo $RANDOM | jq '. + 1024 | . % 65535'`, this will be used in future steps. From now on, we will use the special value `1234` to represent this randomly generated port.
 - Save this port into `/var/homelab.yml`.
 - [Generate a Tailscale auth key](https://login.tailscale.com/admin/settings/keys), save it in Bitwarden and put it in `/var/homelab.yml`.
+- Update `./ansible/inventory.ini` so that the `proxmox` host has IP address `1.2.3.4`.
 
 ### Run playbook
 - If your public key is anything other than `~/.ssh/id_ed25519.pub`, change it in `./ansible/setup-proxmox.yml`.
@@ -54,6 +55,7 @@
   - You should be able to go to the [Tailscale machines page](https://login.tailscale.com/admin/machines) and see your server there as a Tailscale node.
 
 ## Terraform
+- Decide on the IP address that you would want for a new Plex VM. From now on, we will use the special value `<plex-vm-ip>` to represent your plex VM's IP address.
 - Create a file in this directory called `terraform.tfvars`. It should look like this:
 ```
 node            = "proxmox"
@@ -64,12 +66,14 @@ ssh_address     = "1.2.3.4"
 ssh_port        = 1234
 ssh_public_key  = "/path/to/your/public/.ssh/key"
 ssh_private_key = "/path/to/your/private/.ssh/key"
+plex_vm_ip      = "<plex-vm-ip>"
 ```
 - If you chose a name other than "proxmox" for your default node, when you were manually setting up Proxmox in the first step, set the "node" key to that value.
 - The x's in `api_token` should be replaced with the api token you received in the step before.
 - Run `terraform apply`. This should create an Ubuntu VM on IP that can mount to `/mnt/media` on the proxmox host.
-- At this point, you should be able to ssh into the ubuntu VM: `ssh ubuntu@10.0.0.84 -i /path/to/your/private/.ssh/key`.
+- At this point, you should be able to ssh into the ubuntu VM: `ssh ubuntu@<plex-vm-ip> -i /path/to/your/private/.ssh/key`.
 
 ## Ansible for Plex VM
+- Update `./ansible/inventory.ini` so that the `plex` host has IP address `<plex-vm-ip>`.
 - Run `ansible-playbook -i ansible/inventory.ini ansible/setup-plex-vm.yml -u ubuntu`
-- After this, you should be able to go to visit `http://10.0.0.84:32400` and see the Plex welcome screen.
+- After this, you should be able to go to visit `http://<plex-vm-ip>:32400` and see the Plex welcome screen.
