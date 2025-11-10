@@ -21,3 +21,31 @@
         fstype: virtiofs
         opts: defaults
         state: mounted
+
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+        update_cache: yes
+
+    - name: Create Plex config dir
+      file:
+        path: /opt/plex/config
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: "0755"
+
+    - name: Run Plex container
+      community.docker.docker_container:
+        name: plex
+        image: lscr.io/linuxserver/plex:latest
+        restart_policy: unless-stopped
+        env:
+          PUID: "1000"
+          PGID: "1000"
+          TZ: "UTC"
+        network_mode: host
+        volumes:
+          - /opt/plex/config:/config
+          - /mnt/media:/data

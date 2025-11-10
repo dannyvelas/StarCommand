@@ -65,7 +65,9 @@ ssh_private_key = "/path/to/your/private/.ssh/key"
 node            = "whatever-node-name-you-chose-earlier"
 ```
 - The x's in `api_token` should be replaced with the api token you received in the step before.
-- Run `terraform apply`. This should create an Ubuntu VM that has a shared mount to the `/mnt/media` directory of its host.
+- Run `terraform apply`. This should create an Ubuntu VM on IP that can mount to `/mnt/media` on the proxmox host.
+- At this point, you should be able to ssh into the ubuntu VM: `ssh ubuntu@10.0.0.84 -i /path/to/your/private/.ssh/key`.
 
 ## Ansible for Plex VM
 - Run `ansible-playbook -i ansible/inventory.ini ansible/setup-plex-vm.yml -u ubuntu`
+- After this, you should be able to go to visit `http://10.0.0.84:32400` and see the Plex welcome screen.
