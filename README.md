@@ -58,8 +58,11 @@
 ```
 endpoint        = "https://1.2.3.4:8006/"
 api_token       = "terraform@pve!provider=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+ssh_address     = "1.2.3.4"
+ssh_port        = 1234
 ssh_public_key  = "/path/to/your/public/.ssh/key"
 ssh_private_key = "/path/to/your/private/.ssh/key"
 node            = "whatever-node-name-you-chose-earlier"
 ```
+- The x's in `api_token` should be replaced with the api token you received in the step before.
 - Run `terraform apply`. This should create an Ubuntu VM that has a shared mount to the `/mnt/media` directory of its host.
