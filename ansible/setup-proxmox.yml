@@ -8,7 +8,45 @@
     - /var/homelab.yml
 
   tasks:
-    ### Create Admin
+    ### APT
+    - name: enable no-subscription repo
+      ansible.builtin.blockinfile:
+        path: /etc/apt/sources.list.d/pve-no-subscription.sources
+        create: true
+        block: |
+          Types: deb
+          URIs: http://download.proxmox.com/debian/pve
+          Suites: trixie
+          Components: pve-no-subscription
+          Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg
+
+    - name: delete enterprise repo
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/pve-enterprise.sources
+        state: absent
+
+    - name: delete ceph enterprise repo
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/ceph.sources
+        state: absent
+
+    - name: create no-subscription ceph repo
+      ansible.builtin.blockinfile:
+        path: /etc/apt/sources.list.d/ceph.sources
+        block: |
+          Types: deb
+          URIs: http://download.proxmox.com/debian/ceph-squid
+          Suites: trixie
+          Components: no-subscription
+          Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg
+        create: yes
+        owner: root
+        group: root
+        mode: "0644"
+      notify:
+        - apt update
+
+    ## sudo
     - name: Install sudo
       apt:
         name:
@@ -17,6 +55,7 @@
         update_cache: yes
         cache_valid_time: 3600
 
+    ## Create admin
     - name: Create admin user
       user:
         name: admin
@@ -50,7 +89,7 @@
           Port {{ ssh_port }}
           PasswordAuthentication no
           PermitRootLogin no
-      notify: restart sshd
+      notify: Restart sshd
 
     ### Terraform
     - name: Create local terraform user
@@ -115,44 +154,6 @@
           {{ token_output.stdout }}
           ===============================
       when: token_output.rc == 0
-
-    ### APT
-    - name: enable no-subscription repo
-      ansible.builtin.blockinfile:
-        path: /etc/apt/sources.list.d/pve-no-subscription.sources
-        create: true
-        block: |
-          Types: deb
-          URIs: http://download.proxmox.com/debian/pve
-          Suites: trixie
-          Components: pve-no-subscription
-          Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg
-
-    - name: delete enterprise repo
-      ansible.builtin.file:
-        path: /etc/apt/sources.list.d/pve-enterprise.sources
-        state: absent
-
-    - name: delete ceph enterprise repo
-      ansible.builtin.file:
-        path: /etc/apt/sources.list.d/ceph.sources
-        state: absent
-
-    - name: create no-subscription ceph repo
-      ansible.builtin.blockinfile:
-        path: /etc/apt/sources.list.d/ceph.sources
-        block: |
-          Types: deb
-          URIs: http://download.proxmox.com/debian/ceph-squid
-          Suites: trixie
-          Components: no-subscription
-          Signed-By: /usr/share/keyrings/proxmox-archive-keyring.gpg
-        create: yes
-        owner: root
-        group: root
-        mode: "0644"
-      notify:
-        - apt update
 
     ### Tailscale
     - name: Add tailscale key and repository
