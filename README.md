@@ -17,14 +17,16 @@
     - "root", for your OS and file system. From what I've seen this takes up around 30% of the space you gave it.
     - "data", for VM disks. This seems to take up whatever remaining space there is from the space you gave it.
   - If you don't want Proxmox to use all the remaining space on your drive for VM disks, then you should use a value for the `hdsize` field which is smaller than the total capacity of your drive. This is especially true if you have a smaller hard-drive and can't easily add storage. You can put the available space to better use, like for storing media content.
+- After, you will be asked for an administrator email and password. Create a password, enter it, and store it in Bitwarden. This will be the "root" password.
 - In setup, on the "Management Network Configuration" page:
   - For management interface, pick the network card that is being used for ethernet.
-  - For Hostname (FQDN), put proxmox.lan.
+  - For Hostname (FQDN), put `proxmox.lan`. The part before the first `.` will become your Proxmox node name. In this case, my node name is `proxmox`. From here on, we will use the special value `<node-name>` to represent your node name.
   - For IP address (CIDR), pick an IP address that is not assigned by your router and that you can reserve for your server. This will be used a lot. From here on, we will use the special value `1.2.3.4` to represent your server's IP address.
   - For gateway, put the IP address of your router. From here on, we will use the special value `10.0.0.1` to represent your router's IP address.
   - For DNS server, put either your router's IP address or use a public DNS server like `1.1.1.1` (Cloudflare) `8.8.8.8` (Google).
 - Verify that from another computer you can `ping 1.2.3.4` and access `https://1.2.3.4:8006`.
-- Add an `ssh` key to your Proxmox server and verify afterward that you have remote `ssh` access to your server from your other computer.
+- Run: `ssh-copy-id -i /path/to/your/public/.ssh/key root@1.2.3.4`. In other words, add an `ssh` key to your Proxmox server and verify afterward that you have remote `ssh` access to your server from your other computer.
+- If you're using a laptop as a server, you might want to run this as well so that you can close the lid without it sleeping: `sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target`.
 
 ## Ansible
 ### Variables set up
@@ -63,7 +65,7 @@
 - Decide on the IP address that you would want for a new Plex VM. From now on, we will use the special value `<plex-vm-ip>` to represent your plex VM's IP address.
 - Create a file in this directory called `terraform.tfvars`. It should look like this:
 ```
-node            = "proxmox"
+node            = "<node-name>"
 router_ip       = "10.0.0.1"
 endpoint        = "https://1.2.3.4:8006/"
 api_token       = "terraform@pve!provider=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
@@ -73,7 +75,6 @@ ssh_public_key  = "/path/to/your/public/.ssh/key"
 ssh_private_key = "/path/to/your/private/.ssh/key"
 plex_vm_ip      = "<plex-vm-ip>"
 ```
-- If you chose a hostname other than "proxmox" in your management configuration page, when you were manually setting up Proxmox in the first step, set the "node" key to that value.
 - The x's in `api_token` should be replaced with the api token you received in the step before.
 - Run `terraform apply`. This should create an Ubuntu VM on IP that can mount to `/mnt/media` on the Proxmox host.
 - At this point, you should be able to ssh into the ubuntu VM: `ssh ubuntu@<plex-vm-ip> -i /path/to/your/private/.ssh/key`.
