@@ -9,9 +9,14 @@
 
 ## Instructions
 
-### Set up proxmox manually
+### Set up Proxmox manually
 - Flash [Proxmox](https://www.proxmox.com/en/downloads) ISO onto a USB or SSD or disk and then connect that to your server so that you can boot your server with the Proxmox VE OS.
-- In the setup, you'll be given an option to name your default proxmox node, name it "proxmox".
+- After accepting the terms and conditions, you can configure your filesystem and the amount of space on your drive that will be used by Proxmox:
+  - You probably want `ext4` or `xfs`, unless you know what you're doing.
+  - You can specify how much space on your hard-drive you want Proxmox to use using the `hdsize` field. By default it will use the whole thing. It will create two main logical volumes:
+    - "root", for your OS and file system. From what I've seen this takes up around 30% of the space you gave it.
+    - "data", for VM disks. This seems to take up whatever remaining space there is from the space you gave it.
+  - If you don't want Proxmox to use all the remaining space on your drive for VM disks, then you should use a value for the `hdsize` field which is smaller than the total capacity of your drive. This is especially true if you have a smaller hard-drive and can't easily add storage. You can put the available space to better use, like for storing media content.
 - In setup, on the "Management Network Configuration" page:
   - For management interface, pick the network card that is being used for ethernet.
   - For Hostname (FQDN), put proxmox.lan.
@@ -19,7 +24,7 @@
   - For gateway, put the IP address of your router. From here on, we will use the special value `10.0.0.1` to represent your router's IP address.
   - For DNS server, put either your router's IP address or use a public DNS server like `1.1.1.1` (Cloudflare) `8.8.8.8` (Google).
 - Verify that from another computer you can `ping 1.2.3.4` and access `https://1.2.3.4:8006`.
-- Add an `ssh` key to your proxmox server and verify afterward that you have remote `ssh` access to your server from your other computer.
+- Add an `ssh` key to your Proxmox server and verify afterward that you have remote `ssh` access to your server from your other computer.
 
 ## Ansible
 ### Variables set up
@@ -68,9 +73,9 @@ ssh_public_key  = "/path/to/your/public/.ssh/key"
 ssh_private_key = "/path/to/your/private/.ssh/key"
 plex_vm_ip      = "<plex-vm-ip>"
 ```
-- If you chose a name other than "proxmox" for your default node, when you were manually setting up Proxmox in the first step, set the "node" key to that value.
+- If you chose a hostname other than "proxmox" in your management configuration page, when you were manually setting up Proxmox in the first step, set the "node" key to that value.
 - The x's in `api_token` should be replaced with the api token you received in the step before.
-- Run `terraform apply`. This should create an Ubuntu VM on IP that can mount to `/mnt/media` on the proxmox host.
+- Run `terraform apply`. This should create an Ubuntu VM on IP that can mount to `/mnt/media` on the Proxmox host.
 - At this point, you should be able to ssh into the ubuntu VM: `ssh ubuntu@<plex-vm-ip> -i /path/to/your/private/.ssh/key`.
 
 ## Ansible for Plex VM
