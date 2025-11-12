@@ -91,6 +91,8 @@
           PermitRootLogin no
       notify: Restart sshd
 
+    - meta: flush_handlers
+
     ### Terraform
     - name: Create local terraform user
       user:
