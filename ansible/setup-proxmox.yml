@@ -191,8 +191,41 @@
       when: tailscale_status.stdout | from_json | json_query('BackendState') != 'Running'
 
     ### Mount point for VMs
-    - name: Create media directory
+    - name: Create new partition for media storage
+      parted:
+        device: /dev/sda
+        number: 4
+        state: present
+        part_start: 120GiB
+        part_end: 238.5GiB
+
+    - name: Create physical volume on new partition
+      lvg:
+        vg: pve
+        pvs: /dev/sda4
+
+    - name: Create media logical volume
+      lvol:
+        vg: pve
+        lv: media
+        size: 118g
+        pvs: /dev/sda4
+
+    - name: Format media volume with ext4
+      filesystem:
+        fstype: ext4
+        dev: /dev/pve/media
+
+    - name: Create media mount point
       file:
         path: /mnt/media
         state: directory
         mode: "0755"
+
+    - name: Mount media volume
+      mount:
+        path: /mnt/media
+        src: /dev/pve/media
+        fstype: ext4
+        state: mounted
+        opts: defaults
