@@ -19,11 +19,13 @@
         signed_by: /usr/share/keyrings/proxmox-archive-keyring.gpg
         state: present
         enabled: true
+      register: pve_repo
 
     - name: delete enterprise repo
       ansible.builtin.file:
         path: /etc/apt/sources.list.d/pve-enterprise.sources
         state: absent
+      register: del_enterprise_repo
 
     - name: create no-subscription ceph repo
       ansible.builtin.deb822_repository:
@@ -35,6 +37,24 @@
         signed_by: /usr/share/keyrings/proxmox-archive-keyring.gpg
         state: present
         enabled: true
+      register: ceph_repo
+
+    - name: Add tailscale key and repository
+      ansible.builtin.deb822_repository:
+        name: tailscale
+        types: [deb]
+        uris: "https://pkgs.tailscale.com/stable/debian"
+        suites: [trixie]
+        components: [main]
+        signed_by: https://pkgs.tailscale.com/stable/debian/trixie.noarmor.gpg
+        state: present
+        enabled: true
+      register: tailscale_repo
+
+    - name: apt update if any repo changed
+      apt:
+        update_cache: yes
+      when: pve_repo.changed or del_enterprise_repo.changed or ceph_repo.changed or tailscale_repo.changed
 
     ## sudo
     - name: Install sudo
@@ -152,23 +172,6 @@
       when: token_output.rc == 0
 
     ### Tailscale
-    - name: Add tailscale key and repository
-      ansible.builtin.deb822_repository:
-        name: tailscale
-        types: [deb]
-        uris: "https://pkgs.tailscale.com/stable/debian"
-        suites: [trixie]
-        components: [main]
-        signed_by: https://pkgs.tailscale.com/stable/debian/trixie.noarmor.gpg
-        state: present
-        enabled: true
-      register: tailscale_repo
-
-    - name: apt update if repo changed
-      apt:
-        update_cache: yes
-      when: tailscale_repo.changed
-
     - name: Install tailscale
       apt:
         name:
