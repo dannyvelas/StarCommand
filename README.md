@@ -11,12 +11,12 @@
 
 ### Set up Proxmox manually
 - Flash [Proxmox](https://www.proxmox.com/en/downloads) ISO onto a USB or SSD or disk and then connect that to your server so that you can boot your server with the Proxmox VE OS.
-- After accepting the terms and conditions, you can configure your filesystem and the amount of space on your drive that will be used by Proxmox:
+- After accepting the terms and conditions, you can configure your filesystem and how your disk will be provisioned by Proxmox:
   - You probably want `ext4` or `xfs`, unless you know what you're doing.
-  - You can specify how much space on your hard-drive you want Proxmox to use using the `hdsize` field. By default it will use the whole thing. It will create two main logical volumes:
-    - "root", for your OS and file system. From what I've seen this takes up around 30% of the space you gave it.
-    - "data", for VM disks. This seems to take up whatever remaining space there is from the space you gave it.
-  - If you don't want Proxmox to use all the remaining space on your drive for VM disks, then you should use a value for the `hdsize` field which is smaller than the total capacity of your drive. This is especially true if you have a smaller hard-drive and can't easily add storage. You can put the available space to better use, like for storing media content.
+  - By default, Proxmox will create a few logical volumes inside of `sda3`. The main ones to note are:
+    - "root", for your OS and file system. From what I've seen, this takes up around 30% of `hdsize`.
+    - "data", for VM disks, which ends up being of size `hdsize - rootsize - swapsize - minfree`.
+  - If you have a smaller hard-drive and can't easily add storage, you might want to make these two logical volumes a bit smaller. I made the root logical volume 39.9GiB and the data logical volume 55GiB. This gave me around 135GiB of free space in the `pve` volume group.
 - After, you will be asked for an administrator email and password. Create a password, enter it, and store it in Bitwarden. This will be the "root" password.
 - In setup, on the "Management Network Configuration" page:
   - For management interface, pick the network card that is being used for ethernet.
@@ -36,7 +36,7 @@
 - [Generate a Tailscale auth key](https://login.tailscale.com/admin/settings/keys), save it in Bitwarden and put it in `/var/homelab.yml`.
 - Update `./ansible/inventory.ini` so that the `proxmox` host has IP address `1.2.3.4`.
 
-### Run playbook
+### Run Proxmox setup playbooks
 - If your public key is anything other than `~/.ssh/id_ed25519.pub`, change it in `./ansible/setup-proxmox.yml`.
 - Run `ansible-playbook -i ansible/inventory.ini ansible/setup-proxmox.yml -u root`, this will:
   - Install `sudo`.
@@ -61,6 +61,10 @@
   - You should now be able to:
     - Run this playbook as many times as you want (without the `-u root` argument, as that won't work anymore).
     - See your server as a Tailscale node in the [Tailscale machines page](https://login.tailscale.com/admin/machines).
+
+### Run Media logical volume playbook
+- NOTE: This assumes you have at least 120GiB of space in your `pve` volume group.
+- Run `ansible-playbook -i ansible/inventory.ini ansible/add-media-lv.yml`. This will create a new logical volume called "media" in the `pve` volume group of size 120GiB.
 
 ## Terraform
 - Decide on the IP address that you would want for a new Plex VM. From now on, we will use the special value `<plex-vm-ip>` to represent your plex VM's IP address.

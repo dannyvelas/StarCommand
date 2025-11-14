@@ -194,3 +194,15 @@
     - name: Start Tailscale
       command: tailscale up --authkey={{ tailscale_key }}
       when: tailscale_status.stdout | from_json | json_query('BackendState') != 'Running'
+
+    ### Proxmox storage
+    - name: Read current Proxmox storage config
+      command: 'grep -A2 "dir: local" /etc/pve/storage.cfg'
+      register: pve_storage_config
+      failed_when: false # grep exits 1 if not found
+      changed_when: false # reading the file is never "changed"
+
+    - name: Enable import on local storage
+      ansible.builtin.command: >
+        pvesm set local --content iso,vztmpl,backup,import
+      when: "'import' not in pve_storage_config.stdout"
