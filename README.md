@@ -86,5 +86,5 @@ plex_vm_ip      = "<plex-vm-ip>"
 
 ## Ansible for Plex VM
 - Update `./ansible/inventory.ini` so that the `plex` host has IP address `<plex-vm-ip>`.
-- Run `ansible-playbook -i ansible/inventory.ini ansible/setup-plex-vm.yml -u ubuntu`
+- Run `ansible-playbook -i ansible/inventory.ini ansible/setup-plex-vm.yml`
 - After this, you should be able to go to visit `http://<plex-vm-ip>:32400` and see the Plex welcome screen.
