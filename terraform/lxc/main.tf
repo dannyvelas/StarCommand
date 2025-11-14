@@ -12,6 +12,22 @@ terraform {
   required_version = "~> 1.13.3"
 }
 
+provider "proxmox" {
+  endpoint  = var.endpoint
+  api_token = var.api_token
+  insecure  = true
+  ssh {
+    agent       = false
+    username    = "terraform"
+    private_key = file(var.ssh_private_key)
+    node {
+      name    = "proxmox"
+      address = var.ssh_address
+      port    = var.ssh_port
+    }
+  }
+}
+
 data "local_file" "ssh_public_key" {
   filename = var.ssh_public_key
 }
