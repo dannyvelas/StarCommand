@@ -46,7 +46,7 @@
   - Create a Proxmox `terraform` user with an API token with limited permissions.
   - Install `tailscale`.
   - Run `tailscale` and add your server to be a Tailscale node.
-  - Create a `/mnt/media` directory that will be used for mounting.
+  - Make sure that proxmox "local" storage can have items of type "import".
 - After running this playbook:
   - It will show you the API token that was created for the Terraform Proxmox user. Save this in Bitwarden.
   - Add the following to your `~/.ssh/config` file, this will be used by the `./ansible/setup-proxmox.yml` playbook:
