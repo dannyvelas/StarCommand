@@ -1,0 +1,41 @@
+---
+- name: Install Plex Media Server via APT
+  hosts: plex_lxc
+  become: yes
+
+  tasks:
+    - name: Install APT prerequisites
+      ansible.builtin.apt:
+        name:
+          - python3-debian
+        state: present
+        update_cache: yes
+
+    - name: Add Plex APT repository (Deb822 format)
+      ansible.builtin.deb822_repository:
+        name: plexmediaserver
+        types: [deb]
+        uris: "https://downloads.plex.tv/repo/deb"
+        suites: [public]
+        components: [main]
+        signed_by: https://downloads.plex.tv/plex-keys/PlexSign.key
+        state: present
+        enabled: true
+      register: plex_repo
+
+    - name: Update apt cache if plex repo changed
+      ansible.builtin.apt:
+        update_cache: yes
+      when: plex_repo.changed
+
+    - name: Install Plex Media Server
+      ansible.builtin.apt:
+        name: plexmediaserver
+        state: present
+        update_cache: yes
+
+    - name: Ensure Plex is running & enabled
+      ansible.builtin.service:
+        name: plexmediaserver
+        state: started
+        enabled: yes
