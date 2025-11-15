@@ -206,10 +206,3 @@
       ansible.builtin.command: >
         pvesm set local --content iso,vztmpl,backup,import,snippets
       when: "('import' not in pve_storage_config.stdout) or ('snippets' not in pve_storage_config.stdout) or ('vztmpl' not in pve_storage_config.stdout)"
-
-    ### Download template that can be used for LXC
-    - name: Download Ubuntu 24.04 LXC template
-      ansible.builtin.get_url:
-        url: "http://download.proxmox.com/images/system/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
-        dest: "/var/lib/vz/template/cache/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
-        mode: "0644"
