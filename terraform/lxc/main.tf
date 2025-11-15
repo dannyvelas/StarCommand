@@ -77,6 +77,10 @@ resource "proxmox_virtual_environment_container" "ubuntu_container" {
         trimspace(data.local_file.ssh_public_key.content)
       ]
     }
+
+    dns {
+      servers = ["1.1.1.1"]
+    }
   }
 
   operating_system {
