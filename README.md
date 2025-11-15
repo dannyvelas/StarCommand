@@ -10,7 +10,8 @@
 
 <details>
 
-<summary>## Install proxmox</summary>
+<summary><h2>Install proxmox</h2></summary>
+
 - Flash [Proxmox](https://www.proxmox.com/en/downloads) ISO onto a USB or SSD or disk and then connect that to your server so that you can boot your server with the Proxmox VE OS.
 - After accepting the terms and conditions, you can configure your filesystem and how your disk will be provisioned by Proxmox:
   - You probably want `ext4` or `xfs`, unless you know what you're doing.
