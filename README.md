@@ -1,4 +1,4 @@
-# Homelab setup
+# Homelab infra and playbooks
 
 ## Prerequisites
 * A server which is connected to Ethernet. 
@@ -7,9 +7,10 @@
 * [Ansible](https://formulae.brew.sh/formula/ansible) installed on that computer.
 * A [Tailscale](https://login.tailscale.com/start) account.
 
-## Instructions
 
-### Install proxmox
+<details>
+
+<summary>## Install proxmox</summary>
 - Flash [Proxmox](https://www.proxmox.com/en/downloads) ISO onto a USB or SSD or disk and then connect that to your server so that you can boot your server with the Proxmox VE OS.
 - After accepting the terms and conditions, you can configure your filesystem and how your disk will be provisioned by Proxmox:
   - You probably want `ext4` or `xfs`, unless you know what you're doing.
@@ -28,14 +29,16 @@
 - Run: `ssh-copy-id -i /path/to/your/public/.ssh/key root@1.2.3.4`. In other words, add an `ssh` key to your Proxmox server and verify afterward that you have remote `ssh` access to your server from your other computer.
 - If you're using a laptop as a server, you might want to run this as well so that you can close the lid without it sleeping: `sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target`.
 
-### Set Ansible variables
+</details>
+
+## Set Ansible variables
 - `cp ansible/vars.example.yml /var/homelab.yml`.
 - Pick a random port: `echo $RANDOM | jq '. + 1024 | . % 65535'`, this will be used in future steps. From now on, we will use the special value `1234` to represent this randomly generated port.
 - Save this port into `/var/homelab.yml`.
 - [Generate a Tailscale auth key](https://login.tailscale.com/admin/settings/keys), save it in Bitwarden and put it in `/var/homelab.yml`.
 - Update `./ansible/inventory.ini` so that the `proxmox` host has IP address `1.2.3.4`.
 
-### Set up Proxmox with Ansible
+## Set up Proxmox with Ansible
 - If your public key is anything other than `~/.ssh/id_ed25519.pub`, change it in `./ansible/setup-proxmox.yml`.
 - Run `ansible-playbook -i ansible/inventory.ini ansible/setup-proxmox.yml -u root`, this will:
   - Install `sudo`.
@@ -61,11 +64,11 @@
     - Run this playbook as many times as you want (without the `-u root` argument, as that won't work anymore).
     - See your server as a Tailscale node in the [Tailscale machines page](https://login.tailscale.com/admin/machines).
 
-### Create Media logical volume with Ansible
+## Create Media logical volume with Ansible
 - NOTE: This assumes you have at least 120GiB of space in your `pve` volume group.
 - Run `ansible-playbook -i ansible/inventory.ini ansible/add-media-lv.yml`. This will create a new logical volume called "media" in the `pve` volume group of size 120GiB.
 
-### Create a new VM with Terraform
+## Create a new VM with Terraform
 - `cd terraform/vm`.
 - Decide on the IP address that you would want for a VM. From now on, we will use the special value `<vm-ip>` to represent your VM's IP address.
 - Create a file called `terraform.tfvars`. It should look like this:
@@ -84,7 +87,7 @@ vm_ip           = "<vm-ip>"
 - Run `terraform apply`. This should create an Ubuntu VM that can mount to `/mnt/media` on the Proxmox host.
 - At this point, you should be able to ssh into the ubuntu VM: `ssh ubuntu@<vm-ip> -i /path/to/your/private/.ssh/key`.
 
-### Create a new LXC container with Terraform
+## Create a new LXC container with Terraform
 - `cd terraform/lxc`.
 - Decide on the IP address that you would want for an LXC container. From now on, we will use the special value `<lxc-ip>` to represent your container's IP address.
 - Create a file called `terraform.tfvars`. It should look like this:
@@ -101,7 +104,7 @@ ip             = "<lxc-ip>"
 - Run `terraform apply`. This should create an Ubuntu LXC container mounted to `/mnt/media` on the Proxmox host.
 - At this point, you should be able to ssh into it: `ssh root@<lxc-ip> -i /path/to/your/private/.ssh/key`.
 
-### Install Plex in LXC container
+## Install Plex in LXC container
 - Update `./ansible/inventory.ini` so that the `plex` host has IP address `<lxc-ip>`.
 - Run `ansible-playbook -i ansible/inventory.ini ansible/install-plex.yml -u root`
 - After this, you should be able to go to visit `http://<lxc-ip>:32400` and see the Plex welcome screen.
