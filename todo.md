@@ -4,3 +4,5 @@
 - [x] switch over to setup proxmox with ansible
 - [x] make sections collapsible in README
 - [x] add media to /mnt/media directory
+- [ ] add ufw protections to proxmox
+- [ ] make LXC plex config path (`/var/lib/plexmediaserver/Library/Application Support/Plex Media Server`) get mounted to host directory (e.g. `/mnt/media/plex-config` or something like this)
