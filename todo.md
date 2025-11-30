@@ -1,5 +1,5 @@
 - [x] learn about what stuff won't destruct nicely on my server with `terraform destroy` and i would have to manually destruct
-- [x] as of right now, everything would destruct nicely. the only thing not supported natively by bpg/proxmox is cloud-init configurations to mount `media_mount` to `/mnt/media` and enable `qemu-guest-agent`. But that's okay. When we run `terraform destroy` that will wipe the VM entirely so it doesn't matter.
+  - as of right now, everything would destruct nicely. the only thing not supported natively by bpg/proxmox is cloud-init configurations to mount `media_mount` to `/mnt/media` and enable `qemu-guest-agent`. But that's okay. When we run `terraform destroy` that will wipe the VM entirely so it doesn't matter.
 - [x] switch to make terraform authenticate via token not via root
 - [x] switch over to setup proxmox with ansible
 - [x] make sections collapsible in README
