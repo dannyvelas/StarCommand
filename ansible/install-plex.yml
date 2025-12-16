@@ -34,8 +34,16 @@
         state: present
         update_cache: yes
 
-    - name: Ensure Plex is running & enabled
+    - name: Ensure Plex is running and enabled
       ansible.builtin.service:
         name: plexmediaserver
         state: started
         enabled: yes
+
+    - name: Set correct ownership on Plex metadata directory inside the container
+      ansible.builtin.file:
+        path: "/var/lib/plexmediaserver/Library/Application Support/Plex Media Server"
+        owner: plex
+        group: plex
+        recurse: yes
+        state: directory
