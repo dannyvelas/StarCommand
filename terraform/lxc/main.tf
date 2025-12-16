@@ -89,8 +89,14 @@ resource "proxmox_virtual_environment_container" "ubuntu_container" {
   }
 
   mount_point {
-    # bind mount
+    # bind mount for media
     volume = "/mnt/media"
     path   = "/mnt/media"
+  }
+
+  mount_point {
+    # bind mount for plex metadata
+    volume = "/mnt/media/plex-config"
+    path   = "/var/lib/plexmediaserver/Library/Application Support/Plex Media Server"
   }
 }
