@@ -1,0 +1,11 @@
+---
+- name: Prepare server by hardening SSH
+  hosts: vpn
+  become: true
+  vars:
+    ssh_public_key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
+
+  tasks:
+    ### Harden SSH
+    - name: Harden SSH
+      include_tasks: tasks/harden-ssh.yml
