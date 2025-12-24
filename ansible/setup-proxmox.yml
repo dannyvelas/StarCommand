@@ -51,10 +51,10 @@
         enabled: true
       register: tailscale_repo
 
-    - name: apt update if any repo changed
+    - name: apt update and upgrade
       apt:
         update_cache: yes
-      when: pve_repo.changed or del_enterprise_repo.changed or ceph_repo.changed or tailscale_repo.changed
+        upgrade: yes
 
     ## necessary software
     - name: Install sudo
