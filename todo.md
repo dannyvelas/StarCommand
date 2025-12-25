@@ -8,4 +8,4 @@
 - [x] make it so that when "harden-ssh" tasks get run from "setup-proxmox" they use "homelab_admin_password" and when those tasks get run from "setup-server" for "host A", they use the "hostA_admin_password", and when those tasks get run from "setup-server" for "host B", they use the "hostB_admin_password".
 - [x] maybe merge /var/homelab.yml and secrets?
 - [x] document your use of secrets now
-- [ ] add ufw protections to proxmox
+- [x] add ufw protections to proxmox
