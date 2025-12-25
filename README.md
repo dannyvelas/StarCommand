@@ -146,6 +146,11 @@ ip             = "<lxc-ip>"
 - Update `./ansible/secrets.yml` so that under `admin_passwords`, there is a new entry called `vpn:`. The value of this entry should be the admin password you want to use for this server.
 - In your first run, you'll use root permissions to run the playbook: `ansible-playbook -i ansible/inventory.ini ansible/setup-server.yml -u root --ask-vault-pass --ask-pass`.
 - After this, root login with password will be disabled. You'll only be able to login as admin using `/path/to/private/key` at the port specified in `./ansible/secrets.yml`.
-- If you want to re-run this playbook you can, without the `-u root` or `--ask-pass` parts: `ansible-playbook -i ansible/inventory.ini ansible/setup-server.yml --ask-vault-pass`.
+- To re-run this playbook, update the `vpn_grup` of `./ansible/inventory.ini` to look like this:
+  ```
+  [vpn_group]
+  vpn ansible_host=10.20.30.40 ansible_user=admin ansible_port=1234
+  ```
+- You can now re-run this playbook with: `ansible-playbook -i ansible/inventory.ini ansible/setup-server.yml --ask-vault-pass`.
 
 </details>
