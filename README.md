@@ -40,6 +40,7 @@
 - Pick a random port: `echo $RANDOM | jq '. + 1024 | . % 65535'`, this will be used in future steps. From now on, we will use the special value `1234` to represent this randomly generated port.
 - Save this port into `./ansible/secrets.yml`.
 - [Generate a Tailscale auth key](https://login.tailscale.com/admin/settings/keys), save it in Bitwarden and put it in `./ansible/secrets.yml` as well.
+- Pick an admin password for your home server. Save it into `./ansible/secrets.yml`.
 - Update `./ansible/inventory.ini` so that the `proxmox` host has IP address `1.2.3.4`.
 
 </details>
