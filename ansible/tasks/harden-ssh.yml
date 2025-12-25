@@ -13,7 +13,7 @@
 - name: Allow admin user sudo access (requires password)
   ansible.builtin.copy:
     dest: /etc/sudoers.d/admin
-    content: "admin ALL=(ALL) ALL\n"
+    content: "admin ALL=(ALL) NOPASSWD:ALL\n"
     owner: root
     group: root
     mode: "0440"
