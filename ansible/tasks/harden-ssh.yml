@@ -42,7 +42,18 @@
     port: "{{ ssh_port }}"
     proto: tcp
 
-- name: Disallow SSH port 22 in ufw
+- name: Set default policy to deny all incoming traffic
+  community.general.ufw:
+    state: enabled
+    policy: deny
+    direction: incoming
+
+- name: Set default policy to allow all outgoing traffic
+  community.general.ufw:
+    policy: allow
+    direction: outgoing
+
+- name: Disable port 22
   community.general.ufw:
     rule: deny
     port: "22"
