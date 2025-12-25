@@ -35,12 +35,14 @@
 
 <summary><h2>Set Ansible variables</h2></summary>
 
-- Copy the example secrets file: `cp ./ansible/example.secrets.yml ./ansible/secrets.yml`.
-- Encrypt it using a password that you'll save in Bitwarden: `ansible-vault encrypt ./ansible/secrets.yml`.
-- Pick a random port: `echo $RANDOM | jq '. + 1024 | . % 65535'`, this will be used in future steps. From now on, we will use the special value `1234` to represent this randomly generated port.
-- Save this port into `./ansible/secrets.yml`.
-- [Generate a Tailscale auth key](https://login.tailscale.com/admin/settings/keys), save it in Bitwarden and put it in `./ansible/secrets.yml` as well.
-- Pick an admin password for your home server. Save it into `./ansible/secrets.yml`.
+- [Generate a Tailscale auth key](https://login.tailscale.com/admin/settings/keys), save it in Bitwarden.
+- Pick an admin password for your home server. Save it into Bitwarden as well.
+- Run: `ansible-vault create ./ansible/host_vars/proxmox_server/vault.yml`, using a vault password (let's call it `vp`). Save `vp` in Bitwarden.
+- In the content of that file put:
+  ```
+  vault_tailscale_key: "<tailscale auth key here>"
+  vault_admin_password: "<admin password for your home server>"
+  ```
 - Update `./ansible/inventory.ini` so that the `proxmox` host has IP address `1.2.3.4`.
 
 </details>
@@ -54,6 +56,8 @@
   - Install `sudo`.
   - Create an `admin` user with full `sudo` permissions, that can log-in via SSH with the same key as root.
   - Harden SSH access so that root and password logins become not permitted.
+  - Make SSH happen in port `17031` instead of `22`.
+  - Configure `UFW`.
   - Create a `terraform` user with partial `sudo` permissions and SSH access via your public key: `/path/to/your/public/.ssh/key`.
   - Create a Proxmox `terraform` user with an API token with limited permissions.
   - Install `tailscale`.
@@ -67,9 +71,8 @@
       Hostname 1.2.3.4
       User admin
       IdentityFile /path/to/your/private/.ssh/key
-      Port 1234
+      Port 17031
     ```
-  - Change the proxmox host of `./ansible/inventory.ini` to have these values: `ansible_port=1234 ansible_user=admin`.
   - You should now be able to:
     - Run this playbook as many times as you want (without the `-u root` argument, as that won't work anymore).
     - See your server as a Tailscale node in the [Tailscale machines page](https://login.tailscale.com/admin/machines).
@@ -89,7 +92,7 @@ router_ip       = "10.0.0.1"
 endpoint        = "https://1.2.3.4:8006/"
 api_token       = "terraform@pve!provider=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 ssh_address     = "1.2.3.4"
-ssh_port        = 1234
+ssh_port        = 17031
 ssh_public_key  = "/path/to/your/public/.ssh/key"
 ssh_private_key = "/path/to/your/private/.ssh/key"
 vm_ip           = "<vm-ip>"
@@ -147,7 +150,6 @@ ip             = "<lxc-ip>"
 - Run `ansible-vault create ./ansible/host_vars/vpn/vault.yml`, using your vault password.
 - In that file put the following, except use an actual password that you'll save to Bitwarden:
   ```
-  ---
   vault_admin_password: "my super secret password"
   ```
 - In your first run, you'll use root permissions to run the playbook: `ansible-playbook -i ansible/inventory.ini ansible/setup-server.yml -u root --ask-vault-pass --ask-pass`.
