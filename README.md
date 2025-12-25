@@ -131,3 +131,21 @@ ip             = "<lxc-ip>"
 - After this, you should be able to go to visit `http://<lxc-ip>:32400` and see the Plex welcome screen.
 
 </details>
+
+<details>
+
+<summary><h2>Harden SSH in a new server</h2></summary>
+
+- Suppose you want to harden SSH in a new host called `vpn`, with IP `10.20.30.40`.
+- Update `./ansible/inventory.ini` so that there is a new group that looks like this:
+  ```
+  [vpn_group]
+  vpn ansible_host=10.20.30.40
+  ```
+- Update `./ansible/setup-server.yml` so that the `hosts:` field is set to `vpn`.
+- Update `./ansible/secrets.yml` so that under `admin_passwords`, there is a new entry called `vpn:`. The value of this entry should be the admin password you want to use for this server.
+- In your first run, you'll use root permissions to run the playbook: `ansible-playbook -i ansible/inventory.ini ansible/setup-server.yml -u root --ask-vault-pass --ask-pass`.
+- After this, root login with password will be disabled. You'll only be able to login as admin using `/path/to/private/key` at the port specified in `./ansible/secrets.yml`.
+- If you want to re-run this playbook you can, without the `-u root` or `--ask-pass` parts: `ansible-playbook -i ansible/inventory.ini ansible/setup-server.yml --ask-vault-pass`.
+
+</details>

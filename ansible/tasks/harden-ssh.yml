@@ -36,6 +36,18 @@
       PermitRootLogin no
   register: ssh_config
 
+- name: Allow custom SSH port in ufw
+  community.general.ufw:
+    rule: allow
+    port: "{{ ssh_port }}"
+    proto: tcp
+
+- name: Disallow SSH port 22 in ufw
+  community.general.ufw:
+    rule: allow
+    port: "{{ ssh_port }}"
+    proto: tcp
+
 - name: Restart sshd immediately
   ansible.builtin.service:
     name: ssh
