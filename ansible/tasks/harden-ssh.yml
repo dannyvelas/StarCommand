@@ -7,7 +7,7 @@
     append: yes
     state: present
     # Hash the plain-text password from the prompt
-    password: "{{ admin_passwords[inventory_hostname] | password_hash('sha512') }}"
+    password: "{{ vault_admin_password | password_hash('sha512') }}"
     update_password: on_create # only sets it if the user is new
 
 - name: Allow admin user sudo access (requires password)

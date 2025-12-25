@@ -4,8 +4,6 @@
   become: true
   vars:
     ssh_public_key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
-  vars_files:
-    - secrets.yml
 
   tasks:
     ### Harden SSH
