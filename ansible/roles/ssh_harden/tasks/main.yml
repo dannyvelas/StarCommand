@@ -36,6 +36,11 @@
       PermitRootLogin no
   register: ssh_config
 
+- name: Install UFW
+  ansible.builtin.apt:
+    name: ufw
+    state: present
+
 - name: Allow custom SSH port in ufw
   community.general.ufw:
     rule: allow

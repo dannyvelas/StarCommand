@@ -54,11 +54,6 @@
         update_cache: yes
         upgrade: dist # 'dist' is recommended for security hardening
 
-    - name: Install UFW
-      ansible.builtin.apt:
-        name: ufw
-        state: present
-
     ### Server setup stuff
     - name: Harden SSH
       include_tasks: tasks/harden-ssh.yml
