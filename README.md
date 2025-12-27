@@ -137,7 +137,7 @@ ip             = "<lxc-ip>"
 
 <details>
 
-<summary><h2>Harden SSH in a new server</h2></summary>
+<summary><h2>Set up a new server with SSH hardening and automated updates</h2></summary>
 
 - Suppose you want to harden SSH in a new host called `vpn`, with IP `10.20.30.40`.
 - Update `./ansible/inventory.ini` so that there is a new group that looks like this:
