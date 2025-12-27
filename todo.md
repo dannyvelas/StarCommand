@@ -9,3 +9,6 @@
 - [x] maybe merge /var/homelab.yml and secrets?
 - [x] document your use of secrets now
 - [x] add ufw protections to proxmox
+- [x] see if there's a better way to structure repository (roles, but not needed for now)
+- [x] make it so that proxmox also gets server updates
+- [ ] add postfix support so that VPS server updates actually go to your email 
