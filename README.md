@@ -153,7 +153,7 @@ ip             = "<lxc-ip>"
   vault_admin_password: "my super secret password"
   ```
 - In your first run, you'll use root permissions to run the playbook: `ansible-playbook -i ansible/inventory.ini ansible/setup-server.yml -u root --ask-vault-pass --ask-pass`.
-- After this, root login with password will be disabled. You'll only be able to login as admin using `/path/to/private/key` at the port specified in `./ansible/group_vars/all.yml`.
+- After this, root login with password will be disabled. You'll only be able to login as admin using `/path/to/private/key` at the port specified in `./ansible/group_vars/all/all.yml`.
 - You can now re-run this playbook with: `ansible-playbook -i ansible/inventory.ini ansible/setup-server.yml --ask-vault-pass`.
 
 </details>
