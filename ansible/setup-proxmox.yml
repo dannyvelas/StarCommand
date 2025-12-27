@@ -56,10 +56,12 @@
 
     ### Server setup stuff
     - name: Harden SSH
-      include_tasks: tasks/harden-ssh.yml
+      ansible.builtin.import_role:
+        name: ssh_harden
 
     - name: Automated updates
-      include_tasks: tasks/automated-updates.yml
+      ansible.builtin.import_role:
+        name: automated_updates
 
     ## necessary software
     - name: Install sudo

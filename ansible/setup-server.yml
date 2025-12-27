@@ -4,10 +4,6 @@
   become: true
   vars:
     ssh_public_key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
-
-  tasks:
-    - name: Harden SSH
-      include_tasks: tasks/harden-ssh.yml
-
-    - name: Automated updates
-      include_tasks: tasks/automated-updates.yml
+  roles:
+    - ssh_harden
+    - automated_updates
