@@ -1,0 +1,39 @@
+- name: Install Postfix and SASL dependencies
+  ansible.builtin.apt:
+    name:
+      - postfix
+      - libsasl2-modules
+      - ca-certificates
+    state: present
+
+- name: Configure Postfix main.cf
+  ansible.builtin.blockinfile:
+    path: /etc/postfix/main.cf
+    block: |
+      relayhost = [smtp.gmail.com]:587
+      smtp_sasl_auth_enable = yes
+      smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+      smtp_sasl_security_options = noanonymous
+      smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
+      smtp_use_tls = yes
+  register: postfix_config
+
+- name: Create SASL password file
+  ansible.builtin.copy:
+    dest: /etc/postfix/sasl_passwd
+    content: "[smtp.gmail.com]:587 {{ smtp_user }}:{{ smtp_pass }}"
+    owner: root
+    group: root
+    mode: "0600"
+  register: sasl_file
+
+- name: Update Postfix lookup table
+  ansible.builtin.command: postmap /etc/postfix/sasl_passwd
+  when: sasl_file.changed
+  # This ensures the .db file is created IMMEDIATELY if the text file changed
+
+- name: Restart Postfix to apply changes
+  ansible.builtin.service:
+    name: postfix
+    state: restarted
+  when: sasl_file.changed or postfix_config.changed
