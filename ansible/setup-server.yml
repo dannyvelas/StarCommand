@@ -1,6 +1,6 @@
 ---
 - name: Prepare server by hardening SSH and automating updates
-  hosts: vpn
+  hosts: remote_vps
   become: true
   vars:
     ssh_public_key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"

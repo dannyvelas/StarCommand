@@ -139,21 +139,21 @@ ip             = "<lxc-ip>"
 
 <summary><h2>Set up a new server with SSH hardening and automated updates</h2></summary>
 
-- Suppose you want to harden SSH in a new host called `vpn`, with IP `10.20.30.40`.
-- Update `./ansible/inventory.ini` so that there is a new group that looks like this:
+- Suppose you want to harden SSH in a new server called `vpn`, with IP `10.20.30.40`.
+- Update `./ansible/inventory.ini` so that under the `remote_vps` group, there is an entry for your new server:
   ```
-  [vpn_group]
+  [remote_vps]
   vpn ansible_host=10.20.30.40
   ```
-- Update `./ansible/setup-server.yml` so that the `hosts:` field is set to `vpn`.
 - Update `./ansible/host_vars/` so that there is a new directory called `vpn`.
 - Run `ansible-vault create ./ansible/host_vars/vpn/vault.yml`, using your vault password.
 - In that file put the following, except use an actual password that you'll save to Bitwarden:
   ```
   vault_admin_password: "my super secret password"
   ```
-- In your first run, you'll use root permissions to run the playbook: `ansible-playbook -i ansible/inventory.ini ansible/setup-server.yml -u root --ask-vault-pass --ask-pass`.
+- In your first run, you'll use root permissions to run the playbook: `ansible-playbook -i ansible/inventory.ini ansible/setup-server.yml -u root --ask-vault-pass --ask-pass --limit vpn`.
+  - Note: this command makes it so that the `./ansible/setup-server.yml` playbook is only run for your new server (`--limit vpn`). Without this part, the playbook will be run for all hosts under the `remote_vps` group.
 - After this, root login with password will be disabled. You'll only be able to login as admin using `/path/to/private/key` at the port specified in `./ansible/group_vars/all/all.yml`.
-- You can now re-run this playbook with: `ansible-playbook -i ansible/inventory.ini ansible/setup-server.yml --ask-vault-pass`.
+- You can now re-run this playbook with: `ansible-playbook -i ansible/inventory.ini ansible/setup-server.yml --ask-vault-pass --limit vpn`.
 
 </details>
