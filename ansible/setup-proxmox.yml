@@ -5,8 +5,7 @@
   vars:
     ssh_public_key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
 
-  tasks:
-    ### APT
+  pre_tasks:
     - name: enable no-subscription repo
       ansible.builtin.deb822_repository:
         name: pve-no-subscription
@@ -54,15 +53,11 @@
         update_cache: yes
         upgrade: dist # 'dist' is recommended for security hardening
 
-    ### Server setup stuff
-    - name: Harden SSH
-      ansible.builtin.import_role:
-        name: ssh_harden
+  roles:
+    - ssh_harden
+    - automated_updates
 
-    - name: Automated updates
-      ansible.builtin.import_role:
-        name: automated_updates
-
+  tasks:
     ## necessary software
     - name: Install sudo
       apt:
