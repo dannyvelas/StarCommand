@@ -6,6 +6,11 @@
 * [Terraform](https://developer.hashicorp.com/terraform/install) installed on that computer.
 * [Ansible](https://formulae.brew.sh/formula/ansible) installed on that computer.
 * A [Tailscale](https://login.tailscale.com/start) account.
+* Some playbooks will send you an email when your server automatically updates. For this, you'll need an SMTP username and password. If you use Gmail, you can't use your regular password. You'll need to get a 16-character code:
+  * Go to your Google Account settings.
+  * Search for "App Passwords".
+  * Create one called "Ansible Server"
+  * Copy the 16-character code.
 
 <details>
 
@@ -44,6 +49,11 @@
   vault_admin_password: "<admin password for your home server>"
   ```
 - Update `./ansible/inventory.ini` so that the `proxmox` host has IP address `1.2.3.4`.
+- Run `ansible-vault create ./ansible/group_vars/all/vault.yml`, and add the following:
+  ```
+  smtp_user: "your-email@example.com"
+  smtp_pass: "your 16-character code if gmail, otherwise regular password"
+  ```
 
 </details>
 
@@ -141,10 +151,6 @@ ip             = "<lxc-ip>"
 
 The instructions will make it so that only non-root private-key logins are allowed in your server. Also, it will make your server automatically get updates. You will be sent an email when updates happen. These instructions will use "vpn" as the Ansible "host" name and IP address `10.20.30.40`.
 
-- If you use Gmail, you can't use your regular password.
-  - Go to your Google Account settings.
-  - Search for "App Passwords".
-  - Create one called "Ansible Server" and copy the 16-character code.
 - Update `./ansible/inventory.ini` so that under the `remote_vps` group, there is an entry for your new server:
   ```
   [remote_vps]
@@ -155,8 +161,6 @@ The instructions will make it so that only non-root private-key logins are allow
 - In that file put the following, except use an actual password that you'll save to Bitwarden:
   ```
   vault_admin_password: "my super secret password"
-  smtp_user: "your-email@example.com"
-  smtp_pass: "your 16-character code if gmail, otherwise regular password"
   ```
 - In your first run, you'll use root permissions to run the playbook: `ansible-playbook -i ansible/inventory.ini ansible/setup-server.yml -u root --ask-vault-pass --ask-pass --limit vpn`.
   - Note: this command makes it so that the `./ansible/setup-server.yml` playbook is only run for your new server (`--limit vpn`). Without this part, the playbook will be run for all hosts under the `remote_vps` group.
