@@ -43,7 +43,7 @@ resource "proxmox_virtual_environment_container" "ubuntu_container" {
   }
 
   memory {
-    dedicated = 4096
+    dedicated = 1024
   }
 
   disk {
