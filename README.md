@@ -107,7 +107,7 @@ ssh_public_key  = "/path/to/your/public/.ssh/key"
 ssh_private_key = "/path/to/your/private/.ssh/key"
 vm_ip           = "<vm-ip>"
 ```
-- The x's in `api_token` should be replaced with the api token you received in the step before.
+- The x's in `api_token` should be replaced with the API token that you received when you set up proxmox with Ansible.
 - Run `terraform apply`. This should create an Ubuntu VM that can mount to `/mnt/media` on the Proxmox host.
 - At this point, you should be able to ssh into the ubuntu VM: `ssh ubuntu@<vm-ip> -i /path/to/your/private/.ssh/key`.
 
