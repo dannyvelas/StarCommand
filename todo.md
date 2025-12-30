@@ -11,4 +11,8 @@
 - [x] add ufw protections to proxmox
 - [x] see if there's a better way to structure repository (roles, but not needed for now)
 - [x] make it so that proxmox also gets server updates
-- [ ] add postfix support so that VPS server updates actually go to your email 
+- [x] add postfix support so that VPS server updates actually go to your email 
+- [ ] test that firewall actually works and that plex is still working
+- [ ] add jump-host LXC (re-adding tailscale stuff to README for it)
+- [ ] see if there are any changes that need to be made to vm/plexLXC/jumpLXC for firewall
+- [ ] update README to differentiate between jump-host LXC and plex LXC
