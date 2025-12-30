@@ -132,25 +132,6 @@
           ===============================
       when: token_output.rc == 0
 
-    ### Tailscale
-    - name: Install tailscale
-      apt:
-        name:
-          - tailscale
-        state: present
-        update_cache: yes
-        cache_valid_time: 3600
-
-    - name: Check Tailscale backend state
-      command: tailscale status --json
-      register: tailscale_status
-      changed_when: false
-      failed_when: false
-
-    - name: Start Tailscale
-      command: tailscale up --authkey={{ tailscale_key }}
-      when: tailscale_status.stdout | from_json | json_query('BackendState') != 'Running'
-
     ### Proxmox storage
     - name: Read current Proxmox storage config
       command: 'grep -A2 "dir: local" /etc/pve/storage.cfg'
