@@ -35,13 +35,6 @@ resource "proxmox_virtual_environment_cluster_firewall" "cluster" {
   input_policy = "DROP"
 }
 
-# Enable Firewall at the Node level
-resource "proxmox_virtual_environment_firewall_options" "node_firewall_config" {
-  node_name = var.node
-  enabled   = true
-}
-
-
 # Define the Security Group (Reusable for any VM/LXC)
 resource "proxmox_virtual_environment_cluster_firewall_security_group" "mgmt" {
   name    = "management"
