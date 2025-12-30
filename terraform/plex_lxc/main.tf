@@ -122,4 +122,9 @@ resource "proxmox_virtual_environment_firewall_rules" "plex_rules" {
     security_group = "plex"
     iface          = "net0"
   }
+
+  rule {
+    security_group = "guest_mgmt"
+    iface          = "net0"
+  }
 }
