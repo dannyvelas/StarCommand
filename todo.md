@@ -12,7 +12,9 @@
 - [x] see if there's a better way to structure repository (roles, but not needed for now)
 - [x] make it so that proxmox also gets server updates
 - [x] add postfix support so that VPS server updates actually go to your email 
-- [ ] test that firewall actually works and that plex is still working
+- [x] test that firewall actually works and that plex is still working
+- [ ] see if there are any changes that need to be made to vm/plexLXC for firewall
+- [ ] rename LXC to plexLXC in readme and otherwise
 - [ ] add jump-host LXC (re-adding tailscale stuff to README for it)
-- [ ] see if there are any changes that need to be made to vm/plexLXC/jumpLXC for firewall
-- [ ] update README to differentiate between jump-host LXC and plex LXC
+- [ ] add jump-host LXC to readme
+- [ ] see if there are any changes that need to be made to jumpLXC for firewall
