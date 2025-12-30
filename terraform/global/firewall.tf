@@ -66,3 +66,17 @@ resource "proxmox_virtual_environment_firewall_rules" "node_rules" {
     iface          = "vmbr0"
   }
 }
+
+# create security group for plex LXC
+resource "proxmox_virtual_environment_cluster_firewall_security_group" "plex_lxc" {
+  name    = "plex"
+  comment = "Plex Media Server Ports"
+
+  rule {
+    type    = "in"
+    action  = "ACCEPT"
+    proto   = "tcp"
+    dport   = "32400"
+    comment = "Plex Web UI / Media Stream"
+  }
+}

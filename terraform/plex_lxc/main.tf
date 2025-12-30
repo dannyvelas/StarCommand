@@ -31,7 +31,7 @@ resource "proxmox_virtual_environment_download_file" "ubuntu_lxc_template" {
   file_name    = "ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
 }
 
-resource "proxmox_virtual_environment_container" "ubuntu_container" {
+resource "proxmox_virtual_environment_container" "plex_lxc" {
   description  = "Managed by Terraform"
   tags         = ["terraform", "ubuntu"]
   node_name    = var.node
@@ -52,8 +52,9 @@ resource "proxmox_virtual_environment_container" "ubuntu_container" {
   }
 
   network_interface {
-    name   = "eth0"
-    bridge = "vmbr0"
+    name     = "eth0"
+    bridge   = "vmbr0"
+    firewall = true
   }
 
   # this initialization block works because:
@@ -98,5 +99,27 @@ resource "proxmox_virtual_environment_container" "ubuntu_container" {
     # bind mount for plex metadata
     volume = "/mnt/media/plex-config"
     path   = "/var/lib/plexmediaserver/Library/Application Support/Plex Media Server"
+  }
+}
+
+# enable firewall options at container level which is default deny
+resource "proxmox_virtual_environment_firewall_options" "plex_fw_options" {
+  node_name    = var.node
+  container_id = proxmox_virtual_environment_container.plex_lxc.vm_id
+
+  enabled       = true
+  input_policy  = "DROP"   # Everything not allowed is blocked
+  output_policy = "ACCEPT" # Allow the container to reach out for updates
+}
+
+# enable firewall rule which associates the "plex" security group with this plex_lxc
+# the "plex" security group should have been created prior (it is defined in terraform/global)
+resource "proxmox_virtual_environment_firewall_rules" "plex_rules" {
+  node_name    = var.node
+  container_id = proxmox_virtual_environment_container.plex_lxc.vm_id
+
+  rule {
+    security_group = "plex"
+    iface          = "net0"
   }
 }
