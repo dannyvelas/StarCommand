@@ -14,9 +14,16 @@
 - [x] add postfix support so that VPS server updates actually go to your email 
 - [x] test that firewall actually works and that plex is still working
 - [x] rename LXC to plexLXC in readme and otherwise
-- [ ] see if there are any changes that need to be made to vm/plexLXC for firewall
+- [x] see if there are any changes that need to be made to plexLXC for firewall
+- [ ] switch VM to be on port 17031 instead of 22
+- [ ] add firewall rules to VM
+- [ ] see if there are any changes that need to be made to VM for firewall
+- [ ] create a "base" terraform LXC module
+- [ ] create a "base" terraform VM module
 - [ ] add jump-host LXC (re-adding tailscale stuff to README for it)
 - [ ] add jump-host LXC to readme
 - [ ] see if there are any changes that need to be made to jumpLXC for firewall
 - [ ] figure out how to share variables
   - vm_id = 100 is both in `terraform/plex_lxc/main.tf` and `ansible/inventory.ini`
+  - `proxmox_node_name` is both in terraform variables and `./ansible/group_vars/all/all.yml`
+  - port 17031 is both in `./ansible/group_vars/all/all.yml` and `terraform/global/firewall.tf` and `terraform/plex_lxc/main.tf`.
