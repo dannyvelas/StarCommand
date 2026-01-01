@@ -40,7 +40,7 @@ resource "proxmox_virtual_environment_file" "user_data_cloud_config" {
   source_raw {
     data = <<-EOF
     #cloud-config
-    hostname: wireguard_vm
+    hostname: wireguard-vm
     package_update: true
     package_upgrade: true
     users:
@@ -70,8 +70,8 @@ resource "proxmox_virtual_environment_file" "user_data_cloud_config" {
   }
 }
 
-resource "proxmox_virtual_environment_vm" "wireguard_vm" {
-  name        = "wireguard_vm"
+resource "proxmox_virtual_environment_vm" "wireguard-vm" {
+  name        = "wireguard-vm"
   description = "Managed by Terraform"
   tags        = ["terraform", "ubuntu"]
   node_name   = var.node
