@@ -35,8 +35,11 @@
       PermitRootLogin no
   register: ssh_config
 
-- name: Restart sshd immediately
-  ansible.builtin.service:
-    name: ssh
+- name: restart ssh stuff
+  ansible.builtin.systemd:
+    name: "{{ item }}"
     state: restarted
-  when: ssh_config.changed
+    daemon_reload: true
+  loop:
+    - ssh.socket
+    - ssh.service
