@@ -6,7 +6,7 @@
     msg: "Safety check failed: SSH is not responding on 17031. Aborting firewall enable to prevent lockout."
 
 - name: Enable Proxmox Firewall for the Guest
-  delegate_to: "{{ pve_host }}"
+  delegate_to: "{{ proxmox_node_name }}"
   become: true
   ansible.builtin.command: >
     pvesh set /nodes/{{ proxmox_node_name }}/{{ guest_type }}/{{ vmid }}/firewall/options --enable 1
