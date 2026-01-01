@@ -146,15 +146,13 @@ vm_ip           = "<vm-ip>"
 - Decide on the IP address that you would want for your Plex LXC container. From now on, we will use the special value `<plex-lxc-ip>` to represent your Plex container's IP address.
 - Create a file called `terraform.tfvars`. It should look like this:
 ```
-node            = "<node-name>"
-router_ip       = "10.0.0.1"
-host_ip         = "1.2.3.4"
-endpoint        = "https://1.2.3.4:8006/"
-username        = "root@pam"
-password        = "<password>"
-ssh_public_key  = "/path/to/your/public/.ssh/key"
-ssh_private_key = "/path/to/your/private/.ssh/key"
-ip              = "<plex-lxc-ip>"
+node           = "<node-name>"
+router_ip      = "10.0.0.1"
+endpoint       = "https://1.2.3.4:8006/"
+username       = "root@pam"
+password       = "<password>"
+ssh_public_key = "/path/to/your/public/.ssh/key"
+ip             = "<plex-lxc-ip>"
 ```
 - Unfortunately, Proxmox doesn't support some things in this `main.tf` file without root login, so the authentication here is just root username and password.
 - Run `terraform apply`. This should create an Ubuntu LXC container mounted to `/mnt/media` on the Proxmox host.
