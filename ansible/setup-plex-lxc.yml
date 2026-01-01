@@ -2,6 +2,9 @@
 - name: Install Plex Media Server via APT
   hosts: plex_lxc
   become: yes
+  vars:
+    ssh_public_key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
+
   roles:
     - ssh_harden
 

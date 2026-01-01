@@ -102,35 +102,6 @@ resource "proxmox_virtual_environment_container" "plex_lxc" {
   }
 }
 
-# This resource waits for the LXC to be ready, then reaches through the host to flip the SSH port
-# from 22 to 17031
-resource "terraform_data" "bootstrap_ssh" {
-  # This replaces "depends_on". If the VM ID changes, this re-runs.
-  triggers_replace = [
-    proxmox_virtual_environment_container.plex_lxc.id
-  ]
-
-  connection {
-    type        = "ssh"
-    user        = "admin"
-    port        = 17031
-    host        = var.host_ip
-    private_key = file(var.ssh_private_key)
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "timeout 60s bash -c 'until sudo /usr/sbin/pct exec 100 -- ls /etc/ssh/sshd_config; do sleep 2; done'",
-      "sudo /usr/sbin/pct exec 100 -- mkdir -p /etc/systemd/system/ssh.socket.d",
-      "sudo /usr/sbin/pct exec 100 -- bash -c \"echo -e '[Socket]\nListenStream=\nListenStream=17031' > /etc/systemd/system/ssh.socket.d/listen.conf\"",
-      "sudo /usr/sbin/pct exec 100 -- systemctl daemon-reload",
-      "sudo /usr/sbin/pct exec 100 -- systemctl stop ssh.socket",
-      "sudo /usr/sbin/pct exec 100 -- systemctl start ssh.socket",
-      "sudo /usr/sbin/pct exec 100 -- sed -i 's/^#?Port 22/Port 17031/' /etc/ssh/sshd_config"
-    ]
-  }
-}
-
 # enable firewall options at container level which is default deny
 resource "proxmox_virtual_environment_firewall_options" "plex_fw_options" {
   node_name    = var.node

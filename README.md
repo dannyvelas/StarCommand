@@ -162,12 +162,13 @@ ip              = "<plex-lxc-ip>"
 - Update `./ansible/inventory.ini` so that it has this:
   ```
   [plex]
-  plex_lxc ansible_host=<plex-lxc-ip>
+  plex_lxc ansible_host=<plex-lxc-ip> vmid=100
   ```
-- Run `ansible-playbook -i ansible/inventory.ini ansible/setup-plex-lxc.yml -e "ansible_user=root" --ask-vault-pass`.
+- Run the bootstrap playbook: `ansible-playbook -i ansible/inventory.ini ansible/bootstrap-plex-lxc.yml  --ask-vault-pass`.
+- Run the setup playbook. In your first run, you'll use root permissions to run the playbook: `ansible-playbook -i ansible/inventory.ini ansible/setup-plex-lxc.yml -u root --ask-vault-pass`.
 - After this, you should be able to go to visit `http://<plex-lxc-ip>:32400` and see the Plex welcome screen.
 - Also, root login with password will be disabled. You'll only be able to login as admin using `/path/to/private/key` at port `17031`.
-- You can re-run this playbook with: `ansible-playbook -i ansible/inventory.ini ansible/setup-plex-lxc.yml --ask-vault-pass`.
+- You can re-run the setup playbook without root permissions: `ansible-playbook -i ansible/inventory.ini ansible/setup-plex-lxc.yml --ask-vault-pass`.
 
 </details>
 

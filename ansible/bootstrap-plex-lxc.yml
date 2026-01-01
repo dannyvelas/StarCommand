@@ -1,0 +1,42 @@
+---
+- name: Install Plex Media Server via APT
+  hosts: plex_lxc
+  become: yes
+  gather_facts: false
+
+  tasks:
+    - name: Check if SSH Socket is already on port 17031
+      delegate_to: proxmox_server
+      ansible.builtin.command:
+        cmd: "pct exec {{ vmid }} -- grep -q 'ListenStream=17031' /etc/systemd/system/ssh.socket.d/listen.conf"
+      register: ssh_check
+      failed_when: false
+      changed_when: false
+
+    - name: Make LXC SSH Port be 17031 instead of 22
+      delegate_to: proxmox_server
+      become: true
+      when: ssh_check.rc != 0 # Only runs if the grep failed
+      block:
+        - name: Ensure SSH Socket override directory exists
+          ansible.builtin.command:
+            cmd: "/usr/sbin/pct exec {{ vmid }} -- mkdir -p /etc/systemd/system/ssh.socket.d"
+          changed_when: true
+
+        - name: Set ListenStream to 17031
+          ansible.builtin.command:
+            cmd: >
+              /usr/sbin/pct exec {{ vmid }} -- bash -c 
+              "echo -e '[Socket]\nListenStream=\nListenStream=17031' > /etc/systemd/system/ssh.socket.d/listen.conf"
+
+        - name: Reload systemd and bounce SSH socket
+          ansible.builtin.command:
+            cmd: "/usr/sbin/pct exec {{ vmid }} -- {{ item }}"
+          loop:
+            - "systemctl daemon-reload"
+            - "systemctl stop ssh.socket"
+            - "systemctl start ssh.socket"
+
+        - name: Update the config file for consistency
+          ansible.builtin.command:
+            cmd: "/usr/sbin/pct exec {{ vmid }} -- sed -i 's/^#?Port 22/Port 17031/' /etc/ssh/sshd_config"
