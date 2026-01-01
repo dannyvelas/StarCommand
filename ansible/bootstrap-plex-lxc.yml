@@ -36,7 +36,3 @@
             - "systemctl daemon-reload"
             - "systemctl stop ssh.socket"
             - "systemctl start ssh.socket"
-
-        - name: Update the config file for consistency
-          ansible.builtin.command:
-            cmd: "/usr/sbin/pct exec {{ vmid }} -- sed -i 's/^#?Port 22/Port 17031/' /etc/ssh/sshd_config"
