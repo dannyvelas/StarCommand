@@ -72,6 +72,7 @@ resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
   description = "Managed by Terraform"
   tags        = ["terraform", "ubuntu"]
   node_name   = var.node
+  vm_id       = 101
 
   # enable 'Qemu guest agent' so that proxmox can directly communicate with this VM
   # to get its IP address and display it on the console. also so that it can cleanly and
