@@ -140,7 +140,7 @@ vm_ip           = "<vm-ip>"
 
 <details>
 
-<summary><h2>Create a new Plex LXC container with Terraform</h2></summary>
+<summary><h2>Create a new Plex LXC container</h2></summary>
 
 - `cd terraform/plex_lxc`.
 - Decide on the IP address that you would want for your Plex LXC container. From now on, we will use the special value `<plex-lxc-ip>` to represent your Plex container's IP address.
@@ -158,14 +158,15 @@ ip              = "<plex-lxc-ip>"
 ```
 - Unfortunately, Proxmox doesn't support some things in this `main.tf` file without root login, so the authentication here is just root username and password.
 - Run `terraform apply`. This should create an Ubuntu LXC container mounted to `/mnt/media` on the Proxmox host.
-- At this point, you should be able to ssh into it: `ssh root@<plex-lxc-ip> -i /path/to/your/private/.ssh/key -p 17031`.
+- At this point, you will be locked out of SSH because of some firewall rules. This will be fixed with ansible.
+- Get back to the root of the project: `cd ../../`.
 - Update `./ansible/inventory.ini` so that it has this:
   ```
   [plex]
   plex_lxc ansible_host=<plex-lxc-ip> vmid=100
   ```
-- Run the bootstrap playbook: `ansible-playbook -i ansible/inventory.ini ansible/bootstrap-plex-lxc.yml  --ask-vault-pass`.
-- Run the setup playbook. In your first run, you'll use root permissions to run the playbook: `ansible-playbook -i ansible/inventory.ini ansible/setup-plex-lxc.yml -u root --ask-vault-pass`.
+- Run the bootstrap playbook: `ansible-playbook -i ansible/inventory.ini ansible/bootstrap-plex-lxc.yml --ask-vault-pass`.
+- Run the setup playbook. In your first run, you'll use root permissions to run the playbook: `ansible-playbook -i ansible/inventory.ini ansible/setup-plex-lxc.yml -e "ansible_user=root" --ask-vault-pass`.
 - After this, you should be able to go to visit `http://<plex-lxc-ip>:32400` and see the Plex welcome screen.
 - Also, root login with password will be disabled. You'll only be able to login as admin using `/path/to/private/key` at port `17031`.
 - You can re-run the setup playbook without root permissions: `ansible-playbook -i ansible/inventory.ini ansible/setup-plex-lxc.yml --ask-vault-pass`.
