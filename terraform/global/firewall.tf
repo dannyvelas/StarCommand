@@ -95,7 +95,7 @@ resource "proxmox_virtual_environment_cluster_firewall_security_group" "plex_lxc
   }
 }
 
-# security group for wireguard-vm. establishes VPN tunnel
+# security group for wireguard_vm. establishes VPN tunnel
 resource "proxmox_virtual_environment_cluster_firewall_security_group" "vpn_outbound" {
   name    = "vpn-handshake"
   comment = "Allow VM to reach VPN Providers"

@@ -46,6 +46,7 @@ resource "proxmox_virtual_environment_file" "user_data_cloud_config" {
     users:
       - default
       - name: admin
+        primary_group: admin
         groups:
           - sudo
         shell: /bin/bash
@@ -56,13 +57,23 @@ resource "proxmox_virtual_environment_file" "user_data_cloud_config" {
       - qemu-guest-agent
       - net-tools
       - curl
+    # switch port 22 to be 17031
+    write_files:
+      - path: /etc/systemd/system/ssh.socket.d/listen.conf
+        content: |
+          [Socket]
+          ListenStream=
+          ListenStream=17031
     runcmd:
-      # switch port 22 to be 17031
-      - sed -i 's/#Port 22/Port 17031/' /etc/ssh/sshd_config
-      - systemctl restart ssh
       # enable qemu-guest-agent
       - systemctl enable qemu-guest-agent
       - systemctl start qemu-guest-agent
+      # apply changes to the socket
+      - systemctl daemon-reload
+      - systemctl stop ssh.socket
+      - systemctl start ssh.socket
+      - systemctl restart ssh
+      # mark done
       - echo "done" > /tmp/cloud-config.done
     EOF
 
@@ -70,7 +81,7 @@ resource "proxmox_virtual_environment_file" "user_data_cloud_config" {
   }
 }
 
-resource "proxmox_virtual_environment_vm" "wireguard-vm" {
+resource "proxmox_virtual_environment_vm" "wireguard_vm" {
   name        = "wireguard-vm"
   description = "Managed by Terraform"
   tags        = ["terraform", "ubuntu"]
@@ -105,8 +116,9 @@ resource "proxmox_virtual_environment_vm" "wireguard-vm" {
   }
 
   network_device {
-    bridge = "vmbr0"
-    model  = "virtio"
+    bridge   = "vmbr0"
+    model    = "virtio"
+    firewall = true
   }
 
   # this initialization block works because:
@@ -173,7 +185,7 @@ resource "proxmox_virtual_environment_hardware_mapping_dir" "media_mount" {
 # firewall killswitch: stops the VM from talking to the internet directly if the internal rules aren't met
 resource "proxmox_virtual_environment_firewall_options" "wg_fw_options" {
   node_name = var.node
-  vm_id     = proxmox_virtual_environment_vm.wireguard-vm.vm_id
+  vm_id     = proxmox_virtual_environment_vm.wireguard_vm.vm_id
 
   enabled      = true
   input_policy = "DROP"
@@ -184,7 +196,7 @@ resource "proxmox_virtual_environment_firewall_options" "wg_fw_options" {
 
 resource "proxmox_virtual_environment_firewall_rules" "wg_rules" {
   node_name = var.node
-  vm_id     = proxmox_virtual_environment_vm.wireguard-vm.vm_id
+  vm_id     = proxmox_virtual_environment_vm.wireguard_vm.vm_id
 
   # 1. Allow Management (SSH)
   rule {
