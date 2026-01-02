@@ -63,7 +63,8 @@ resource "proxmox_virtual_environment_file" "user_data_cloud_config" {
         content: |
           [Socket]
           ListenStream=
-          ListenStream=17031
+          ListenStream=0.0.0.0:17031
+          ListenStream=[::]:17031
     runcmd:
       # enable qemu-guest-agent
       - systemctl enable qemu-guest-agent
