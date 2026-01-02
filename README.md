@@ -115,31 +115,6 @@ ssh_private_key = "/path/to/your/private/.ssh/key"
 
 <details>
 
-<summary><h2>Create a new VM that is bound to a WireGuard VPN</h2></summary>
-
-- `cd terraform/wireguard-vm`.
-- Decide on the IP address that you would want for a VM. From now on, we will use the special value `<vm-ip>` to represent your VM's IP address.
-- Create a file called `terraform.tfvars`. It should look like this:
-```
-node            = "<node-name>"
-router_ip       = "10.0.0.1"
-endpoint        = "https://1.2.3.4:8006/"
-api_token       = "terraform@pve!provider=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-ssh_address     = "1.2.3.4"
-ssh_port        = 17031
-ssh_public_key  = "/path/to/your/public/.ssh/key"
-ssh_private_key = "/path/to/your/private/.ssh/key"
-vm_ip           = "<vm-ip>"
-```
-- The x's in `api_token` should be replaced with the API token that you received when you set up Proxmox with Ansible.
-- Run `terraform init`.
-- Run `terraform apply`. This should create an Ubuntu VM that can mount to `/mnt/media` on the Proxmox host.
-- At this point, you should be able to ssh into the ubuntu VM: `ssh ubuntu@<vm-ip> -i /path/to/your/private/.ssh/key`.
-
-</details>
-
-<details>
-
 <summary><h2>Create a new Plex LXC container</h2></summary>
 
 - `cd terraform/plex_lxc`.
@@ -168,6 +143,31 @@ ip             = "<plex-lxc-ip>"
 - After this, you should be able to go to visit `http://<plex-lxc-ip>:32400` and see the Plex welcome screen.
 - Also, root login with password will be disabled. You'll only be able to login as admin using `/path/to/private/key` at port `17031`.
 - You can re-run the setup playbook without root permissions: `ansible-playbook -i ansible/inventory.ini ansible/setup-plex-lxc.yml --ask-vault-pass`.
+
+</details>
+
+<details>
+
+<summary><h2>Create a new VM that is bound to a WireGuard VPN</h2></summary>
+
+- `cd terraform/wireguard-vm`.
+- Decide on the IP address that you would want for a VM. From now on, we will use the special value `<vm-ip>` to represent your VM's IP address.
+- Create a file called `terraform.tfvars`. It should look like this:
+```
+node            = "<node-name>"
+router_ip       = "10.0.0.1"
+endpoint        = "https://1.2.3.4:8006/"
+api_token       = "terraform@pve!provider=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+ssh_address     = "1.2.3.4"
+ssh_port        = 17031
+ssh_public_key  = "/path/to/your/public/.ssh/key"
+ssh_private_key = "/path/to/your/private/.ssh/key"
+vm_ip           = "<vm-ip>"
+```
+- The x's in `api_token` should be replaced with the API token that you received when you set up Proxmox with Ansible.
+- Run `terraform init`.
+- Run `terraform apply`. This should create an Ubuntu VM that can mount to `/mnt/media` on the Proxmox host.
+- At this point, you should be able to ssh into the ubuntu VM: `ssh ubuntu@<vm-ip> -i /path/to/your/private/.ssh/key`.
 
 </details>
 
