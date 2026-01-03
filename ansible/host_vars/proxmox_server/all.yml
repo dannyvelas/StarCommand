@@ -1,3 +1,4 @@
 node_cidr_address: 10.0.0.50/24
 gateway_address: 10.0.0.1
 physical_nic: "enx6c1ff7135975"
+proxmox_node_name: "pve"
