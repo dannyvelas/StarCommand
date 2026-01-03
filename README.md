@@ -44,7 +44,6 @@
 - Run: `ansible-vault create ./ansible/host_vars/proxmox_server/vault.yml`, using a vault password. Save this vault password in Bitwarden.
 - In the content of that file put:
   ```
-  vault_tailscale_key: "<tailscale auth key here>"
   vault_admin_password: "<admin password for your home server>"
   ```
 - Update `./ansible/inventory.ini` so that the `proxmox` host has IP address `1.2.3.4`.
@@ -81,9 +80,7 @@
       IdentityFile /path/to/your/private/.ssh/key
       Port 17031
     ```
-  - You should now be able to:
-    - Run this playbook as many times as you want (without the `-u root` argument, as that won't work anymore).
-    - See your server as a Tailscale node in the [Tailscale machines page](https://login.tailscale.com/admin/machines).
+  - You should now be able to run this playbook as many times as you want (without the `-u root` argument, as that won't work anymore).
 
 </details>
 
