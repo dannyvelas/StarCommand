@@ -27,7 +27,7 @@
           ansible.builtin.command:
             cmd: >
               /usr/sbin/pct exec {{ vmid }} -- bash -c 
-              "echo -e '[Socket]\nListenStream=\nListenStream=0.0.0.0:17031\nListenStream=[::]:17031' > /etc/systemd/system/ssh.socket.d/listen.conf"
+              "echo -e '[Socket]\nListenStream=\nListenStream=17031' > /etc/systemd/system/ssh.socket.d/listen.conf"
 
         - name: Reload systemd and bounce SSH socket
           ansible.builtin.command:
