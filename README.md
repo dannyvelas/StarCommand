@@ -26,7 +26,7 @@
 - After, you will be asked for an administrator email and password. Create a password, enter it, and store it in Bitwarden. This will be the "root" password. From here on, we will use the special value `<password>` to represent this password.
 - In setup, on the "Management Network Configuration" page:
   - For management interface, pick the network card that is being used for ethernet.
-  - For Hostname (FQDN), put `proxmox.lan`. The part before the first `.` will become your Proxmox node name. In this case, my node name is `proxmox`. From here on, we will use the special value `<node-name>` to represent your node name.
+  - For Hostname (FQDN), put `pve.lan`. The part before the first `.` will become your Proxmox node name. In this case, my node name is `pve`. From here on, we will use the special value `<node-name>` to represent your node name.
   - For IP address (CIDR), pick an IP address that is not assigned by your router and that you can reserve for your server. This will be used a lot. From here on, we will use the special value `1.2.3.4` to represent your server's IP address.
   - For gateway, put the IP address of your router. From here on, we will use the special value `10.0.0.1` to represent your router's IP address.
   - For DNS server, put either your router's IP address or use a public DNS server like `1.1.1.1` (Cloudflare) `8.8.8.8` (Google).

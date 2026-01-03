@@ -1,4 +1,4 @@
 ssh_port: 17031
 ansible_user: admin
 ansible_port: "{{ ssh_port }}"
-proxmox_node_name: "proxmox"
+proxmox_node_name: "pve"
