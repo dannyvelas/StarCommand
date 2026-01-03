@@ -4,6 +4,9 @@
   become: true
   vars:
     ssh_public_key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
+    node_cidr_address: 10.0.0.50/24
+    gateway_address: 10.0.0.1
+    physical_nic: "enx6c1ff7135975"
 
   pre_tasks:
     - name: enable no-subscription repo
@@ -40,6 +43,29 @@
       ansible.builtin.apt:
         update_cache: yes
         upgrade: dist # 'dist' is recommended for security hardening
+
+    - name: Deploy network configuration from template
+      template:
+        src: interfaces.j2
+        dest: /etc/network/interfaces
+        owner: root
+        group: root
+        mode: "0644"
+        backup: yes # Creates a backup in /etc/network/ in case of failure
+      register: network_config
+
+    - name: Apply network changes
+      shell: "ifreload -a"
+      async: 60
+      poll: 0
+      when: network_config.changed
+      register: reload_task
+
+    - name: Wait for connection to return
+      wait_for_connection:
+        delay: 10
+        timeout: 120
+      when: network_config.changed
 
   roles:
     - ssh_harden

@@ -1,0 +1,17 @@
+auto lo
+iface lo inet loopback
+
+iface {{ physical_nic }} inet manual
+
+auto vmbr0
+iface vmbr0 inet static
+    address {{ node_cidr_address }}
+    gateway {{ gateway_address }}
+    bridge-ports {{ physical_nic }}
+    bridge-stp off
+    bridge-fd 0
+    bridge-vlan-aware yes
+
+iface wlp1s0 inet manual
+
+source /etc/network/interfaces.d/*
