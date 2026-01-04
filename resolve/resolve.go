@@ -36,7 +36,7 @@ func ResolveConfig(verbose bool, hostName string) (map[string]string, error) {
 		} else if err != nil {
 			return nil, fmt.Errorf("error reading config file(%s): %v", file, err)
 		}
-		if err := yaml.Unmarshal(data, &hostConfig); err != nil {
+		if err := yaml.Unmarshal(data, hostConfig); err != nil {
 			return nil, fmt.Errorf("error unmarshalling config file (%s): %v", file, err)
 		}
 	}
