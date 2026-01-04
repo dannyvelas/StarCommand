@@ -63,16 +63,21 @@ func ResolveConfig(verbose bool, hostName string) (map[string]string, error) {
 
 	// validate whether all necessary configs are present
 	requiredKeys := hostRequiredKeys[hostName]
-	missingKeys := make([]string, 0)
-	for _, requiredKey := range requiredKeys {
-		if _, ok := conf[requiredKey]; !ok {
-			missingKeys = append(missingKeys, requiredKey)
-		}
-	}
+	missingKeys := getMissingKeys(conf, requiredKeys)
 	if len(missingKeys) > 0 {
 		return nil, fmt.Errorf("error: missing values for the following keys: %v", missingKeys)
 	}
 
 	conf["node_ip"] = strings.Split(conf["node_cidr_address"], "/")[0]
 	return conf, nil
+}
+
+func getMissingKeys(conf map[string]string, requiredKeys []string) []string {
+	missingKeys := make([]string, 0)
+	for _, requiredKey := range requiredKeys {
+		if _, ok := conf[requiredKey]; !ok {
+			missingKeys = append(missingKeys, requiredKey)
+		}
+	}
+	return missingKeys
 }
