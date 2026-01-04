@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 
+	"github.com/dannyvelas/homelab/resolve"
 	"github.com/spf13/cobra"
 )
 
@@ -15,6 +18,19 @@ var resolveCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		host := args[0]
 		fmt.Printf("verbose mode: %t.\nhost: %s.\n", verbose, host)
+		config, err := resolve.ResolveConfig(verbose, host)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s", err.Error())
+			os.Exit(1)
+		}
+
+		bytes, err := json.MarshalIndent(config, "", "    ")
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error marshalling to JSON: %s", err.Error())
+			os.Exit(1)
+		}
+
+		fmt.Println(string(bytes))
 	},
 }
 
