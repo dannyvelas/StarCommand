@@ -1,11 +1,11 @@
 package resolve
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/dannyvelas/homelab/helpers"
 	"gopkg.in/yaml.v2"
@@ -15,36 +15,15 @@ const configDir = "./config"
 
 var fallbackConfigFile = filepath.Join(configDir, "all.yml")
 
-const (
-	keySSHPublicKeyPath     = "ssh_public_key_path"
-	keyNodeCIDRAddress      = "node_cidr_address"
-	keyGatewayAddress       = "gateway_address"
-	keyPhysicalNIC          = "physical_nic"
-	keyVaultAdminPassword   = "vault_admin_password"
-	keySSHPort              = "ssh_port"
-	keyAutoUpdateRebootTime = "auto_update_reboot_time"
-	keyAdminEmail           = "admin_email"
-	keySMTPUser             = "smtp_user"
-	keySMTPPassword         = "smtp_password"
-)
-
-var hostRequiredKeys = map[string][]string{
-	"proxmox": {
-		keySSHPublicKeyPath,
-		keyNodeCIDRAddress,
-		keyGatewayAddress,
-		keyPhysicalNIC,
-		keyVaultAdminPassword,
-		keySSHPort,
-		keyAutoUpdateRebootTime,
-		keyAdminEmail,
-		keySMTPUser,
-		keySMTPPassword,
-	},
+var hostRequiredKeys = map[string]Config{
+	"proxmox": NewProxmoxConfig(),
 }
 
 func ResolveConfig(verbose bool, hostName string) (map[string]string, error) {
-	conf := make(map[string]string)
+	hostConfig, ok := hostRequiredKeys[hostName]
+	if !ok {
+		return nil, fmt.Errorf("unrecognized host: %s", hostName)
+	}
 
 	hostConfigFile := filepath.Join(configDir, fmt.Sprintf("%s.yml", hostName))
 	for _, file := range []string{fallbackConfigFile, hostConfigFile} {
@@ -57,28 +36,38 @@ func ResolveConfig(verbose bool, hostName string) (map[string]string, error) {
 		} else if err != nil {
 			return nil, fmt.Errorf("error reading config file(%s): %v", file, err)
 		}
-		if err := yaml.Unmarshal(data, &conf); err != nil {
+		if err := yaml.Unmarshal(data, &hostConfig); err != nil {
 			return nil, fmt.Errorf("error unmarshalling config file (%s): %v", file, err)
 		}
 	}
 
-	// validate whether all necessary configs are present
-	requiredKeys := hostRequiredKeys[hostName]
-	missingKeys := getMissingKeys(conf, requiredKeys)
-	if len(missingKeys) > 0 {
-		return nil, fmt.Errorf("error: missing values for the following keys: %s", helpers.StringSliceToBulletedList(missingKeys))
+	configErrors := hostConfig.Validate()
+	if len(configErrors) > 0 {
+		return nil, fmt.Errorf("error: invalid configs: %s", helpers.MapToBulletedList(configErrors))
 	}
 
-	conf["node_ip"] = strings.Split(conf["node_cidr_address"], "/")[0]
-	return conf, nil
+	if err := hostConfig.FillInKeys(); err != nil {
+		return nil, fmt.Errorf("error filling in fields: %v", err)
+	}
+
+	m, err := configToMap(hostConfig)
+	if err != nil {
+		return nil, fmt.Errorf("error transforming config to map: %v", err)
+	}
+
+	return m, nil
 }
 
-func getMissingKeys(conf map[string]string, requiredKeys []string) []string {
-	missingKeys := make([]string, 0)
-	for _, requiredKey := range requiredKeys {
-		if _, ok := conf[requiredKey]; !ok {
-			missingKeys = append(missingKeys, requiredKey)
-		}
+func configToMap(c any) (map[string]string, error) {
+	bytes, err := json.Marshal(c)
+	if err != nil {
+		return nil, fmt.Errorf("error marshalling config: %v", err)
 	}
-	return missingKeys
+
+	var m map[string]string
+	if err := json.Unmarshal(bytes, &m); err != nil {
+		return nil, fmt.Errorf("error unmarshalling config to map: %v", err)
+	}
+
+	return m, nil
 }

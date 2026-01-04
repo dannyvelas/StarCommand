@@ -6,17 +6,17 @@ import (
 )
 
 const listTemplate = `
-{{- range . }}
-- {{ . }}
+{{- range $k, $v := . }}
+- {{ $k }}: {{ $v }}
 {{- end }}
 `
 
 var parsedListTemplate = template.Must(template.New("list").Parse(listTemplate))
 
-func StringSliceToBulletedList(items []string) string {
+func MapToBulletedList(m map[string]string) string {
 	var sb strings.Builder
 
-	if err := parsedListTemplate.Execute(&sb, items); err != nil {
+	if err := parsedListTemplate.Execute(&sb, m); err != nil {
 		panic(err)
 	}
 
