@@ -48,13 +48,20 @@ func ResolveConfig(env env.Env, verbose bool, hostName string) (map[string]strin
 		}
 	}
 
-	bwClient, err := client.NewBitwardenClient(rootConfig.BitwardenAPIURL, rootConfig.BitwardenIdentityURL, env.BitwardenProjectID)
+	bwClient, err := client.NewBitwardenClient(
+		rootConfig.BitwardenAPIURL,
+		rootConfig.BitwardenIdentityURL,
+		env.BitwardenAccessToken,
+		env.BitwardenProjectID,
+		env.BitwardenStateFilePath,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("error initializing bitwarden client: %v", err)
 	}
 
-	adminPasswordSecretName := fmt.Sprintf("%s_admin_password", hostName)
-	fmt.Println(bwClient.GetSecretByName(adminPasswordSecretName))
+	if err := bwClient.FillStruct(hostConfig); err != nil {
+		return nil, fmt.Errorf("error filling host config struct with bitwarden secrets: %v", err)
+	}
 
 	configErrors := hostConfig.Validate()
 	if len(configErrors) > 0 {

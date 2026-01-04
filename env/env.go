@@ -7,8 +7,9 @@ import (
 )
 
 type Env struct {
-	BitwardenAccessToken string
-	BitwardenProjectID   string
+	BitwardenAccessToken   string
+	BitwardenProjectID     string
+	BitwardenStateFilePath string
 }
 
 // New returns an Env struct if all expected environmental variables are present
@@ -18,14 +19,19 @@ func New() (Env, []string) {
 
 	missing := make([]string, 0)
 
-	token := os.Getenv("BWS_ACCESS_TOKEN")
-	if token == "" {
+	bitwardenAccessToken := os.Getenv("BWS_ACCESS_TOKEN")
+	if bitwardenAccessToken == "" {
 		missing = append(missing, "BWS_ACCESS_TOKEN")
 	}
 
-	projectID := os.Getenv("BWS_PROJECT_ID")
-	if projectID == "" {
+	bitwardenProjectID := os.Getenv("BWS_PROJECT_ID")
+	if bitwardenProjectID == "" {
 		missing = append(missing, "BWS_PROJECT_ID")
+	}
+
+	bitwardenStateFilePath := os.Getenv("BWS_STATE_FILE_PATH")
+	if bitwardenStateFilePath == "" {
+		missing = append(missing, "BWS_STATE_FILE_PATH")
 	}
 
 	if len(missing) > 0 {
@@ -33,7 +39,8 @@ func New() (Env, []string) {
 	}
 
 	return Env{
-		BitwardenAccessToken: token,
-		BitwardenProjectID:   projectID,
+		BitwardenAccessToken:   bitwardenAccessToken,
+		BitwardenProjectID:     bitwardenProjectID,
+		BitwardenStateFilePath: bitwardenStateFilePath,
 	}, nil
 }

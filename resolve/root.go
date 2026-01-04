@@ -7,5 +7,5 @@ type rootConfig struct {
 
 var defaultRootConfig = rootConfig{
 	BitwardenAPIURL:      "https://api.bitwarden.com",
-	BitwardenIdentityURL: "https://identity.bitwarden.com/connect/token",
+	BitwardenIdentityURL: "https://identity.bitwarden.com",
 }
