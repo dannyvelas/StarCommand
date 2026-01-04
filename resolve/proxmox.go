@@ -77,9 +77,8 @@ func (p *ProxmoxConfig) Validate() map[string]string {
 
 func (p *ProxmoxConfig) FillInKeys() error {
 	// ParsePrefix returns the prefix and an error if it's invalid
-	_, err := netip.ParsePrefix(p.NodeCIDRAddress)
-	if err != nil {
-		return fmt.Errorf("'%s' is not a valid CIDR: %v\n", p.NodeCIDRAddress, err)
+	if _, err := netip.ParsePrefix(p.NodeCIDRAddress); err != nil {
+		return fmt.Errorf("'%s' is not a valid CIDR: %v", p.NodeCIDRAddress, err)
 	}
 
 	bytes, err := os.ReadFile(p.SSHPublicKeyPath)
