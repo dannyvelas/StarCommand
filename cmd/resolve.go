@@ -17,7 +17,6 @@ var resolveCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		host := args[0]
-		fmt.Printf("verbose mode: %t.\nhost: %s.\n", verbose, host)
 		config, err := resolve.ResolveConfig(verbose, host)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%s", err.Error())
