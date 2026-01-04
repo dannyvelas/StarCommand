@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-type ProxmoxConfig struct {
+type proxmoxConfig struct {
 	// Required
 	SSHPublicKeyPath     string `yaml:"ssh_public_key_path" json:"ssh_public_key_path"`
 	NodeCIDRAddress      string `yaml:"node_cidr_address" json:"node_cidr_address"`
@@ -24,11 +24,11 @@ type ProxmoxConfig struct {
 }
 
 // NewProxmoxConfig returns a pointer to the zero-value of ProxmoxConfig
-func NewProxmoxConfig() *ProxmoxConfig {
-	return &ProxmoxConfig{}
+func NewProxmoxConfig() *proxmoxConfig {
+	return &proxmoxConfig{}
 }
 
-func (p *ProxmoxConfig) Validate() map[string]string {
+func (p *proxmoxConfig) Validate() map[string]string {
 	keyErrors := make(map[string]string)
 	if p.SSHPublicKeyPath == "" {
 		keyErrors["ssh_public_key_path"] = errMissing
@@ -75,7 +75,7 @@ func (p *ProxmoxConfig) Validate() map[string]string {
 	return keyErrors
 }
 
-func (p *ProxmoxConfig) FillInKeys() error {
+func (p *proxmoxConfig) FillInKeys() error {
 	// ParsePrefix returns the prefix and an error if it's invalid
 	if _, err := netip.ParsePrefix(p.NodeCIDRAddress); err != nil {
 		return fmt.Errorf("'%s' is not a valid CIDR: %v", p.NodeCIDRAddress, err)

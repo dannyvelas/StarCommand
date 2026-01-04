@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/dannyvelas/homelab/client"
+	"github.com/dannyvelas/homelab/env"
 	"github.com/dannyvelas/homelab/helpers"
 	"gopkg.in/yaml.v2"
 )
@@ -19,7 +21,9 @@ var hostRequiredKeys = map[string]Config{
 	"proxmox": NewProxmoxConfig(),
 }
 
-func ResolveConfig(verbose bool, hostName string) (map[string]string, error) {
+func ResolveConfig(env env.Env, verbose bool, hostName string) (map[string]string, error) {
+	rootConfig := defaultRootConfig
+
 	hostConfig, ok := hostRequiredKeys[hostName]
 	if !ok {
 		return nil, fmt.Errorf("unrecognized host: %s", hostName)
@@ -36,10 +40,21 @@ func ResolveConfig(verbose bool, hostName string) (map[string]string, error) {
 		} else if err != nil {
 			return nil, fmt.Errorf("error reading config file(%s): %v", file, err)
 		}
+		if err := yaml.Unmarshal(data, &rootConfig); err != nil {
+			return nil, fmt.Errorf("error unmarshalling config file (%s) to root config: %v", file, err)
+		}
 		if err := yaml.Unmarshal(data, hostConfig); err != nil {
-			return nil, fmt.Errorf("error unmarshalling config file (%s): %v", file, err)
+			return nil, fmt.Errorf("error unmarshalling config file (%s) to host config: %v", file, err)
 		}
 	}
+
+	bwClient, err := client.NewBitwardenClient(rootConfig.BitwardenAPIURL, rootConfig.BitwardenIdentityURL, env.BitwardenProjectID)
+	if err != nil {
+		return nil, fmt.Errorf("error initializing bitwarden client: %v", err)
+	}
+
+	adminPasswordSecretName := fmt.Sprintf("%s_admin_password", hostName)
+	fmt.Println(bwClient.GetSecretByName(adminPasswordSecretName))
 
 	configErrors := hostConfig.Validate()
 	if len(configErrors) > 0 {

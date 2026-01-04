@@ -3,10 +3,9 @@ package cmd
 import (
 	"os"
 
+	"github.com/dannyvelas/homelab/env"
 	"github.com/spf13/cobra"
 )
-
-var verbose bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -17,13 +16,13 @@ var rootCmd = &cobra.Command{
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	err := rootCmd.Execute()
-	if err != nil {
+	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
 }
 
-func init() {
-	// all subcommands support "verbose"
+func Initialize(env env.Env) {
+	var verbose bool
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose mode")
+	rootCmd.AddCommand(newResolveCmd(env, verbose))
 }
