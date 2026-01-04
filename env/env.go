@@ -2,6 +2,8 @@ package env
 
 import (
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 type Env struct {
@@ -12,6 +14,8 @@ type Env struct {
 // New returns an Env struct if all expected environmental variables are present
 // otherwise it will return a zero-value and the list of missing environmental variables
 func New() (Env, []string) {
+	godotenv.Load()
+
 	missing := make([]string, 0)
 
 	token := os.Getenv("BWS_ACCESS_TOKEN")
