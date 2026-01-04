@@ -12,7 +12,7 @@ type ProxmoxConfig struct {
 	NodeCIDRAddress      string `yaml:"node_cidr_address" json:"node_cidr_address"`
 	GatewayAddress       string `yaml:"gateway_address" json:"gateway_address"`
 	PhysicalNIC          string `yaml:"physical_nic" json:"physical_nic"`
-	VaultAdminPassword   string `yaml:"vault_admin_password" json:"vault_admin_password"`
+	AdminPassword        string `yaml:"admin_password" json:"admin_password"`
 	SSHPort              string `yaml:"ssh_port" json:"ssh_port"`
 	AutoUpdateRebootTime string `yaml:"auto_update_reboot_time" json:"auto_update_reboot_time"`
 	AdminEmail           string `yaml:"admin_email" json:"admin_email"`
@@ -48,8 +48,8 @@ func (p *ProxmoxConfig) Validate() map[string]string {
 		keyErrors["physical_nic"] = errMissing
 	}
 
-	if p.VaultAdminPassword == "" {
-		keyErrors["vault_admin_password"] = errMissing
+	if p.AdminPassword == "" {
+		keyErrors["admin_password"] = errMissing
 	}
 
 	if p.SSHPort == "" {
