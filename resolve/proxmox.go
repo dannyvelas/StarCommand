@@ -82,9 +82,11 @@ func (p *proxmoxConfig) Validate() map[string]string {
 
 func (p *proxmoxConfig) FillInKeys() error {
 	// ParsePrefix returns the prefix and an error if it's invalid
-	if _, err := netip.ParsePrefix(p.NodeCIDRAddress); err != nil {
+	prefix, err := netip.ParsePrefix(p.NodeCIDRAddress)
+	if err != nil {
 		return fmt.Errorf("'%s' is not a valid CIDR: %v", p.NodeCIDRAddress, err)
 	}
+	p.NodeIP = prefix.Addr().String()
 
 	expandedPublicKeyPath, err := helpers.ExpandPath(p.SSHPublicKeyPath)
 	if err != nil {
