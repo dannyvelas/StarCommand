@@ -10,19 +10,19 @@ import (
 
 type proxmoxConfig struct {
 	// Required
-	SSHPublicKeyPath     string `yaml:"ssh_public_key_path" json:"ssh_public_key_path"`
-	NodeCIDRAddress      string `yaml:"node_cidr_address" json:"node_cidr_address"`
-	GatewayAddress       string `yaml:"gateway_address" json:"gateway_address"`
-	PhysicalNIC          string `yaml:"physical_nic" json:"physical_nic"`
-	ProxmoxAdminPassword string `yaml:"proxmox_admin_password" json:"proxmox_admin_password"`
-	SSHPort              string `yaml:"ssh_port" json:"ssh_port"`
-	AutoUpdateRebootTime string `yaml:"auto_update_reboot_time" json:"auto_update_reboot_time"`
-	AdminEmail           string `yaml:"admin_email" json:"admin_email"`
-	SMTPUser             string `yaml:"smtp_user" json:"smtp_user"`
-	SMTPPassword         string `yaml:"smtp_password" json:"smtp_password"`
+	SSHPublicKeyPath     string `json:"ssh_public_key_path"`
+	NodeCIDRAddress      string `json:"node_cidr_address"`
+	GatewayAddress       string `json:"gateway_address"`
+	PhysicalNIC          string `json:"physical_nic"`
+	ProxmoxAdminPassword string `json:"proxmox_admin_password"`
+	SSHPort              string `json:"ssh_port"`
+	AutoUpdateRebootTime string `json:"auto_update_reboot_time"`
+	AdminEmail           string `json:"admin_email"`
+	SMTPUser             string `json:"smtp_user"`
+	SMTPPassword         string `json:"smtp_password"`
 	// Injected
-	NodeIP       string `yaml:"node_ip" json:"node_ip"`
-	SSHPublicKey string `yaml:"ssh_public_key" json:"ssh_public_key"`
+	NodeIP       string `json:"node_ip"`
+	SSHPublicKey string `json:"ssh_public_key"`
 }
 
 // NewProxmoxConfig returns a pointer to a ProxmoxConfig with some defaults

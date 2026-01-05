@@ -1,8 +1,8 @@
 package resolve
 
 type rootConfig struct {
-	BitwardenAPIURL      string `yaml:"bitwarden_api_url" json:"bitwarden_api_url"`
-	BitwardenIdentityURL string `yaml:"bitwarden_identity_url" json:"bitwarden_identity_url"`
+	BitwardenAPIURL      string `json:"bitwarden_api_url"`
+	BitwardenIdentityURL string `json:"bitwarden_identity_url"`
 }
 
 var defaultRootConfig = rootConfig{
