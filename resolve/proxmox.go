@@ -25,9 +25,12 @@ type proxmoxConfig struct {
 	SSHPublicKey string `yaml:"ssh_public_key" json:"ssh_public_key"`
 }
 
-// NewProxmoxConfig returns a pointer to the zero-value of ProxmoxConfig
+// NewProxmoxConfig returns a pointer to a ProxmoxConfig with some defaults
 func NewProxmoxConfig() *proxmoxConfig {
-	return &proxmoxConfig{}
+	return &proxmoxConfig{
+		SSHPort:              "22",
+		AutoUpdateRebootTime: "05:00",
+	}
 }
 
 func (p *proxmoxConfig) Validate() map[string]string {
