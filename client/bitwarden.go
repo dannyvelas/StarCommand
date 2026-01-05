@@ -8,11 +8,12 @@ import (
 )
 
 type BitwardenClient struct {
-	projectID string
-	client    sdk.BitwardenClientInterface
+	organizationID string
+	projectID      string
+	client         sdk.BitwardenClientInterface
 }
 
-func NewBitwardenClient(apiURL, identityURL, accessToken, projectID, stateFile string) (BitwardenClient, error) {
+func NewBitwardenClient(apiURL, identityURL, accessToken, organizationID, projectID, stateFile string) (BitwardenClient, error) {
 	bitwardenClient, err := sdk.NewBitwardenClient(&apiURL, &identityURL)
 	if err != nil {
 		return BitwardenClient{}, fmt.Errorf("error initializing bitwarden client: %v", err)
@@ -23,20 +24,21 @@ func NewBitwardenClient(apiURL, identityURL, accessToken, projectID, stateFile s
 	}
 
 	return BitwardenClient{
-		projectID: projectID,
-		client:    bitwardenClient,
+		organizationID: organizationID,
+		projectID:      projectID,
+		client:         bitwardenClient,
 	}, nil
 }
 
 // FillStruct takes a struct as an argument and fills its fields
-// with values found in c.projectID
+// with values found in c.organizationID
 func (c BitwardenClient) FillStruct(v any) error {
 	rv := reflect.ValueOf(v)
 	if rv.Kind() != reflect.Pointer {
 		return fmt.Errorf("error: expected pointer argument to FillStruct")
 	}
 
-	listResponse, err := c.client.Secrets().List(c.projectID)
+	listResponse, err := c.client.Secrets().List(c.organizationID)
 	if err != nil {
 		return fmt.Errorf("error listing secrets: %v", err)
 	}

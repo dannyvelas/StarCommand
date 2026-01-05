@@ -52,6 +52,7 @@ func ResolveConfig(env env.Env, verbose bool, hostName string) (map[string]strin
 		rootConfig.BitwardenAPIURL,
 		rootConfig.BitwardenIdentityURL,
 		env.BitwardenAccessToken,
+		env.BitwardenOrganizationID,
 		env.BitwardenProjectID,
 		env.BitwardenStateFilePath,
 	)
