@@ -4,9 +4,9 @@ go 1.25.1
 
 require (
 	github.com/bitwarden/sdk-go v1.0.2
+	github.com/goccy/go-yaml v1.19.1
 	github.com/joho/godotenv v1.5.1
 	github.com/spf13/cobra v1.10.2
-	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (

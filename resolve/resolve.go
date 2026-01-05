@@ -10,7 +10,7 @@ import (
 	"github.com/dannyvelas/homelab/client"
 	"github.com/dannyvelas/homelab/env"
 	"github.com/dannyvelas/homelab/helpers"
-	"gopkg.in/yaml.v2"
+	"github.com/goccy/go-yaml"
 )
 
 const configDir = "./config"
