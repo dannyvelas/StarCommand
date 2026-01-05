@@ -2,8 +2,6 @@
 - name: Set up APT, Harden SSH, set up terraform and proxmox storage
   hosts: proxmox
   become: true
-  vars:
-    ssh_public_key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
 
   pre_tasks:
     - name: enable no-subscription repo
