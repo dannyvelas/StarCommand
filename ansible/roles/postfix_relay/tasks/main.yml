@@ -21,7 +21,7 @@
 - name: Create SASL password file
   ansible.builtin.copy:
     dest: /etc/postfix/sasl_passwd
-    content: "[smtp.gmail.com]:587 {{ smtp_user }}:{{ smtp_pass }}"
+    content: "[smtp.gmail.com]:587 {{ smtp_user }}:{{ smtp_password }}"
     owner: root
     group: root
     mode: "0600"
