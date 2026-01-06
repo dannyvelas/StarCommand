@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/dannyvelas/homelab/internal/config"
 	"github.com/dannyvelas/homelab/internal/env"
-	"github.com/dannyvelas/homelab/internal/resolve"
 	"github.com/spf13/cobra"
 )
 
@@ -22,7 +22,7 @@ func newResolveCmd(env env.Env, verbose bool) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			host := args[0]
 			if showRequirements {
-				requiredKeys, err := resolve.GetRequiredKeys(host)
+				requiredKeys, err := config.GetRequiredKeys(host)
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "error getting required keys: %s", err.Error())
 					os.Exit(1)
@@ -32,7 +32,7 @@ func newResolveCmd(env env.Env, verbose bool) *cobra.Command {
 				return
 			}
 
-			config, err := resolve.ResolveConfig(env, verbose, host)
+			config, err := config.Resolve(env, verbose, host)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)

@@ -1,3 +1,3 @@
-package resolve
+package config
 
 const errMissing = "missing"

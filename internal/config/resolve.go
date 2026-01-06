@@ -1,4 +1,4 @@
-package resolve
+package config
 
 import (
 	"encoding/json"
@@ -21,7 +21,7 @@ var hostToConfig = map[string]Config{
 	"proxmox": NewProxmoxConfig(),
 }
 
-func ResolveConfig(env env.Env, verbose bool, hostName string) (map[string]string, error) {
+func Resolve(env env.Env, verbose bool, hostName string) (map[string]string, error) {
 	rootConfig := defaultRootConfig
 
 	hostConfig, ok := hostToConfig[hostName]

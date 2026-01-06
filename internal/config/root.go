@@ -1,4 +1,4 @@
-package resolve
+package config
 
 type rootConfig struct {
 	BitwardenAPIURL      string `json:"bitwarden_api_url"`
