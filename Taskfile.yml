@@ -15,7 +15,7 @@ tasks:
     generates:
       - "./bin/labctl"
     cmds:
-      - go build -o ./bin/labctl main.go
+      - go build -o ./bin/labctl ./cmd/labctl
 
   setup:proxmox:check:
     desc: "Check requirements for Proxmox"

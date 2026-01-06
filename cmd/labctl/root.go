@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"os"
@@ -13,15 +13,15 @@ var rootCmd = &cobra.Command{
 	Short: "An internal CLI to configure a homelab",
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
+// execute adds all child commands to the root command and sets flags appropriately.
+// this is called by main.main(). It only needs to happen once to the rootCmd.
+func execute() {
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
 }
 
-func Initialize(env env.Env) {
+func initialize(env env.Env) {
 	var verbose bool
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose mode")
 	rootCmd.AddCommand(newResolveCmd(env, verbose))

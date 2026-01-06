@@ -1,13 +1,9 @@
-/*
-Copyright © 2026 NAME HERE <EMAIL ADDRESS>
-*/
 package main
 
 import (
 	"fmt"
 	"os"
 
-	"github.com/dannyvelas/homelab/cmd"
 	"github.com/dannyvelas/homelab/internal/env"
 	"github.com/dannyvelas/homelab/internal/helpers"
 )
@@ -19,6 +15,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	cmd.Initialize(envVars)
-	cmd.Execute()
+	initialize(envVars)
+	execute()
 }
