@@ -24,5 +24,6 @@ func execute() {
 func initialize(env env.Env) {
 	var verbose bool
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose mode")
-	rootCmd.AddCommand(newResolveCmd(env, verbose))
+	rootCmd.AddCommand(getCmd(env, verbose))
+	rootCmd.AddCommand(setCmd())
 }

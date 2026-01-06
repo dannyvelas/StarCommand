@@ -21,7 +21,7 @@ tasks:
     desc: "Check requirements for Proxmox"
     deps: [build:labctl]
     cmds:
-      - ./bin/labctl resolve proxmox --requirements
+      - ./bin/labctl get config proxmox --dry-run
     run: once
 
   setup:proxmox:
@@ -30,7 +30,7 @@ tasks:
 
     cmds:
       - |
-        CONF_JSON=$(./bin/labctl resolve proxmox)
+        CONF_JSON=$(./bin/labctl get config proxmox)
         NODE_IP=$(echo $CONF_JSON | jq -r '.node_ip')
         if ssh -p 17031 -o ConnectTimeout=3 admin@{{.NODE_IP}} exit 2>/dev/null; then
           ansible-playbook -i ansible/inventory.ini ansible/setup-proxmox.yml --ask-vault-pass -e "$CONF_JSON"

@@ -10,18 +10,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// resolveCmd represents the resolve command
-func newResolveCmd(env env.Env, verbose bool) *cobra.Command {
-	var showRequirements bool
+func getConfigCmd(env env.Env, verbose bool) *cobra.Command {
+	var dryRun bool
 
-	resolveCmd := &cobra.Command{
-		Use:   "resolve <host-name>",
+	getConfigCmd := &cobra.Command{
+		Use:   "config <host-name>",
 		Short: "Generate a JSON object of configuration values for a given host",
 		Args:  cobra.ExactArgs(1),
-
 		Run: func(cmd *cobra.Command, args []string) {
 			host := args[0]
-			if showRequirements {
+			if dryRun {
 				requiredKeys, err := config.GetRequiredKeys(host)
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "error getting required keys: %s", err.Error())
@@ -48,7 +46,7 @@ func newResolveCmd(env env.Env, verbose bool) *cobra.Command {
 		},
 	}
 
-	resolveCmd.Flags().BoolVar(&showRequirements, "requirements", false, "Check for missing configuration requirements")
+	getConfigCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Show found/missing keys without generating JSON")
 
-	return resolveCmd
+	return getConfigCmd
 }
