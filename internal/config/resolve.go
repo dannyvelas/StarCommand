@@ -9,6 +9,7 @@ import (
 
 	"github.com/dannyvelas/homelab/internal/client"
 	"github.com/dannyvelas/homelab/internal/env"
+	"github.com/dannyvelas/homelab/internal/helpers"
 	"github.com/goccy/go-yaml"
 )
 
@@ -88,26 +89,46 @@ func readConfigs(hostName string, env env.Env, verbose bool) (config, error) {
 		}
 	}
 
-	// if bitwarden env variables are defined, add them to configs
-	if env.BitwardenAccessToken != "" && env.BitwardenOrganizationID != "" && env.BitwardenProjectID != "" {
-		bwClient, err := client.NewBitwardenClient(
-			bitwardenConfig.BitwardenAPIURL,
-			bitwardenConfig.BitwardenIdentityURL,
-			env.BitwardenAccessToken,
-			env.BitwardenOrganizationID,
-			env.BitwardenProjectID,
-			env.BitwardenStateFilePath,
-		)
-		if err != nil {
-			return nil, fmt.Errorf("error initializing bitwarden client: %v", err)
-		}
+	if missingBitwardenFields := getMissingBitwardenFields(env); len(missingBitwardenFields) > 0 {
+		fmt.Fprintf(os.Stderr, "warning: some bitwarden ENV variables are missing:%s\nBitwarden secrets will not be loaded.\n", helpers.StringSliceToBulletedList(missingBitwardenFields))
+		return hostConfig, nil
+	}
 
-		if err := bwClient.FillStruct(hostConfig); err != nil {
-			return nil, fmt.Errorf("error filling host config struct with bitwarden secrets: %v", err)
-		}
+	bwClient, err := client.NewBitwardenClient(
+		bitwardenConfig.BitwardenAPIURL,
+		bitwardenConfig.BitwardenIdentityURL,
+		env.BitwardenAccessToken,
+		env.BitwardenOrganizationID,
+		env.BitwardenProjectID,
+		env.BitwardenStateFilePath,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("error initializing bitwarden client: %v", err)
+	}
+
+	if err := bwClient.FillStruct(hostConfig); err != nil {
+		return nil, fmt.Errorf("error filling host config struct with bitwarden secrets: %v", err)
 	}
 
 	return hostConfig, nil
+}
+
+func getMissingBitwardenFields(env env.Env) []string {
+	missing := make([]string, 0)
+
+	if env.BitwardenAccessToken == "" {
+		missing = append(missing, "BWS_ACCESS_TOKEN")
+	}
+
+	if env.BitwardenProjectID == "" {
+		missing = append(missing, "BWS_PROJECT_ID")
+	}
+
+	if env.BitwardenOrganizationID == "" {
+		missing = append(missing, "BWS_ORGANIZATION_ID")
+	}
+
+	return missing
 }
 
 func configToMap(c any) (map[string]string, error) {
