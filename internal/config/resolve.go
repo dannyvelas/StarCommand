@@ -9,7 +9,6 @@ import (
 
 	"github.com/dannyvelas/homelab/internal/client"
 	"github.com/dannyvelas/homelab/internal/env"
-	"github.com/dannyvelas/homelab/internal/helpers"
 	"github.com/goccy/go-yaml"
 )
 
@@ -17,11 +16,52 @@ const configDir = "./config"
 
 var fallbackConfigFile = filepath.Join(configDir, "all.yml")
 
-var hostToConfig = map[string]Config{
-	"proxmox": NewProxmoxConfig(),
+var hostToConfig = map[string]config{
+	"proxmox": newProxmoxConfig(),
 }
 
 func Resolve(hostName string, env env.Env, verbose bool) (map[string]string, error) {
+	hostConfig, err := readConfigs(hostName, env, verbose)
+	if err != nil {
+		return nil, fmt.Errorf("error reading configs: %v", err)
+	}
+
+	validateResult, ok, err := hostConfig.Validate()
+	if err != nil {
+		return nil, fmt.Errorf("error validating config: %v", err)
+	} else if !ok {
+		return nil, fmt.Errorf("error: invalid configs: %s", fmtTable(validateResult))
+	}
+
+	if fillableConfig, ok := hostConfig.(fillableConfig); ok {
+		if err := fillableConfig.FillInKeys(); err != nil {
+			return nil, fmt.Errorf("error filling in fields: %v", err)
+		}
+	}
+
+	m, err := configToMap(hostConfig)
+	if err != nil {
+		return nil, fmt.Errorf("error transforming config to map: %v", err)
+	}
+
+	return m, nil
+}
+
+func DryRun(hostName string, env env.Env, verbose bool) (string, error) {
+	hostConfig, err := readConfigs(hostName, env, verbose)
+	if err != nil {
+		return "", fmt.Errorf("error reading configs: %v", err)
+	}
+
+	validateResult, _, err := hostConfig.Validate()
+	if err != nil {
+		return "", fmt.Errorf("error validating config: %v", err)
+	}
+
+	return fmtTable(validateResult), nil
+}
+
+func readConfigs(hostName string, env env.Env, verbose bool) (config, error) {
 	rootConfig := defaultRootConfig
 
 	hostConfig, ok := hostToConfig[hostName]
@@ -64,32 +104,7 @@ func Resolve(hostName string, env env.Env, verbose bool) (map[string]string, err
 		return nil, fmt.Errorf("error filling host config struct with bitwarden secrets: %v", err)
 	}
 
-	configErrors := hostConfig.Validate()
-	if len(configErrors) > 0 {
-		return nil, fmt.Errorf("error: invalid configs: %s", helpers.MapToBulletedList(configErrors))
-	}
-
-	if err := hostConfig.FillInKeys(); err != nil {
-		return nil, fmt.Errorf("error filling in fields: %v", err)
-	}
-
-	m, err := configToMap(hostConfig)
-	if err != nil {
-		return nil, fmt.Errorf("error transforming config to map: %v", err)
-	}
-
-	return m, nil
-}
-
-func GetRequiredKeys(hostName string) (string, error) {
-	hostConfig, ok := hostToConfig[hostName]
-	if !ok {
-		return "", fmt.Errorf("unrecognized host: %s", hostName)
-	}
-
-	requiredKeys := hostConfig.RequiredKeys()
-
-	return helpers.StringSliceToBulletedList(requiredKeys), nil
+	return hostConfig, nil
 }
 
 func configToMap(c any) (map[string]string, error) {

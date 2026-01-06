@@ -10,89 +10,64 @@ import (
 
 type proxmoxConfig struct {
 	// Required
-	SSHPublicKeyPath     string `json:"ssh_public_key_path"`
-	NodeCIDRAddress      string `json:"node_cidr_address"`
-	GatewayAddress       string `json:"gateway_address"`
-	PhysicalNIC          string `json:"physical_nic"`
-	AdminPassword        string `json:"admin_password" bw:"proxmox_admin_password"`
-	SSHPort              string `json:"ssh_port"`
-	AutoUpdateRebootTime string `json:"auto_update_reboot_time"`
-	AdminEmail           string `json:"admin_email"`
-	SMTPUser             string `json:"smtp_user"`
-	SMTPPassword         string `json:"smtp_password"`
+	SSHPublicKeyPath     string `json:"ssh_public_key_path" required:"true"`
+	NodeCIDRAddress      string `json:"node_cidr_address" required:"true"`
+	GatewayAddress       string `json:"gateway_address" required:"true"`
+	PhysicalNIC          string `json:"physical_nic" required:"true"`
+	AdminPassword        string `json:"admin_password" required:"true" bw:"proxmox_admin_password" `
+	SSHPort              string `json:"ssh_port" required:"true"`
+	AutoUpdateRebootTime string `json:"auto_update_reboot_time" required:"true"`
+	AdminEmail           string `json:"admin_email" required:"true"`
+	SMTPUser             string `json:"smtp_user" required:"true"`
+	SMTPPassword         string `json:"smtp_password" required:"true"`
 	// Injected
 	NodeIP       string `json:"node_ip"`
 	SSHPublicKey string `json:"ssh_public_key"`
 }
 
 // NewProxmoxConfig returns a pointer to a ProxmoxConfig with some defaults
-func NewProxmoxConfig() *proxmoxConfig {
+func newProxmoxConfig() *proxmoxConfig {
 	return &proxmoxConfig{
 		SSHPort:              "22",
 		AutoUpdateRebootTime: "05:00",
 	}
 }
 
-func (p *proxmoxConfig) Validate() map[string]string {
-	keyErrors := make(map[string]string)
-	if p.SSHPublicKeyPath == "" {
-		keyErrors["ssh_public_key_path"] = errMissing
+func (p *proxmoxConfig) Validate() (map[string]string, bool, error) {
+	results := make(map[string]string)
+	ok := true
+
+	tagToFieldMap, err := helpers.GetTagToFieldMap(p, "bw", "json")
+	if err != nil {
+		return nil, false, fmt.Errorf("error getting tag to field map: %v", err)
 	}
 
-	if p.NodeCIDRAddress == "" {
-		keyErrors["node_cidr_address"] = errMissing
-	} else if _, err := netip.ParsePrefix(p.NodeCIDRAddress); err != nil {
-		keyErrors["node_cidr_address"] = fmt.Sprintf("'%s' is not a valid CIDR: %v\n", p.NodeCIDRAddress, err)
+	for tag, field := range tagToFieldMap {
+		if _, ok := field.Type.Tag.Lookup("required"); !ok {
+			continue
+		}
+
+		if field.Value.IsZero() {
+			results[tag] = statusMissing
+			ok = false
+		} else {
+			results[tag] = statusLoaded
+		}
 	}
 
-	if p.GatewayAddress == "" {
-		keyErrors["gateway_address"] = errMissing
+	nodeCIDRAddressStatus, ok := results["node_cidr_address"]
+	if !ok {
+		return nil, false, fmt.Errorf("missing validation for node_cidr_address")
 	}
 
-	if p.PhysicalNIC == "" {
-		keyErrors["physical_nic"] = errMissing
+	if nodeCIDRAddressStatus == statusLoaded {
+		if _, err := netip.ParsePrefix(p.NodeCIDRAddress); err != nil {
+			results["node_cidr_address"] = fmt.Sprintf("'%s' is not a valid CIDR: %v\n", p.NodeCIDRAddress, err)
+			ok = false
+		}
 	}
 
-	if p.AdminPassword == "" {
-		keyErrors["admin_password"] = errMissing
-	}
-
-	if p.SSHPort == "" {
-		keyErrors["ssh_port"] = errMissing
-	}
-
-	if p.AutoUpdateRebootTime == "" {
-		keyErrors["auto_update_reboot_time"] = errMissing
-	}
-
-	if p.AdminEmail == "" {
-		keyErrors["admin_email"] = errMissing
-	}
-
-	if p.SMTPUser == "" {
-		keyErrors["smtp_user"] = errMissing
-	}
-
-	if p.SMTPPassword == "" {
-		keyErrors["smtp_password"] = errMissing
-	}
-
-	return keyErrors
-}
-
-func (p *proxmoxConfig) RequiredKeys() []string {
-	return []string{
-		"ssh_public_key_path",
-		"node_cidr_address",
-		"gateway_address",
-		"physical_nic",
-		"proxmox_admin_password",
-		"ssh_port",
-		"auto_update_reboot_time",
-		"admin_email",
-		"smtp_user",
-		"smtp_password",
-	}
+	return results, ok, nil
 }
 
 func (p *proxmoxConfig) FillInKeys() error {

@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"github.com/bitwarden/sdk-go"
+	"github.com/dannyvelas/homelab/internal/helpers"
 )
 
 type BitwardenClient struct {
@@ -43,7 +44,7 @@ func (c BitwardenClient) FillStruct(v any) error {
 		return fmt.Errorf("error listing secrets: %v", err)
 	}
 
-	tagToFieldMap, err := getTagToFieldMap(v)
+	tagToFieldMap, err := helpers.GetTagToFieldMap(v, "bw", "json")
 	if err != nil {
 		return fmt.Errorf("error getting tag to field map: %v", err)
 	}
@@ -59,42 +60,8 @@ func (c BitwardenClient) FillStruct(v any) error {
 			return fmt.Errorf("error getting secret: %v", err)
 		}
 
-		field.SetString(secretData.Value)
+		field.Value.SetString(secretData.Value)
 	}
 
 	return nil
-}
-
-// getTagToFieldMap takes a struct and returns a map where each key is
-// the value of the "bw" tag. each value is a reflect.Value.
-// if now "bw" tag is present, this falls back to use the value "json" tag.
-func getTagToFieldMap(v any) (map[string]reflect.Value, error) {
-	rv := reflect.ValueOf(v)
-
-	// If a pointer is passed, get the underlying element (the actual struct)
-	if rv.Kind() == reflect.Pointer {
-		rv = rv.Elem()
-	}
-
-	// If it's not a struct, we can't look up tags
-	if rv.Kind() != reflect.Struct {
-		return nil, fmt.Errorf("expected a struct as argument")
-	}
-
-	tagToFieldMap := make(map[string]reflect.Value)
-
-	rt := rv.Type()
-	for i := 0; i < rt.NumField(); i++ {
-		field := rt.Field(i)
-		foundTag := field.Tag.Get("bw")
-
-		// if "bw" tag is not present, fall back to json
-		if foundTag == "" {
-			foundTag = field.Tag.Get("json")
-		}
-
-		tagToFieldMap[foundTag] = rv.Field(i)
-	}
-
-	return tagToFieldMap, nil
 }

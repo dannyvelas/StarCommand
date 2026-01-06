@@ -45,7 +45,7 @@
 
 <summary><h2>Set up Proxmox with Ansible</h2></summary>
 
-- Make sure that `./config/all.yml` and `./config/proxmox.yml` and your Bitwarden secrets combined have the variables prescribed by `task setup:proxmox:check`.
+- Run `task setup:proxmox:check` to see the configs that you need to add to your `./config/all.yml`, `./config/proxmox.yml`, or Bitwarden secrets vault.
 - Run `task setup:proxmox`.
 - That will show you the API token that was created for the Terraform Proxmox user. Save this in Bitwarden.
 - Add the following to your `~/.ssh/config` file, this will be used by the `./ansible/setup-proxmox.yml` playbook:

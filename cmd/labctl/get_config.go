@@ -20,13 +20,13 @@ func getConfigCmd(env env.Env, verbose bool) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			host := args[0]
 			if dryRun {
-				requiredKeys, err := config.GetRequiredKeys(host)
+				validation, err := config.DryRun(host, env, verbose)
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "error getting required keys: %s", err.Error())
+					fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 					os.Exit(1)
 				}
 
-				fmt.Printf("Required keys:%s", requiredKeys)
+				fmt.Printf("Config Requirements for %s:\n%s", host, validation)
 				return
 			}
 
