@@ -62,20 +62,97 @@ func DryRun(hostName string, verbose bool) (string, error) {
 }
 
 func readConfigs(hostName string, verbose bool) (config, error) {
+	// TODO: make this dynamic
+	usingBitwarden := true
+
 	hostConfig, ok := hostToConfig[hostName]
 	if !ok {
 		return nil, fmt.Errorf("unrecognized host: %s", hostName)
 	}
 
 	configMap := make(map[string]string)
-	if err := filesUnmarshalInto(hostName, verbose, configMap); err != nil {
+
+	// read files
+	fileMap, err := readFiles(hostName, verbose)
+	if err != nil {
 		return nil, fmt.Errorf("error reading file configs: %v", err)
 	}
 
-	if err := envUnmarshalInto(configMap); err != nil {
-		return nil, fmt.Errorf("error reading env into map: %v", err)
+	// decode files
+	if err := decode(fileMap, configMap); err != nil {
+		return nil, fmt.Errorf("error decoding file configs into a map: %v", err)
 	}
 
+	// read env
+	envMap, err := readEnv()
+	if err != nil {
+		return nil, fmt.Errorf("error reading env: %v", err)
+	}
+
+	// decode env
+	if err := decode(envMap, configMap); err != nil {
+		return nil, fmt.Errorf("error decoding env into a map: %v", err)
+	}
+
+	if usingBitwarden {
+		// read bitwarden secrets
+		bitwardenSecrets, err := readBitwardenSecrets(configMap)
+		if err != nil {
+			return nil, fmt.Errorf("error reading env: %v", err)
+		}
+
+		// decode bitwarden secrets
+		if err := decode(bitwardenSecrets, configMap); err != nil {
+			return nil, fmt.Errorf("error decoding bitwarden secrets into a map: %v", err)
+		}
+	}
+
+	if err := decode(configMap, hostConfig); err != nil {
+		return nil, fmt.Errorf("error unmarshalling all configs into host config: %v", err)
+	}
+
+	return hostConfig, nil
+}
+
+func readFiles(hostName string, verbose bool) (map[string]string, error) {
+	m := make(map[string]string)
+	hostConfigFile := filepath.Join(configDir, fmt.Sprintf("%s.yml", hostName))
+	for _, file := range []string{fallbackConfigFile, hostConfigFile} {
+		data, err := os.ReadFile(file)
+		if errors.Is(err, os.ErrNotExist) {
+			if verbose {
+				fmt.Fprintf(os.Stderr, "warning: %s config file not found\n", file)
+			}
+			continue
+		} else if err != nil {
+			return nil, fmt.Errorf("error reading config file(%s): %v", file, err)
+		}
+		if err := yaml.Unmarshal(data, m); err != nil {
+			return nil, fmt.Errorf("error unmarshalling config file (%s): %v", file, err)
+		}
+	}
+	return m, nil
+}
+
+func readEnv() (map[string]string, error) {
+	environ := os.Environ()
+	envAsMap := make(map[string]string, len(environ))
+	for _, entry := range environ {
+		if entry != "" {
+			key, value, err := split(entry)
+			if err != nil {
+				return nil, fmt.Errorf("error splitting: %v", err)
+			}
+			envAsMap[key] = value
+		}
+	}
+	return envAsMap, nil
+}
+
+func readBitwardenSecrets(configMap map[string]string) (map[string]string, error) {
+	// read bitwarden config
+
+	// decode bitwarden config
 	bitwardenConfig := newBitwardenConfig()
 	if err := decode(configMap, &bitwardenConfig); err != nil {
 		return nil, fmt.Errorf("error reading bitwarden config into a map: %v", err)
@@ -88,7 +165,7 @@ func readConfigs(hostName string, verbose bool) (config, error) {
 		return nil, fmt.Errorf("error: invalid bitwarden configs: %s", fmtTable(results))
 	}
 
-	bwClient, err := client.NewBitwardenClient(
+	bitwardenClient, err := client.NewBitwardenClient(
 		bitwardenConfig.APIURL,
 		bitwardenConfig.IdentityURL,
 		bitwardenConfig.AccessToken,
@@ -100,48 +177,15 @@ func readConfigs(hostName string, verbose bool) (config, error) {
 		return nil, fmt.Errorf("error initializing bitwarden client: %v", err)
 	}
 
-	if err := bwClient.UnmarshalInto(configMap); err != nil {
-		return nil, fmt.Errorf("error filling host config struct with bitwarden secrets: %v", err)
+	// read bitwarden secrets
+	bitwardenSecrets, err := bitwardenClient.Read()
+	if err != nil {
+		return nil, fmt.Errorf("error reading bitwarden secrets: %v", err)
 	}
 
-	if err := decode(configMap, hostConfig); err != nil {
-		return nil, fmt.Errorf("error unmarshalling all configs into host config: %v", err)
-	}
+	// decode bitwarden secrets
 
-	return hostConfig, nil
-}
-
-func filesUnmarshalInto(hostName string, verbose bool, target map[string]string) error {
-	hostConfigFile := filepath.Join(configDir, fmt.Sprintf("%s.yml", hostName))
-	for _, file := range []string{fallbackConfigFile, hostConfigFile} {
-		data, err := os.ReadFile(file)
-		if errors.Is(err, os.ErrNotExist) {
-			if verbose {
-				fmt.Fprintf(os.Stderr, "warning: %s config file not found\n", file)
-			}
-			continue
-		} else if err != nil {
-			return fmt.Errorf("error reading config file(%s): %v", file, err)
-		}
-		if err := yaml.Unmarshal(data, target); err != nil {
-			return fmt.Errorf("error unmarshalling config file (%s): %v", file, err)
-		}
-	}
-	return nil
-}
-
-func envUnmarshalInto(target map[string]string) error {
-	environ := os.Environ()
-	for _, entry := range environ {
-		if entry != "" {
-			key, value, err := split(entry)
-			if err != nil {
-				return fmt.Errorf("error splitting: %v", err)
-			}
-			target[key] = value
-		}
-	}
-	return nil
+	return bitwardenSecrets, nil
 }
 
 func split(entry string) (string, string, error) {
