@@ -3,7 +3,6 @@ package main
 import (
 	"os"
 
-	"github.com/dannyvelas/homelab/internal/env"
 	"github.com/spf13/cobra"
 )
 
@@ -21,9 +20,9 @@ func execute() {
 	}
 }
 
-func initialize(env env.Env) {
+func initialize() {
 	var verbose bool
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose mode")
-	rootCmd.AddCommand(getCmd(env, verbose))
+	rootCmd.AddCommand(getCmd(verbose))
 	rootCmd.AddCommand(setCmd())
 }
