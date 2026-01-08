@@ -9,21 +9,21 @@ import (
 	"github.com/goccy/go-yaml"
 )
 
-var _ unvalidatedReader = fileProvider{}
+var _ unvalidatedReader = fileReader{}
 
-type fileProvider struct {
+type fileReader struct {
 	hostName string
 	verbose  bool
 }
 
-func newFileProvider(hostName string, verbose bool) fileProvider {
-	return fileProvider{
+func newFileReader(hostName string, verbose bool) fileReader {
+	return fileReader{
 		hostName: hostName,
 		verbose:  verbose,
 	}
 }
 
-func (p fileProvider) ReadUnvalidated() (map[string]string, error) {
+func (p fileReader) ReadUnvalidated() (map[string]string, error) {
 	m := make(map[string]string)
 	hostConfigFile := filepath.Join(configDir, fmt.Sprintf("%s.yml", p.hostName))
 	for _, file := range []string{fallbackConfigFile, hostConfigFile} {

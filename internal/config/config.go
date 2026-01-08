@@ -23,7 +23,7 @@ type fillableConfig interface {
 	FillInKeys() error
 }
 
-func validateStruct(v any) (map[string]string, bool, error) {
+func validateConfig(v any) (map[string]string, bool, error) {
 	results := make(map[string]string)
 	ok := true
 

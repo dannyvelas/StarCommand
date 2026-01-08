@@ -18,8 +18,10 @@ func getConfigCmd(verbose bool) *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			host := args[0]
+			fullConfig := config.NewFullConfig(host, verbose)
+
 			if dryRun {
-				validation, err := config.DryRun(host, verbose)
+				validation, err := fullConfig.DryRun(host, verbose)
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 					os.Exit(1)
@@ -29,7 +31,7 @@ func getConfigCmd(verbose bool) *cobra.Command {
 				return
 			}
 
-			config, err := config.Resolve(host, verbose)
+			config, err := fullConfig.ReadValidated()
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)

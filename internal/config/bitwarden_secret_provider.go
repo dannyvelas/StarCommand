@@ -6,25 +6,25 @@ import (
 	"github.com/dannyvelas/homelab/internal/client"
 )
 
-var _ unvalidatedReader = bitwardenSecretProvider{}
+var _ unvalidatedReader = bitwardenSecretReader{}
 
-type bitwardenSecretProvider struct {
-	bitwardenCredProvider bitwardenCredProvider
+type bitwardenSecretReader struct {
+	bitwardenCredReader bitwardenCredReader
 }
 
-func newBitwardenSecretProvider(configMap map[string]string) bitwardenSecretProvider {
-	return bitwardenSecretProvider{
-		bitwardenCredProvider: newBitwardenCredProvider(configMap),
+func newBitwardenSecretReader(configMap map[string]string) bitwardenSecretReader {
+	return bitwardenSecretReader{
+		bitwardenCredReader: newBitwardenCredReader(configMap),
 	}
 }
 
-func (p bitwardenSecretProvider) ReadUnvalidated() (map[string]string, error) {
+func (p bitwardenSecretReader) ReadUnvalidated() (map[string]string, error) {
 	config := newBitwardenConfig()
-	if err := UnmarshalInto(p.bitwardenCredProvider, &config); err != nil {
+	if err := UnmarshalInto(p.bitwardenCredReader, &config); err != nil {
 		return nil, fmt.Errorf("error unmarshalling bitwarden creds: %v", err)
 	}
 
-	results, ok, err := validateStruct(config)
+	results, ok, err := validateConfig(config)
 	if err != nil {
 		return nil, fmt.Errorf("error validating bitwarden config: %v", err)
 	} else if !ok {
@@ -43,8 +43,7 @@ func (p bitwardenSecretProvider) ReadUnvalidated() (map[string]string, error) {
 		return nil, fmt.Errorf("error initializing bitwarden client: %v", err)
 	}
 
-	// read bitwarden secrets
-	bitwardenSecrets, err := bitwardenClient.Read()
+	bitwardenSecrets, err := bitwardenClient.ReadSecrets()
 	if err != nil {
 		return nil, fmt.Errorf("error reading bitwarden secrets: %v", err)
 	}

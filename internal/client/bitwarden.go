@@ -34,36 +34,21 @@ func NewBitwardenClient(apiURL, identityURL, accessToken, organizationID, projec
 	}, nil
 }
 
-func (c BitwardenClient) Read() (map[string]string, error) {
-	return map[string]string{}, nil
-	//rv := reflect.ValueOf(v)
-	//if rv.Kind() != reflect.Pointer {
-	//	return fmt.Errorf("error: expected pointer argument to Decode")
-	//}
+func (c BitwardenClient) ReadSecrets() (map[string]string, error) {
+	m := make(map[string]string)
+	listResponse, err := c.client.Secrets().List(c.organizationID)
+	if err != nil {
+		return nil, fmt.Errorf("error listing secrets: %v", err)
+	}
 
-	//listResponse, err := c.client.Secrets().List(c.organizationID)
-	//if err != nil {
-	//	return fmt.Errorf("error listing secrets: %v", err)
-	//}
+	for _, secret := range listResponse.Data {
+		secretData, err := c.client.Secrets().Get(secret.ID)
+		if err != nil {
+			return nil, fmt.Errorf("error getting secret: %v", err)
+		}
 
-	//tagToFieldMap, err := helpers.GetTagToFieldMap(v, "bw", "json")
-	//if err != nil {
-	//	return fmt.Errorf("error getting tag to field map: %v", err)
-	//}
+		m[secret.Key] = secretData.Value
+	}
 
-	// for _, secret := range listResponse.Data {
-	//	field, ok := tagToFieldMap[secret.Key]
-	//	if !ok {
-	//		continue
-	//	}
-
-	//	secretData, err := c.client.Secrets().Get(secret.ID)
-	//	if err != nil {
-	//		return fmt.Errorf("error getting secret: %v", err)
-	//	}
-
-	//	field.Value.SetString(secretData.Value)
-	//}
-
-	// return nil
+	return m, nil
 }

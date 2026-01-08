@@ -1,17 +1,17 @@
 package config
 
-var _ unvalidatedReader = bitwardenCredProvider{}
+var _ unvalidatedReader = bitwardenCredReader{}
 
-type bitwardenCredProvider struct {
+type bitwardenCredReader struct {
 	configMap map[string]string
 }
 
-func newBitwardenCredProvider(configMap map[string]string) bitwardenCredProvider {
-	return bitwardenCredProvider{
+func newBitwardenCredReader(configMap map[string]string) bitwardenCredReader {
+	return bitwardenCredReader{
 		configMap: configMap,
 	}
 }
 
-func (p bitwardenCredProvider) ReadUnvalidated() (map[string]string, error) {
+func (p bitwardenCredReader) ReadUnvalidated() (map[string]string, error) {
 	return p.configMap, nil
 }

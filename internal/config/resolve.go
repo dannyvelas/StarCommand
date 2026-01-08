@@ -23,7 +23,7 @@ type fullConfig struct {
 	verbose  bool
 }
 
-func newFullConfig(hostName string, verbose bool) fullConfig {
+func NewFullConfig(hostName string, verbose bool) fullConfig {
 	return fullConfig{
 		hostName: hostName,
 		verbose:  verbose,
@@ -41,7 +41,7 @@ func (p fullConfig) ReadValidated() (map[string]string, error) {
 		return nil, fmt.Errorf("error transforming map to host config: %v", err)
 	}
 
-	validateResult, ok, err := validateStruct(hostConfig)
+	validateResult, ok, err := validateConfig(hostConfig)
 	if err != nil {
 		return nil, fmt.Errorf("error validating config: %v", err)
 	} else if !ok {
@@ -64,17 +64,17 @@ func (p fullConfig) ReadUnvalidated() (map[string]string, error) {
 	configMap := make(map[string]string)
 
 	// read files
-	if err := UnmarshalInto(newFileProvider(p.hostName, p.verbose), configMap); err != nil {
+	if err := UnmarshalInto(newFileReader(p.hostName, p.verbose), configMap); err != nil {
 		return nil, fmt.Errorf("error unmarshalling files to map: %v", err)
 	}
 
 	// read env
-	if err := UnmarshalInto(newEnvProvider(), configMap); err != nil {
+	if err := UnmarshalInto(newEnvReader(), configMap); err != nil {
 		return nil, fmt.Errorf("error unmarshalling env to map: %v", err)
 	}
 
 	if usingBitwarden {
-		if err := UnmarshalInto(newBitwardenSecretProvider(configMap), configMap); err != nil {
+		if err := UnmarshalInto(newBitwardenSecretReader(configMap), configMap); err != nil {
 			return nil, fmt.Errorf("error unmarshalling bitwarden secrets to map: %v", err)
 		}
 	}
@@ -88,7 +88,7 @@ func (p fullConfig) DryRun(hostName string, verbose bool) (string, error) {
 		return "", fmt.Errorf("error reading configs: %v", err)
 	}
 
-	validateResult, _, err := validateStruct(hostConfig)
+	validateResult, _, err := validateConfig(hostConfig)
 	if err != nil {
 		return "", fmt.Errorf("error validating config: %v", err)
 	}

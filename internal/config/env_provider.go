@@ -6,15 +6,15 @@ import (
 	"strings"
 )
 
-var _ unvalidatedReader = envProvider{}
+var _ unvalidatedReader = envReader{}
 
-type envProvider struct{}
+type envReader struct{}
 
-func newEnvProvider() envProvider {
-	return envProvider{}
+func newEnvReader() envReader {
+	return envReader{}
 }
 
-func (p envProvider) ReadUnvalidated() (map[string]string, error) {
+func (p envReader) ReadUnvalidated() (map[string]string, error) {
 	environ := os.Environ()
 	envAsMap := make(map[string]string, len(environ))
 	for _, entry := range environ {
