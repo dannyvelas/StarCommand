@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/bitwarden/sdk-go"
-	"github.com/dannyvelas/homelab/internal/helpers"
 )
 
 type BitwardenClient struct {
@@ -17,10 +16,6 @@ func NewBitwardenClient(apiURL, identityURL, accessToken, organizationID, projec
 	bitwardenClient, err := sdk.NewBitwardenClient(&apiURL, &identityURL)
 	if err != nil {
 		return BitwardenClient{}, fmt.Errorf("error initializing bitwarden client: %v", err)
-	}
-
-	if stateFile == "" {
-		stateFile = helpers.AtProjectRoot(".bw_state")
 	}
 
 	if err := bitwardenClient.AccessTokenLogin(accessToken, &stateFile); err != nil {
