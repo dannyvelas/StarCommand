@@ -1,5 +1,13 @@
 package config
 
 type provider interface {
-	Decode(target any) error
+	UnmarshalInto(target any) error
+}
+
+type validatedReader interface {
+	ReadValidated() (map[string]string, error)
+}
+
+type unvalidatedReader interface {
+	ReadUnvalidated() (map[string]string, error)
 }
