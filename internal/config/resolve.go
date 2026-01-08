@@ -76,13 +76,8 @@ func readConfigs(hostName string, verbose bool) (config, error) {
 		return nil, fmt.Errorf("error reading env into map: %v", err)
 	}
 
-	mapProvider, err := newMapProvider(configMap)
-	if err != nil {
-		return nil, fmt.Errorf("error initializing map provider: %v", err)
-	}
-
 	bitwardenConfig := newBitwardenConfig()
-	if err := mapProvider.UnmarshalInto(&bitwardenConfig); err != nil {
+	if err := decode(configMap, &bitwardenConfig); err != nil {
 		return nil, fmt.Errorf("error reading bitwarden config into a map: %v", err)
 	}
 
@@ -109,12 +104,7 @@ func readConfigs(hostName string, verbose bool) (config, error) {
 		return nil, fmt.Errorf("error filling host config struct with bitwarden secrets: %v", err)
 	}
 
-	mapProvider, err = newMapProvider(configMap)
-	if err != nil {
-		return nil, fmt.Errorf("error initializing map provider: %v", err)
-	}
-
-	if err := mapProvider.UnmarshalInto(hostConfig); err != nil {
+	if err := decode(configMap, hostConfig); err != nil {
 		return nil, fmt.Errorf("error unmarshalling all configs into host config: %v", err)
 	}
 

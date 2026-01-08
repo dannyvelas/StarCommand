@@ -48,6 +48,7 @@
 - [ ] migrate all variables to "./configs" dir, effectively deleting all ansible and terraform config files
 - [ ] test if you can actually store c.client.Secrets() in a variable in client/bitwarden.go
 - [x] maybe rename "resolve" package in go
+- [ ] make it so that reading from bitwarden is optional. now it is required.
 
 ## terraform-provider-proxmox repo
 - [x] make PR to correct the steps necessary to run `make example`
