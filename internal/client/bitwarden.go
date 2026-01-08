@@ -2,7 +2,6 @@ package client
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/bitwarden/sdk-go"
 	"github.com/dannyvelas/homelab/internal/helpers"
@@ -35,35 +34,36 @@ func NewBitwardenClient(apiURL, identityURL, accessToken, organizationID, projec
 	}, nil
 }
 
-func (c BitwardenClient) (v any) error {
-	rv := reflect.ValueOf(v)
-	if rv.Kind() != reflect.Pointer {
-		return fmt.Errorf("error: expected pointer argument to Decode")
-	}
+func (c BitwardenClient) Read() (map[string]string, error) {
+	return map[string]string{}, nil
+	//rv := reflect.ValueOf(v)
+	//if rv.Kind() != reflect.Pointer {
+	//	return fmt.Errorf("error: expected pointer argument to Decode")
+	//}
 
-	listResponse, err := c.client.Secrets().List(c.organizationID)
-	if err != nil {
-		return fmt.Errorf("error listing secrets: %v", err)
-	}
+	//listResponse, err := c.client.Secrets().List(c.organizationID)
+	//if err != nil {
+	//	return fmt.Errorf("error listing secrets: %v", err)
+	//}
 
-	tagToFieldMap, err := helpers.GetTagToFieldMap(v, "bw", "json")
-	if err != nil {
-		return fmt.Errorf("error getting tag to field map: %v", err)
-	}
+	//tagToFieldMap, err := helpers.GetTagToFieldMap(v, "bw", "json")
+	//if err != nil {
+	//	return fmt.Errorf("error getting tag to field map: %v", err)
+	//}
 
-	for _, secret := range listResponse.Data {
-		field, ok := tagToFieldMap[secret.Key]
-		if !ok {
-			continue
-		}
+	// for _, secret := range listResponse.Data {
+	//	field, ok := tagToFieldMap[secret.Key]
+	//	if !ok {
+	//		continue
+	//	}
 
-		secretData, err := c.client.Secrets().Get(secret.ID)
-		if err != nil {
-			return fmt.Errorf("error getting secret: %v", err)
-		}
+	//	secretData, err := c.client.Secrets().Get(secret.ID)
+	//	if err != nil {
+	//		return fmt.Errorf("error getting secret: %v", err)
+	//	}
 
-		field.Value.SetString(secretData.Value)
-	}
+	//	field.Value.SetString(secretData.Value)
+	//}
 
-	return nil
+	// return nil
 }
