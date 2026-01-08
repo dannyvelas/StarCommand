@@ -9,23 +9,23 @@ var hostToConfig = map[string]config{
 }
 
 var (
-	_ validatedReader   = fullConfig{}
-	_ unvalidatedReader = fullConfig{}
+	_ validatedReader   = fullConfigReader{}
+	_ unvalidatedReader = fullConfigReader{}
 )
 
-type fullConfig struct {
+type fullConfigReader struct {
 	hostName string
 	verbose  bool
 }
 
-func NewFullConfig(hostName string, verbose bool) fullConfig {
-	return fullConfig{
+func NewFullConfig(hostName string, verbose bool) fullConfigReader {
+	return fullConfigReader{
 		hostName: hostName,
 		verbose:  verbose,
 	}
 }
 
-func (p fullConfig) ReadValidated() (map[string]string, error) {
+func (p fullConfigReader) ReadValidated() (map[string]string, error) {
 	hostConfig := hostToConfig[p.hostName]
 	if err := UnmarshalInto(p, hostConfig); err != nil {
 		return nil, fmt.Errorf("error reading host config into struct: %v", err)
@@ -52,7 +52,7 @@ func (p fullConfig) ReadValidated() (map[string]string, error) {
 	return configMap, nil
 }
 
-func (p fullConfig) ReadUnvalidated() (map[string]string, error) {
+func (p fullConfigReader) ReadUnvalidated() (map[string]string, error) {
 	// TODO: make this dynamic
 	usingBitwarden := true
 
@@ -77,7 +77,7 @@ func (p fullConfig) ReadUnvalidated() (map[string]string, error) {
 	return configMap, nil
 }
 
-func (p fullConfig) DryRun() (string, error) {
+func (p fullConfigReader) DryRun() (string, error) {
 	hostConfig := hostToConfig[p.hostName]
 	if err := UnmarshalInto(p, hostConfig); err != nil {
 		return "", fmt.Errorf("error reading host config into struct: %v", err)
