@@ -55,12 +55,7 @@ func (p *proxmoxConfig) Validate() (map[string]string, bool, error) {
 		}
 	}
 
-	nodeCIDRAddressStatus, ok := results["node_cidr_address"]
-	if !ok {
-		return nil, false, fmt.Errorf("missing validation for node_cidr_address")
-	}
-
-	if nodeCIDRAddressStatus == statusLoaded {
+	if results["node_cidr_address"] == statusLoaded {
 		if _, err := netip.ParsePrefix(p.NodeCIDRAddress); err != nil {
 			results["node_cidr_address"] = fmt.Sprintf("'%s' is not a valid CIDR: %v\n", p.NodeCIDRAddress, err)
 			ok = false
