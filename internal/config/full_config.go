@@ -2,12 +2,7 @@ package config
 
 import (
 	"fmt"
-	"path/filepath"
 )
-
-const configDir = "./config"
-
-var fallbackConfigFile = filepath.Join(configDir, "all.yml")
 
 var hostToConfig = map[string]config{
 	"proxmox": newProxmoxConfig(),

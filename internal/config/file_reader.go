@@ -9,6 +9,10 @@ import (
 	"github.com/goccy/go-yaml"
 )
 
+const configDir = "./config"
+
+var fallbackConfigFile = filepath.Join(configDir, "all.yml")
+
 var _ unvalidatedReader = fileReader{}
 
 type fileReader struct {
