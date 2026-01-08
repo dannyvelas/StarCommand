@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 
 	"github.com/dannyvelas/homelab/internal/client"
-	"github.com/dannyvelas/homelab/internal/env"
 	"github.com/dannyvelas/homelab/internal/helpers"
 	"github.com/goccy/go-yaml"
 )
@@ -21,8 +20,8 @@ var hostToConfig = map[string]config{
 	"proxmox": newProxmoxConfig(),
 }
 
-func Resolve(hostName string, env env.Env, verbose bool) (map[string]string, error) {
-	hostConfig, err := readConfigs(hostName, env, verbose)
+func Resolve(hostName string, verbose bool) (map[string]string, error) {
+	hostConfig, err := readConfigs(hostName, verbose)
 	if err != nil {
 		return nil, fmt.Errorf("error reading configs: %v", err)
 	}
@@ -48,8 +47,8 @@ func Resolve(hostName string, env env.Env, verbose bool) (map[string]string, err
 	return m, nil
 }
 
-func DryRun(hostName string, env env.Env, verbose bool) (string, error) {
-	hostConfig, err := readConfigs(hostName, env, verbose)
+func DryRun(hostName string, verbose bool) (string, error) {
+	hostConfig, err := readConfigs(hostName, verbose)
 	if err != nil {
 		return "", fmt.Errorf("error reading configs: %v", err)
 	}
@@ -62,7 +61,7 @@ func DryRun(hostName string, env env.Env, verbose bool) (string, error) {
 	return fmtTable(validateResult), nil
 }
 
-func readConfigs(hostName string, env env.Env, verbose bool) (config, error) {
+func readConfigs(hostName string, verbose bool) (config, error) {
 	bitwardenConfig := defaultBitwardenConfig
 
 	hostConfig, ok := hostToConfig[hostName]
@@ -89,7 +88,7 @@ func readConfigs(hostName string, env env.Env, verbose bool) (config, error) {
 		}
 	}
 
-	if missingBitwardenFields := getMissingBitwardenFields(env); len(missingBitwardenFields) > 0 {
+	if missingBitwardenFields := getMissingBitwardenFields(); len(missingBitwardenFields) > 0 {
 		fmt.Fprintf(os.Stderr, "warning: some bitwarden ENV variables are missing:%s\nBitwarden secrets will not be loaded.\n", helpers.StringSliceToBulletedList(missingBitwardenFields))
 		return hostConfig, nil
 	}
@@ -97,10 +96,10 @@ func readConfigs(hostName string, env env.Env, verbose bool) (config, error) {
 	bwClient, err := client.NewBitwardenClient(
 		bitwardenConfig.BitwardenAPIURL,
 		bitwardenConfig.BitwardenIdentityURL,
-		env.BitwardenAccessToken,
-		env.BitwardenOrganizationID,
-		env.BitwardenProjectID,
-		env.BitwardenStateFilePath,
+		"",
+		"",
+		"",
+		"",
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error initializing bitwarden client: %v", err)
@@ -113,20 +112,20 @@ func readConfigs(hostName string, env env.Env, verbose bool) (config, error) {
 	return hostConfig, nil
 }
 
-func getMissingBitwardenFields(env env.Env) []string {
+func getMissingBitwardenFields() []string {
 	missing := make([]string, 0)
 
-	if env.BitwardenAccessToken == "" {
-		missing = append(missing, "BWS_ACCESS_TOKEN")
-	}
+	//if env.BitwardenAccessToken == "" {
+	//	missing = append(missing, "BWS_ACCESS_TOKEN")
+	//}
 
-	if env.BitwardenProjectID == "" {
-		missing = append(missing, "BWS_PROJECT_ID")
-	}
+	//if env.BitwardenProjectID == "" {
+	//	missing = append(missing, "BWS_PROJECT_ID")
+	//}
 
-	if env.BitwardenOrganizationID == "" {
-		missing = append(missing, "BWS_ORGANIZATION_ID")
-	}
+	//if env.BitwardenOrganizationID == "" {
+	//	missing = append(missing, "BWS_ORGANIZATION_ID")
+	//}
 
 	return missing
 }

@@ -6,11 +6,10 @@ import (
 	"os"
 
 	"github.com/dannyvelas/homelab/internal/config"
-	"github.com/dannyvelas/homelab/internal/env"
 	"github.com/spf13/cobra"
 )
 
-func getConfigCmd(env env.Env, verbose bool) *cobra.Command {
+func getConfigCmd(verbose bool) *cobra.Command {
 	var dryRun bool
 
 	getConfigCmd := &cobra.Command{
@@ -20,7 +19,7 @@ func getConfigCmd(env env.Env, verbose bool) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			host := args[0]
 			if dryRun {
-				validation, err := config.DryRun(host, env, verbose)
+				validation, err := config.DryRun(host, verbose)
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 					os.Exit(1)
@@ -30,7 +29,7 @@ func getConfigCmd(env env.Env, verbose bool) *cobra.Command {
 				return
 			}
 
-			config, err := config.Resolve(host, env, verbose)
+			config, err := config.Resolve(host, verbose)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
