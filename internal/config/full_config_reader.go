@@ -28,7 +28,9 @@ func NewFullConfig(hostName string, verbose bool) fullConfigReader {
 
 func (p fullConfigReader) ReadValidated() (map[string]string, error) {
 	hostConfig := hostToConfig[p.hostName]
-	if err := UnmarshalInto(p, hostConfig); err != nil {
+	if err := UnmarshalInto(p, hostConfig); errors.Is(err, ErrInvalidFields) {
+		return nil, err
+	} else if err != nil {
 		return nil, fmt.Errorf("error reading host config into struct: %v", err)
 	}
 
@@ -70,7 +72,7 @@ func (p fullConfigReader) ReadUnvalidated() (map[string]string, error) {
 	}
 
 	if usingBitwarden {
-		if err := UnmarshalInto(newBitwardenSecretReader(configMap), &configMap); errors.Is(err, errInvalidFields) {
+		if err := UnmarshalInto(newBitwardenSecretReader(configMap), &configMap); errors.Is(err, ErrInvalidFields) {
 			return nil, err
 		} else if err != nil {
 			return nil, fmt.Errorf("error unmarshalling bitwarden secrets to map: %v", err)
@@ -82,9 +84,7 @@ func (p fullConfigReader) ReadUnvalidated() (map[string]string, error) {
 
 func (p fullConfigReader) DryRun() (string, error) {
 	hostConfig := hostToConfig[p.hostName]
-	if err := UnmarshalInto(p, hostConfig); errors.Is(err, errInvalidFields) {
-		return err.Error(), nil
-	} else if err != nil {
+	if err := UnmarshalInto(p, hostConfig); err != nil && !errors.Is(err, ErrInvalidFields) {
 		return "", fmt.Errorf("error reading host config into struct: %v", err)
 	}
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 
@@ -31,13 +32,16 @@ func getConfigCmd(verbose bool) *cobra.Command {
 				return
 			}
 
-			config, err := fullConfig.ReadValidated()
-			if err != nil {
+			c, err := fullConfig.ReadValidated()
+			if errors.Is(err, config.ErrInvalidFields) {
+				fmt.Fprintf(os.Stderr, "Some required fields were missing:\n%s\n", err.Error())
+				os.Exit(1)
+			} else if err != nil {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
 			}
 
-			bytes, err := json.MarshalIndent(config, "", "    ")
+			bytes, err := json.MarshalIndent(c, "", "    ")
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "error marshalling to JSON: %s", err.Error())
 				os.Exit(1)

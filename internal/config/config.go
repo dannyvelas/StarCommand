@@ -57,7 +57,7 @@ func validateConfig(v any) (map[string]string, bool, error) {
 
 func UnmarshalInto(r unvalidatedReader, target any) error {
 	m, err := r.ReadUnvalidated()
-	if errors.Is(err, errInvalidFields) {
+	if errors.Is(err, ErrInvalidFields) {
 		return err
 	} else if err != nil {
 		return fmt.Errorf("error reading: %v", err)

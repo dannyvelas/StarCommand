@@ -8,7 +8,7 @@ import (
 	"text/template"
 )
 
-var errInvalidFields = errors.New("")
+var ErrInvalidFields = errors.New("")
 
 // newErrInvalidFields takes a map and returns a formatted error
 func newErrInvalidFields(data map[string]string) error {
@@ -59,5 +59,5 @@ func newErrInvalidFields(data map[string]string) error {
 		panic(err)
 	}
 
-	return fmt.Errorf("%w%s", errInvalidFields, buf.String())
+	return fmt.Errorf("%w%s", ErrInvalidFields, buf.String())
 }
