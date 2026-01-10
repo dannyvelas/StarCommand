@@ -26,7 +26,7 @@ type fillableConfig interface {
 
 func validateConfig(v any) (map[string]string, bool, error) {
 	results := make(map[string]string)
-	ok := true
+	valid := true
 
 	tagToFieldMap, err := helpers.GetTagToFieldMap(v, "bw", "json")
 	if err != nil {
@@ -40,7 +40,7 @@ func validateConfig(v any) (map[string]string, bool, error) {
 
 		if field.Value.IsZero() {
 			results[tag] = statusMissing
-			ok = false
+			valid = false
 		} else {
 			results[tag] = statusLoaded
 		}
@@ -51,8 +51,8 @@ func validateConfig(v any) (map[string]string, bool, error) {
 		return results, ok, nil
 	}
 
-	results, ok = config.Validate(results, ok)
-	return results, ok, nil
+	results, valid = config.Validate(results, valid)
+	return results, valid, nil
 }
 
 func UnmarshalInto(r unvalidatedReader, target any) error {
