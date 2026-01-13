@@ -55,6 +55,7 @@
 - [ ] rename "results" to diagnosticMap
 - [ ] rename the name that the receivers of `*reader` structs use to refer to "self". right now it's "p" but that kinda doesn't make sense
 - [ ] remove "unvalidated" from everything. we can just call it readResult or something
+- [ ] probably make `ErrInvalidFields` not public anymore
 
 ## terraform-provider-proxmox repo
 - [x] make PR to correct the steps necessary to run `make example`
