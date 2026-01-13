@@ -13,5 +13,5 @@ func newBitwardenCredReader(configMap map[string]string) bitwardenCredReader {
 }
 
 func (p bitwardenCredReader) ReadUnvalidated() (unvalidatedResult, error) {
-	return simpleUnvalidatedResult{configMap: p.configMap}, nil
+	return simpleUnvalidatedResult(p), nil
 }
