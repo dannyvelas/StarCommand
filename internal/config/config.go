@@ -57,30 +57,19 @@ func validateConfig(v any) (map[string]string, error) {
 	return results, nil
 }
 
-func UnmarshalInto(r unvalidatedReader, target any) (map[string]string, error) {
+func UnmarshalInto(r unvalidatedReader, target any) error {
 	m, err := r.ReadUnvalidated()
-	if err != nil && !errors.Is(err, ErrInvalidFields) {
-		return nil, fmt.Errorf("error reading: %v", err)
-	}
-
-	diagnosticMap := getDiagnosticMapFromReader(r)
 	if errors.Is(err, ErrInvalidFields) {
-		return diagnosticMap, err
+		return err
+	} else if err != nil {
+		return fmt.Errorf("error reading: %v", err)
 	}
 
 	if err := decode(m, target); err != nil {
-		return nil, fmt.Errorf("error converting map into target: %v", err)
+		return fmt.Errorf("error converting map into target: %v", err)
 	}
 
-	return diagnosticMap, nil
-}
-
-func getDiagnosticMapFromReader(r unvalidatedReader) map[string]string {
-	diagnosticReader, ok := r.(diagnosticReader)
-	if !ok {
-		return nil
-	}
-	return diagnosticReader.GetDiagnosticMap()
+	return nil
 }
 
 func decode(src, dest any) error {

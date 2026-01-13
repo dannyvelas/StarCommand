@@ -26,7 +26,7 @@ func newBitwardenSecretReader(configMap map[string]string) *bitwardenSecretReade
 func (p *bitwardenSecretReader) ReadUnvalidated() (map[string]string, error) {
 	config := newBitwardenConfig()
 
-	if _, err := UnmarshalInto(p.bitwardenCredReader, &config); err != nil {
+	if err := UnmarshalInto(p.bitwardenCredReader, &config); err != nil {
 		return nil, fmt.Errorf("error unmarshalling bitwarden creds: %v", err)
 	}
 
