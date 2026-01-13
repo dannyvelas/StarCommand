@@ -65,10 +65,10 @@ func UnmarshalInto(r unvalidatedReader, target any) (map[string]string, error) {
 
 	diagnosticMap := getDiagnosticMapFromUnvalidatedResult(unvalidatedResult)
 	if errors.Is(err, ErrInvalidFields) {
-		return diagnosticMap, nil
+		return diagnosticMap, ErrInvalidFields
 	}
 
-	if err := decode(unvalidatedResult, target); err != nil {
+	if err := decode(unvalidatedResult.getConfigMap(), target); err != nil {
 		return nil, fmt.Errorf("error converting map into target: %v", err)
 	}
 
