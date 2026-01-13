@@ -1,26 +1,26 @@
 package config
 
-type unvalidatedReader interface {
-	ReadUnvalidated() (unvalidatedResult, error)
+type reader interface {
+	read() (readResult, error)
 }
 
-type unvalidatedResult interface {
+type readResult interface {
 	getConfigMap() map[string]string
 }
 
-type simpleUnvalidatedResult struct {
+type simpleReadResult struct {
 	configMap map[string]string
 }
 
-func (r simpleUnvalidatedResult) getConfigMap() map[string]string {
+func (r simpleReadResult) getConfigMap() map[string]string {
 	return r.configMap
 }
 
-type diagnosticUnvalidatedResult struct {
+type diagnosticReadResult struct {
 	configMap     map[string]string
 	diagnosticMap map[string]string
 }
 
-func (r diagnosticUnvalidatedResult) getConfigMap() map[string]string {
+func (r diagnosticReadResult) getConfigMap() map[string]string {
 	return r.configMap
 }

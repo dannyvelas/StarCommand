@@ -11,7 +11,7 @@ var hostToConfig = map[string]config{
 	"proxmox": newProxmoxConfig(),
 }
 
-var _ unvalidatedReader = (*fullConfigReader)(nil)
+var _ reader = (*fullConfigReader)(nil)
 
 type fullConfigReader struct {
 	hostName string
@@ -54,7 +54,7 @@ func (r *fullConfigReader) ReadValidated() (map[string]string, error) {
 	return configMap, nil
 }
 
-func (r *fullConfigReader) ReadUnvalidated() (unvalidatedResult, error) {
+func (r *fullConfigReader) read() (readResult, error) {
 	// TODO: make this dynamic
 	usingBitwarden := true
 
@@ -77,10 +77,10 @@ func (r *fullConfigReader) ReadUnvalidated() (unvalidatedResult, error) {
 			return nil, fmt.Errorf("error unmarshalling bitwarden secrets to map: %v", err)
 		}
 
-		return diagnosticUnvalidatedResult{configMap: configMap, diagnosticMap: diagnosticMap}, err
+		return diagnosticReadResult{configMap: configMap, diagnosticMap: diagnosticMap}, err
 	}
 
-	return simpleUnvalidatedResult{configMap: configMap}, nil
+	return simpleReadResult{configMap: configMap}, nil
 }
 
 func (r *fullConfigReader) DryRun() (string, error) {

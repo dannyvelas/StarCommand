@@ -7,7 +7,7 @@ import (
 	"github.com/dannyvelas/homelab/internal/client"
 )
 
-var _ unvalidatedReader = (*bitwardenSecretReader)(nil)
+var _ reader = (*bitwardenSecretReader)(nil)
 
 type bitwardenSecretReader struct {
 	bitwardenCredReader bitwardenCredReader
@@ -19,7 +19,7 @@ func newBitwardenSecretReader(configMap map[string]string) *bitwardenSecretReade
 	}
 }
 
-func (r *bitwardenSecretReader) ReadUnvalidated() (unvalidatedResult, error) {
+func (r *bitwardenSecretReader) read() (readResult, error) {
 	config := newBitwardenConfig()
 
 	if _, err := UnmarshalInto(r.bitwardenCredReader, &config); err != nil {
@@ -28,7 +28,7 @@ func (r *bitwardenSecretReader) ReadUnvalidated() (unvalidatedResult, error) {
 
 	results, err := validateConfig(config)
 	if errors.Is(err, ErrInvalidFields) {
-		return diagnosticUnvalidatedResult{configMap: nil, diagnosticMap: results}, ErrInvalidFields
+		return diagnosticReadResult{configMap: nil, diagnosticMap: results}, ErrInvalidFields
 	} else if err != nil {
 		return nil, fmt.Errorf("error validating bitwarden config: %v", err)
 	}
@@ -50,7 +50,7 @@ func (r *bitwardenSecretReader) ReadUnvalidated() (unvalidatedResult, error) {
 		return nil, fmt.Errorf("error reading bitwarden secrets: %v", err)
 	}
 
-	return diagnosticUnvalidatedResult{
+	return diagnosticReadResult{
 		configMap:     bitwardenSecrets,
 		diagnosticMap: results,
 	}, nil

@@ -56,27 +56,26 @@ func validateConfig(v any) (map[string]string, error) {
 	return results, nil
 }
 
-func UnmarshalInto(r unvalidatedReader, target any) (map[string]string, error) {
-	unvalidatedResult, err := r.ReadUnvalidated()
+func UnmarshalInto(r reader, target any) (map[string]string, error) {
+	readResult, err := r.read()
 	if err != nil && !errors.Is(err, ErrInvalidFields) {
 		return nil, fmt.Errorf("error reading: %v", err)
 	}
 
-	diagnosticMap := getDiagnosticMapFromUnvalidatedResult(unvalidatedResult)
+	diagnosticMap := getDiagnosticMap(readResult)
 	if errors.Is(err, ErrInvalidFields) {
 		return diagnosticMap, ErrInvalidFields
 	}
 
-	if err := helpers.FromMap(unvalidatedResult.getConfigMap(), target); err != nil {
+	if err := helpers.FromMap(readResult.getConfigMap(), target); err != nil {
 		return nil, fmt.Errorf("error converting map into target: %v", err)
 	}
 
 	return diagnosticMap, nil
 }
 
-func getDiagnosticMapFromUnvalidatedResult(r unvalidatedResult) map[string]string {
-	switch v := r.(type) {
-	case diagnosticUnvalidatedResult:
+func getDiagnosticMap(r readResult) map[string]string {
+	if v, ok := r.(diagnosticReadResult); ok {
 		return v.diagnosticMap
 	}
 	return nil

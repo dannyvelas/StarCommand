@@ -8,7 +8,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var _ unvalidatedReader = envReader{}
+var _ reader = envReader{}
 
 type envReader struct{}
 
@@ -17,7 +17,7 @@ func newEnvReader() envReader {
 	return envReader{}
 }
 
-func (r envReader) ReadUnvalidated() (unvalidatedResult, error) {
+func (r envReader) read() (readResult, error) {
 	environ := os.Environ()
 	envAsMap := make(map[string]string, len(environ))
 	for _, entry := range environ {
@@ -29,7 +29,7 @@ func (r envReader) ReadUnvalidated() (unvalidatedResult, error) {
 			envAsMap[key] = value
 		}
 	}
-	return simpleUnvalidatedResult{configMap: envAsMap}, nil
+	return simpleReadResult{configMap: envAsMap}, nil
 }
 
 func split(entry string) (string, string, error) {

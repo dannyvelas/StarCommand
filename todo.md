@@ -53,8 +53,8 @@
 - [x] add test so that if `validateConfig` runs for something that doesn't implement `config`, it can return `true`. and if it runs for something that does implement `config`, it can return `false`
   - NOT NECESSARY anymore
 - [ ] rename "results" to diagnosticMap
-- [ ] rename the name that the receivers of `*reader` structs use to refer to "self". right now it's "p" but that kinda doesn't make sense
-- [ ] remove "unvalidated" from everything. we can just call it readResult or something
+- [x] rename the name that the receivers of `*reader` structs use to refer to "self". right now it's "p" but that kinda doesn't make sense
+- [x] remove "unvalidated" from everything. we can just call it readResult or something
 - [ ] probably make `ErrInvalidFields` not public anymore
 - [ ] use a different tag name than "bw". people won't necessarily use bitwarden. use something like "config" instead.
 

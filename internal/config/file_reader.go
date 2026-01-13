@@ -14,7 +14,7 @@ const configDir = "./config"
 
 var fallbackConfigFile = filepath.Join(configDir, "all.yml")
 
-var _ unvalidatedReader = fileReader{}
+var _ reader = fileReader{}
 
 type fileReader struct {
 	hostName string
@@ -28,7 +28,7 @@ func newFileReader(hostName string, verbose bool) fileReader {
 	}
 }
 
-func (r fileReader) ReadUnvalidated() (unvalidatedResult, error) {
+func (r fileReader) read() (readResult, error) {
 	m := make(map[string]string)
 	hostConfigFile := filepath.Join(configDir, fmt.Sprintf("%s.yml", r.hostName))
 	for _, file := range []string{fallbackConfigFile, hostConfigFile} {
@@ -47,5 +47,5 @@ func (r fileReader) ReadUnvalidated() (unvalidatedResult, error) {
 		}
 		maps.Copy(m, tempMap)
 	}
-	return simpleUnvalidatedResult{configMap: m}, nil
+	return simpleReadResult{configMap: m}, nil
 }
