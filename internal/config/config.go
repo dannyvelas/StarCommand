@@ -1,7 +1,6 @@
 package config
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -68,23 +67,11 @@ func UnmarshalInto(r unvalidatedReader, target any) (map[string]string, error) {
 		return diagnosticMap, ErrInvalidFields
 	}
 
-	if err := decode(unvalidatedResult.getConfigMap(), target); err != nil {
+	if err := helpers.FromMap(unvalidatedResult.getConfigMap(), target); err != nil {
 		return nil, fmt.Errorf("error converting map into target: %v", err)
 	}
 
 	return diagnosticMap, nil
-}
-
-func decode(src, dest any) error {
-	bytes, err := json.Marshal(src)
-	if err != nil {
-		return fmt.Errorf("error marshalling map: %v", err)
-	}
-
-	if err := json.Unmarshal(bytes, dest); err != nil {
-		return fmt.Errorf("error unmarshalling map into target: %v", err)
-	}
-	return nil
 }
 
 func getDiagnosticMapFromUnvalidatedResult(r unvalidatedResult) map[string]string {

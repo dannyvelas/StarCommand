@@ -8,6 +8,8 @@ import (
 	"github.com/dannyvelas/homelab/internal/helpers"
 )
 
+var _ config = (*proxmoxConfig)(nil)
+
 type proxmoxConfig struct {
 	// Required
 	SSHPublicKeyPath     string `json:"ssh_public_key_path" required:"true"`

@@ -1,6 +1,8 @@
 package helpers
 
-import "maps"
+import (
+	"maps"
+)
 
 func MergeMaps[K comparable, V any](m1, m2 map[K]V) map[K]V {
 	newMap := make(map[K]V)

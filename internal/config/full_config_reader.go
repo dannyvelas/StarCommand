@@ -46,8 +46,8 @@ func (p *fullConfigReader) ReadValidated() (map[string]string, error) {
 		}
 	}
 
-	configMap := make(map[string]string)
-	if err := decode(hostConfig, configMap); err != nil {
+	configMap, err := helpers.ToMap(hostConfig)
+	if err != nil {
 		return nil, fmt.Errorf("error transforming host config into config map: %v", err)
 	}
 
