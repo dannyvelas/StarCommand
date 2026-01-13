@@ -16,7 +16,7 @@ type proxmoxConfig struct {
 	NodeCIDRAddress      string `json:"node_cidr_address" required:"true"`
 	GatewayAddress       string `json:"gateway_address" required:"true"`
 	PhysicalNIC          string `json:"physical_nic" required:"true"`
-	AdminPassword        string `json:"admin_password" required:"true" bw:"proxmox_admin_password"`
+	AdminPassword        string `json:"admin_password" required:"true" labctl:"proxmox_admin_password"`
 	SSHPort              string `json:"ssh_port" required:"true"`
 	AutoUpdateRebootTime string `json:"auto_update_reboot_time" required:"true"`
 	AdminEmail           string `json:"admin_email" required:"true"`

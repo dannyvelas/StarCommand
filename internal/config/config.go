@@ -27,7 +27,7 @@ func validateConfig(v any) (map[string]string, error) {
 	diagnosticMap := make(map[string]string)
 	valid := true
 
-	tagToFieldMap, err := helpers.GetTagToFieldMap(v, "bw", "json")
+	tagToFieldMap, err := helpers.GetTagToFieldMap(v, "labctl", "json")
 	if err != nil {
 		return nil, fmt.Errorf("error getting tag to field map: %v", err)
 	}

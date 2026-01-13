@@ -57,7 +57,7 @@
 - [x] remove "unvalidated" from everything. we can just call it readResult or something
 - [x] probably make `ErrInvalidFields` not public anymore
   - WONT DO: it's needed for when ssh calls `config.UnmarshalInto`
-- [ ] use a different tag name than "bw". people won't necessarily use bitwarden. use something like "config" instead.
+- [x] use a different tag name than "bw". people won't necessarily use bitwarden. use something like "config" instead.
 
 ## terraform-provider-proxmox repo
 - [x] make PR to correct the steps necessary to run `make example`

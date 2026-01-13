@@ -54,7 +54,7 @@ func FromMap(src map[string]string, dst any) error {
 		}
 
 		// get tag value
-		configTag := queryForTags(field, "bw", []string{"json"})
+		configTag := queryForTags(field, "labctl", []string{"json"})
 		if configTag == "" {
 			continue
 		}
@@ -90,7 +90,7 @@ func ToMap(src any) (map[string]string, error) {
 			continue
 		}
 
-		tag := queryForTags(f, "bw", []string{"json"})
+		tag := queryForTags(f, "labctl", []string{"json"})
 		if tag != "" {
 			dest[tag] = fVal.String()
 		}
