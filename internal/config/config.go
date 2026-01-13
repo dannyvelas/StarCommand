@@ -13,7 +13,7 @@ const (
 )
 
 type config interface {
-	// Validate receives a map of validation results where each element corresponds to a key in the config
+	// Validate receives a diagnostic map where each element corresponds to a key in the config
 	// the second return value will be false if at least one key was invalid. otherwise, it will be true
 	Validate(map[string]string) bool
 }
@@ -24,7 +24,7 @@ type fillableConfig interface {
 }
 
 func validateConfig(v any) (map[string]string, error) {
-	results := make(map[string]string)
+	diagnosticMap := make(map[string]string)
 	valid := true
 
 	tagToFieldMap, err := helpers.GetTagToFieldMap(v, "bw", "json")
@@ -38,22 +38,22 @@ func validateConfig(v any) (map[string]string, error) {
 		}
 
 		if field.Value.IsZero() {
-			results[tag] = statusMissing
+			diagnosticMap[tag] = statusMissing
 			valid = false
 		} else {
-			results[tag] = statusLoaded
+			diagnosticMap[tag] = statusLoaded
 		}
 	}
 
 	if config, ok := v.(config); ok {
-		valid = valid && config.Validate(results)
+		valid = valid && config.Validate(diagnosticMap)
 	}
 
 	if !valid {
-		return results, ErrInvalidFields
+		return diagnosticMap, ErrInvalidFields
 	}
 
-	return results, nil
+	return diagnosticMap, nil
 }
 
 func UnmarshalInto(r reader, target any) (map[string]string, error) {

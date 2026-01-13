@@ -28,14 +28,14 @@ func NewFullConfig(hostName string, verbose bool) *fullConfigReader {
 func (r *fullConfigReader) Read() (map[string]string, error) {
 	hostConfig := hostToConfig[r.hostName]
 
-	diagnosticMap, err := UnmarshalInto(r, hostConfig)
+	diagnosticMapInternalConfig, err := UnmarshalInto(r, hostConfig)
 	if err != nil && !errors.Is(err, ErrInvalidFields) {
 		return nil, fmt.Errorf("error reading host config into struct: %v", err)
 	}
 
-	results, err := validateConfig(hostConfig)
+	diagnosticMapHostConfig, err := validateConfig(hostConfig)
 	if errors.Is(err, ErrInvalidFields) {
-		return nil, fmt.Errorf("invalid or missing fields:\n%s", diagnosticMapToTable(helpers.MergeMaps(diagnosticMap, results)))
+		return nil, fmt.Errorf("invalid or missing fields:\n%s", diagnosticMapToTable(helpers.MergeMaps(diagnosticMapInternalConfig, diagnosticMapHostConfig)))
 	} else if err != nil {
 		return nil, fmt.Errorf("error validating config: %v", err)
 	}
@@ -86,15 +86,15 @@ func (r *fullConfigReader) read() (readResult, error) {
 func (r *fullConfigReader) DryRun() (string, error) {
 	hostConfig := hostToConfig[r.hostName]
 
-	diagnosticMap, err := UnmarshalInto(r, hostConfig)
+	diagnosticMapInternalConfig, err := UnmarshalInto(r, hostConfig)
 	if err != nil && !errors.Is(err, ErrInvalidFields) {
 		return "", fmt.Errorf("error reading host config into struct: %v", err)
 	}
 
-	results, err := validateConfig(hostConfig)
+	diagnosticMapHostConfig, err := validateConfig(hostConfig)
 	if err != nil && !errors.Is(err, ErrInvalidFields) {
 		return "", fmt.Errorf("error validating config: %v", err)
 	}
 
-	return diagnosticMapToTable(helpers.MergeMaps(diagnosticMap, results)), nil
+	return diagnosticMapToTable(helpers.MergeMaps(diagnosticMapInternalConfig, diagnosticMapHostConfig)), nil
 }
