@@ -17,7 +17,7 @@ func newEnvReader() envReader {
 	return envReader{}
 }
 
-func (p envReader) ReadUnvalidated() (unvalidatedResult, error) {
+func (r envReader) ReadUnvalidated() (unvalidatedResult, error) {
 	environ := os.Environ()
 	envAsMap := make(map[string]string, len(environ))
 	for _, entry := range environ {

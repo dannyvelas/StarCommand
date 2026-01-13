@@ -28,14 +28,14 @@ func newFileReader(hostName string, verbose bool) fileReader {
 	}
 }
 
-func (p fileReader) ReadUnvalidated() (unvalidatedResult, error) {
+func (r fileReader) ReadUnvalidated() (unvalidatedResult, error) {
 	m := make(map[string]string)
-	hostConfigFile := filepath.Join(configDir, fmt.Sprintf("%s.yml", p.hostName))
+	hostConfigFile := filepath.Join(configDir, fmt.Sprintf("%s.yml", r.hostName))
 	for _, file := range []string{fallbackConfigFile, hostConfigFile} {
 		tempMap := make(map[string]string)
 		data, err := os.ReadFile(file)
 		if errors.Is(err, os.ErrNotExist) {
-			if p.verbose {
+			if r.verbose {
 				fmt.Fprintf(os.Stderr, "warning: %s config file not found\n", file)
 			}
 			continue

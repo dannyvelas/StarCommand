@@ -25,10 +25,10 @@ func NewFullConfig(hostName string, verbose bool) *fullConfigReader {
 	}
 }
 
-func (p *fullConfigReader) ReadValidated() (map[string]string, error) {
-	hostConfig := hostToConfig[p.hostName]
+func (r *fullConfigReader) ReadValidated() (map[string]string, error) {
+	hostConfig := hostToConfig[r.hostName]
 
-	diagnosticMap, err := UnmarshalInto(p, hostConfig)
+	diagnosticMap, err := UnmarshalInto(r, hostConfig)
 	if err != nil && !errors.Is(err, ErrInvalidFields) {
 		return nil, fmt.Errorf("error reading host config into struct: %v", err)
 	}
@@ -54,14 +54,14 @@ func (p *fullConfigReader) ReadValidated() (map[string]string, error) {
 	return configMap, nil
 }
 
-func (p *fullConfigReader) ReadUnvalidated() (unvalidatedResult, error) {
+func (r *fullConfigReader) ReadUnvalidated() (unvalidatedResult, error) {
 	// TODO: make this dynamic
 	usingBitwarden := true
 
 	configMap := make(map[string]string)
 
 	// read files
-	if _, err := UnmarshalInto(newFileReader(p.hostName, p.verbose), &configMap); err != nil {
+	if _, err := UnmarshalInto(newFileReader(r.hostName, r.verbose), &configMap); err != nil {
 		return nil, fmt.Errorf("error unmarshalling files to map: %v", err)
 	}
 
@@ -83,10 +83,10 @@ func (p *fullConfigReader) ReadUnvalidated() (unvalidatedResult, error) {
 	return simpleUnvalidatedResult{configMap: configMap}, nil
 }
 
-func (p *fullConfigReader) DryRun() (string, error) {
-	hostConfig := hostToConfig[p.hostName]
+func (r *fullConfigReader) DryRun() (string, error) {
+	hostConfig := hostToConfig[r.hostName]
 
-	diagnosticMap, err := UnmarshalInto(p, hostConfig)
+	diagnosticMap, err := UnmarshalInto(r, hostConfig)
 	if err != nil && !errors.Is(err, ErrInvalidFields) {
 		return "", fmt.Errorf("error reading host config into struct: %v", err)
 	}

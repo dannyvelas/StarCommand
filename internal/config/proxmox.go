@@ -35,11 +35,11 @@ func newProxmoxConfig() *proxmoxConfig {
 	}
 }
 
-func (p *proxmoxConfig) Validate(results map[string]string) bool {
+func (c *proxmoxConfig) Validate(results map[string]string) bool {
 	ok := true
 	if results["node_cidr_address"] == statusLoaded {
-		if _, err := netip.ParsePrefix(p.NodeCIDRAddress); err != nil {
-			results["node_cidr_address"] = fmt.Sprintf("'%s' is not a valid CIDR: %v\n", p.NodeCIDRAddress, err)
+		if _, err := netip.ParsePrefix(c.NodeCIDRAddress); err != nil {
+			results["node_cidr_address"] = fmt.Sprintf("'%s' is not a valid CIDR: %v\n", c.NodeCIDRAddress, err)
 			ok = false
 		}
 	}
@@ -47,24 +47,24 @@ func (p *proxmoxConfig) Validate(results map[string]string) bool {
 	return ok
 }
 
-func (p *proxmoxConfig) FillInKeys() error {
+func (c *proxmoxConfig) FillInKeys() error {
 	// ParsePrefix returns the prefix and an error if it's invalid
-	prefix, err := netip.ParsePrefix(p.NodeCIDRAddress)
+	prefix, err := netip.ParsePrefix(c.NodeCIDRAddress)
 	if err != nil {
-		return fmt.Errorf("'%s' is not a valid CIDR: %v", p.NodeCIDRAddress, err)
+		return fmt.Errorf("'%s' is not a valid CIDR: %v", c.NodeCIDRAddress, err)
 	}
-	p.NodeIP = prefix.Addr().String()
+	c.NodeIP = prefix.Addr().String()
 
-	expandedPublicKeyPath, err := helpers.ExpandPath(p.SSHPublicKeyPath)
+	expandedPublicKeyPath, err := helpers.ExpandPath(c.SSHPublicKeyPath)
 	if err != nil {
-		return fmt.Errorf("error expanding path(%s): %v", p.SSHPublicKeyPath, err)
+		return fmt.Errorf("error expanding path(%s): %v", c.SSHPublicKeyPath, err)
 	}
 
 	bytes, err := os.ReadFile(expandedPublicKeyPath)
 	if err != nil {
 		return fmt.Errorf("error reading ssh public key file: %v", err)
 	}
-	p.SSHPublicKey = string(bytes)
+	c.SSHPublicKey = string(bytes)
 
 	return nil
 }
