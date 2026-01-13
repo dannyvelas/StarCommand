@@ -128,3 +128,40 @@ the solution i'm going with:
   * which means that `fullConfigReader.DryRun()` gets the `ErrInvalidFields` value from `UnmarshalInto`.
   * but here's the trick
   * now, `fullConfigReader.DryRun()` needs to get the diagnostic map from with the diagnostic map so it can merge the diagnostic map of the missing credentials to the `diagnosticMap` that gets created in a subsequent call to `validateConfig`
+
+
+  ## gemini question no.2
+
+I have a bunch of structs that implement this interface:
+```
+type unvalidatedReader interface {
+	ReadUnvalidated() (map[string]string, error)
+}
+```
+
+In a bunch of places in my code where there exists some struct `a` that implements that interface, there exists some call to `a.ReadUnvalidated()`.
+
+There are two structs in particular, let's call them `s` and `t` that implement this `unvalidatedReader` interface, but the callers of `s.ReadUnvalidated()` and `t.ReadUnvalidated()` always need to receive an additional value from `s.ReadUnvalidated()` or `t.ReadUnvalidated()`. These callers of the `ReadUnvalidated()` function of `s` and `t` would prefer the return value of `ReadUnvalidated()` to be like this: `(map[string]string, map[string]string, error)` instead of how it is now: `(map[string]string, error)`.
+
+I could theoretically just change the `unvalidatedReader` interface to look like this:
+```
+type unvalidatedReader interface {
+  ReadUnvalidated() (map[string]string, map[string]string, error)
+}
+```
+
+But I don't really want to do this because 99% of structs will have a `ReadUnvalidated` function that will just be returning `nil` for the middle value. also, that middle value is really not relevant or makes sense for those 99% of structs. So, I don't want to change all those structs because of this 1% case of `s` and `t`.
+
+So, I needed some way to get an additional `map[string]string` value to the callers of `s.ReadUnvalidated` and `t.ReadUnvalidated`. The approach I chose was to make `s` and `t` also implement this additional interface:
+```
+type additionalReader interface {
+  GetAdditionalMap() (map[string]string, error)
+}
+```
+
+In my code, I made the callers of `s.ReadUnvalidated()` and `t.ReadUnvalidated()` get the additional map that they need by making them, right after, call to `s.GetAdditionalMap()` and `t.GetAdditionalMap()`, respectively. This makes the callers of `s.ReadUnvalidated()` and `t.ReadUnvalidated()` happy because now they're getting the additional data they need.
+
+To make this work, I made the implementations of `s.ReadUnvalidated` and `t.ReadUnvalidated` slightly different to the implementations of the `ReadUnvalidated` functions of all the other structs. The `s.ReadUnvalidated` and `t.ReadUnvalidated` functions do an additional step. Instead of directly returning something like `return unvalidatedMap, additionalMap, nil`, they get the `additionalMap` value, and they store it inside of a member field of the struct: `self.additionalMap = additionalMap`. That way, when `GetAdditionalMap` is called, it can return the additional map by just referring to the `additionalMap` member field that was previously set inside of `ReadUnvalidated`: `return self.additionalMap`.
+
+This works fine in Go, but there's one thing I don't like about it. It requires mutation and as my program grows, mutation will become harder to manage and understand, especially because it's not necessarily intuitive that `GetAdditionalMap` will return `nil` unless `ReadUnvalidated` had been previously called. So, I'm wondering how this problem would be solved in OCaml, a language where there mutation is usually not advised.
+
