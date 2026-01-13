@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 
@@ -31,6 +32,7 @@ func (p fileReader) ReadUnvalidated() (unvalidatedResult, error) {
 	m := make(map[string]string)
 	hostConfigFile := filepath.Join(configDir, fmt.Sprintf("%s.yml", p.hostName))
 	for _, file := range []string{fallbackConfigFile, hostConfigFile} {
+		tempMap := make(map[string]string)
 		data, err := os.ReadFile(file)
 		if errors.Is(err, os.ErrNotExist) {
 			if p.verbose {
@@ -40,9 +42,10 @@ func (p fileReader) ReadUnvalidated() (unvalidatedResult, error) {
 		} else if err != nil {
 			return nil, fmt.Errorf("error reading config file(%s): %v", file, err)
 		}
-		if err := yaml.Unmarshal(data, &m); err != nil {
+		if err := yaml.Unmarshal(data, &tempMap); err != nil {
 			return nil, fmt.Errorf("error unmarshalling config file (%s): %v", file, err)
 		}
+		maps.Copy(m, tempMap)
 	}
 	return simpleUnvalidatedResult{configMap: m}, nil
 }

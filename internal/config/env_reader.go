@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/joho/godotenv"
 )
 
 var _ unvalidatedReader = envReader{}
@@ -11,6 +13,7 @@ var _ unvalidatedReader = envReader{}
 type envReader struct{}
 
 func newEnvReader() envReader {
+	godotenv.Load()
 	return envReader{}
 }
 

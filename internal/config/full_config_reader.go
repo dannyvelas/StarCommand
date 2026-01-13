@@ -36,10 +36,10 @@ func (p *fullConfigReader) ReadValidated() (map[string]string, error) {
 	}
 
 	results, err := validateConfig(hostConfig)
-	if err != nil && !errors.Is(err, ErrInvalidFields) {
-		return nil, err
-	} else if errors.Is(err, ErrInvalidFields) {
+	if errors.Is(err, ErrInvalidFields) {
 		return nil, fmt.Errorf("invalid or missing fields:\n%s", diagnosticMapToTable(helpers.MergeMaps(diagnosticMap, results)))
+	} else if err != nil {
+		return nil, fmt.Errorf("error validating config: %v", err)
 	}
 
 	if fillableConfig, ok := hostConfig.(fillableConfig); ok {
@@ -79,11 +79,7 @@ func (p *fullConfigReader) ReadUnvalidated() (unvalidatedResult, error) {
 			return nil, fmt.Errorf("error unmarshalling bitwarden secrets to map: %v", err)
 		}
 
-		if errors.Is(err, ErrInvalidFields) {
-			return nil, ErrInvalidFields
-		}
-
-		return diagnosticUnvalidatedResult{configMap: configMap, diagnosticMap: diagnosticMap}, nil
+		return diagnosticUnvalidatedResult{configMap: configMap, diagnosticMap: diagnosticMap}, err
 	}
 
 	return simpleUnvalidatedResult{configMap: configMap}, nil
@@ -98,7 +94,7 @@ func (p *fullConfigReader) DryRun() (string, error) {
 	}
 
 	results, err := validateConfig(hostConfig)
-	if err != nil {
+	if err != nil && !errors.Is(err, ErrInvalidFields) {
 		return "", fmt.Errorf("error validating config: %v", err)
 	}
 
