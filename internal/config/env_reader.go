@@ -14,7 +14,7 @@ func newEnvReader() envReader {
 	return envReader{}
 }
 
-func (p envReader) ReadUnvalidated() (map[string]string, error) {
+func (p envReader) ReadUnvalidated() (unvalidatedResult, error) {
 	environ := os.Environ()
 	envAsMap := make(map[string]string, len(environ))
 	for _, entry := range environ {
@@ -26,7 +26,7 @@ func (p envReader) ReadUnvalidated() (map[string]string, error) {
 			envAsMap[key] = value
 		}
 	}
-	return envAsMap, nil
+	return simpleUnvalidatedResult{configMap: envAsMap}, nil
 }
 
 func split(entry string) (string, string, error) {

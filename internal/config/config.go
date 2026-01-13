@@ -57,19 +57,22 @@ func validateConfig(v any) (map[string]string, error) {
 	return results, nil
 }
 
-func UnmarshalInto(r unvalidatedReader, target any) error {
-	m, err := r.ReadUnvalidated()
+func UnmarshalInto(r unvalidatedReader, target any) (map[string]string, error) {
+	unvalidatedResult, err := r.ReadUnvalidated()
+	if err != nil && !errors.Is(err, ErrInvalidFields) {
+		return nil, fmt.Errorf("error reading: %v", err)
+	}
+
+	diagnosticMap := getDiagnosticMapFromUnvalidatedResult(unvalidatedResult)
 	if errors.Is(err, ErrInvalidFields) {
-		return err
-	} else if err != nil {
-		return fmt.Errorf("error reading: %v", err)
+		return diagnosticMap, nil
 	}
 
-	if err := decode(m, target); err != nil {
-		return fmt.Errorf("error converting map into target: %v", err)
+	if err := decode(unvalidatedResult, target); err != nil {
+		return nil, fmt.Errorf("error converting map into target: %v", err)
 	}
 
-	return nil
+	return diagnosticMap, nil
 }
 
 func decode(src, dest any) error {
@@ -80,6 +83,14 @@ func decode(src, dest any) error {
 
 	if err := json.Unmarshal(bytes, dest); err != nil {
 		return fmt.Errorf("error unmarshalling map into target: %v", err)
+	}
+	return nil
+}
+
+func getDiagnosticMapFromUnvalidatedResult(r unvalidatedResult) map[string]string {
+	switch v := r.(type) {
+	case diagnosticUnvalidatedResult:
+		return v.diagnosticMap
 	}
 	return nil
 }

@@ -7,14 +7,10 @@ import (
 	"github.com/dannyvelas/homelab/internal/client"
 )
 
-var (
-	_ unvalidatedReader = (*bitwardenSecretReader)(nil)
-	_ diagnosticReader  = (*bitwardenSecretReader)(nil)
-)
+var _ unvalidatedReader = (*bitwardenSecretReader)(nil)
 
 type bitwardenSecretReader struct {
 	bitwardenCredReader bitwardenCredReader
-	diagnosticMap       map[string]string
 }
 
 func newBitwardenSecretReader(configMap map[string]string) *bitwardenSecretReader {
@@ -23,21 +19,18 @@ func newBitwardenSecretReader(configMap map[string]string) *bitwardenSecretReade
 	}
 }
 
-func (p *bitwardenSecretReader) ReadUnvalidated() (map[string]string, error) {
+func (p *bitwardenSecretReader) ReadUnvalidated() (unvalidatedResult, error) {
 	config := newBitwardenConfig()
 
-	if err := UnmarshalInto(p.bitwardenCredReader, &config); err != nil {
+	if _, err := UnmarshalInto(p.bitwardenCredReader, &config); err != nil {
 		return nil, fmt.Errorf("error unmarshalling bitwarden creds: %v", err)
 	}
 
 	results, err := validateConfig(config)
-	if err != nil && !errors.Is(err, ErrInvalidFields) {
-		return nil, fmt.Errorf("error validating bitwarden config: %v", err)
-	}
-
-	p.diagnosticMap = results
 	if errors.Is(err, ErrInvalidFields) {
-		return nil, ErrInvalidFields
+		return diagnosticUnvalidatedResult{configMap: nil, diagnosticMap: results}, ErrInvalidFields
+	} else if err != nil {
+		return nil, fmt.Errorf("error validating bitwarden config: %v", err)
 	}
 
 	bitwardenClient, err := client.NewBitwardenClient(
@@ -57,9 +50,8 @@ func (p *bitwardenSecretReader) ReadUnvalidated() (map[string]string, error) {
 		return nil, fmt.Errorf("error reading bitwarden secrets: %v", err)
 	}
 
-	return bitwardenSecrets, nil
-}
-
-func (p *bitwardenSecretReader) GetDiagnosticMap() map[string]string {
-	return p.diagnosticMap
+	return diagnosticUnvalidatedResult{
+		configMap:     bitwardenSecrets,
+		diagnosticMap: results,
+	}, nil
 }

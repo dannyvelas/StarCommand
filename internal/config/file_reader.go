@@ -27,7 +27,7 @@ func newFileReader(hostName string, verbose bool) fileReader {
 	}
 }
 
-func (p fileReader) ReadUnvalidated() (map[string]string, error) {
+func (p fileReader) ReadUnvalidated() (unvalidatedResult, error) {
 	m := make(map[string]string)
 	hostConfigFile := filepath.Join(configDir, fmt.Sprintf("%s.yml", p.hostName))
 	for _, file := range []string{fallbackConfigFile, hostConfigFile} {
@@ -44,5 +44,5 @@ func (p fileReader) ReadUnvalidated() (map[string]string, error) {
 			return nil, fmt.Errorf("error unmarshalling config file (%s): %v", file, err)
 		}
 	}
-	return m, nil
+	return simpleUnvalidatedResult{configMap: m}, nil
 }

@@ -11,10 +11,7 @@ var hostToConfig = map[string]config{
 	"proxmox": newProxmoxConfig(),
 }
 
-var (
-	_ unvalidatedReader = (*fullConfigReader)(nil)
-	_ diagnosticReader  = (*fullConfigReader)(nil)
-)
+var _ unvalidatedReader = (*fullConfigReader)(nil)
 
 type fullConfigReader struct {
 	hostName      string
@@ -33,11 +30,10 @@ func NewFullConfig(hostName string, verbose bool) *fullConfigReader {
 func (p *fullConfigReader) ReadValidated() (map[string]string, error) {
 	hostConfig := hostToConfig[p.hostName]
 
-	if err := UnmarshalInto(p, hostConfig); err != nil && !errors.Is(err, ErrInvalidFields) {
+	diagnosticMap, err := UnmarshalInto(p, hostConfig)
+	if err != nil && !errors.Is(err, ErrInvalidFields) {
 		return nil, fmt.Errorf("error reading host config into struct: %v", err)
 	}
-
-	diagnosticMap := p.GetDiagnosticMap()
 
 	results, err := validateConfig(hostConfig)
 	if err != nil && !errors.Is(err, ErrInvalidFields) {
@@ -60,46 +56,46 @@ func (p *fullConfigReader) ReadValidated() (map[string]string, error) {
 	return configMap, nil
 }
 
-func (p *fullConfigReader) ReadUnvalidated() (map[string]string, error) {
+func (p *fullConfigReader) ReadUnvalidated() (unvalidatedResult, error) {
 	// TODO: make this dynamic
 	usingBitwarden := true
 
 	configMap := make(map[string]string)
 
 	// read files
-	if err := UnmarshalInto(newFileReader(p.hostName, p.verbose), &configMap); err != nil {
+	if _, err := UnmarshalInto(newFileReader(p.hostName, p.verbose), &configMap); err != nil {
 		return nil, fmt.Errorf("error unmarshalling files to map: %v", err)
 	}
 
 	// read env
-	if err := UnmarshalInto(newEnvReader(), &configMap); err != nil {
+	if _, err := UnmarshalInto(newEnvReader(), &configMap); err != nil {
 		return nil, fmt.Errorf("error unmarshalling env to map: %v", err)
 	}
 
 	if usingBitwarden {
 		bitwardenSecretReader := newBitwardenSecretReader(configMap)
-		err := UnmarshalInto(bitwardenSecretReader, &configMap)
+		diagnosticMap, err := UnmarshalInto(bitwardenSecretReader, &configMap)
 		if err != nil && !errors.Is(err, ErrInvalidFields) {
 			return nil, fmt.Errorf("error unmarshalling bitwarden secrets to map: %v", err)
 		}
 
-		p.diagnosticMap = bitwardenSecretReader.GetDiagnosticMap()
 		if errors.Is(err, ErrInvalidFields) {
 			return nil, ErrInvalidFields
 		}
+
+		return diagnosticUnvalidatedResult{configMap: configMap, diagnosticMap: diagnosticMap}, nil
 	}
 
-	return configMap, nil
+	return simpleUnvalidatedResult{configMap: configMap}, nil
 }
 
 func (p *fullConfigReader) DryRun() (string, error) {
 	hostConfig := hostToConfig[p.hostName]
 
-	if err := UnmarshalInto(p, hostConfig); err != nil && !errors.Is(err, ErrInvalidFields) {
+	diagnosticMap, err := UnmarshalInto(p, hostConfig)
+	if err != nil && !errors.Is(err, ErrInvalidFields) {
 		return "", fmt.Errorf("error reading host config into struct: %v", err)
 	}
-
-	diagnosticMap := p.GetDiagnosticMap()
 
 	results, err := validateConfig(hostConfig)
 	if err != nil {
@@ -107,8 +103,4 @@ func (p *fullConfigReader) DryRun() (string, error) {
 	}
 
 	return diagnosticMapToTable(helpers.MergeMaps(diagnosticMap, results)), nil
-}
-
-func (p *fullConfigReader) GetDiagnosticMap() map[string]string {
-	return p.diagnosticMap
 }
