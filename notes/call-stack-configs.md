@@ -111,3 +111,20 @@ do you think this is a good solution to this problem?
 another approach i was considering:
   * making the `ReadUnvalidated` function in the interface actually return like an `(enum, error)`, or more accurately in go,  `(<some-interface>, error)` where `<some-interface>` is guaranteed to have a `config()` function which returns the first map and could optionally also have a `getSecondMap()` function inside of it
     * and then `UnmarshalInto()` would basically return a `(any, error)` and in the two places where `UnmarshalInto()` is called and the second map is expected, the caller, we would check if `any` implements `getSecondMap()`, and if it does, it would use it for the diagnostics.
+
+
+the solution i'm going with:
+* suppose that there are bitwarden creds missing and the `--dry-run` flag is used. also suppose there are no unexpected internal errors.
+  * `fullConfigReader.DryRun()` will call:
+  * `UnmarshalInto(fullConfigReader, hostConfig)` which calls
+  * `fullConfigReader.ReadUnvalidated()` which calls
+  * `bitwardenSecretReader.ReadUnvalidated()` which calls
+  * `validateConfig(bitwardenConfig)`
+  * when `bitwardenSecretReader.ReadUnvalidated()` calls `validateConfig`, `validateConfig` will return `ErrInvalidFields`
+  * `bitwardenSecretReader` will preserve the diagnosticMap returned from `validateConfig` in its struct.
+  * next, `bitwardenSecretReader.ReadUnvalidated()` will return `nil, ErrInvalidFields`.
+  * so that means that `fullConfigReader.ReadUnvalidated` will also return `nil, ErrInvalidFields`
+  * which means that `UnmarshalInto(fullConfigReader, hostConfig)`, which has a return type of `error` will also just return `ErrInvalidFields`
+  * which means that `fullConfigReader.DryRun()` gets the `ErrInvalidFields` value from `UnmarshalInto`.
+  * but here's the trick
+  * now, `fullConfigReader.DryRun()` needs to get the diagnostic map from with the diagnostic map so it can merge the diagnostic map of the missing credentials to the `diagnosticMap` that gets created in a subsequent call to `validateConfig`
