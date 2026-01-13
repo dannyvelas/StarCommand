@@ -33,7 +33,8 @@ func newProxmoxConfig() *proxmoxConfig {
 	}
 }
 
-func (p *proxmoxConfig) Validate(results map[string]string, ok bool) (map[string]string, bool) {
+func (p *proxmoxConfig) Validate(results map[string]string) bool {
+	ok := true
 	if results["node_cidr_address"] == statusLoaded {
 		if _, err := netip.ParsePrefix(p.NodeCIDRAddress); err != nil {
 			results["node_cidr_address"] = fmt.Sprintf("'%s' is not a valid CIDR: %v\n", p.NodeCIDRAddress, err)
@@ -41,7 +42,7 @@ func (p *proxmoxConfig) Validate(results map[string]string, ok bool) (map[string
 		}
 	}
 
-	return results, ok
+	return ok
 }
 
 func (p *proxmoxConfig) FillInKeys() error {

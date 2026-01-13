@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 
@@ -33,10 +32,7 @@ func getConfigCmd(verbose bool) *cobra.Command {
 			}
 
 			c, err := fullConfig.ReadValidated()
-			if errors.Is(err, config.ErrInvalidFields) {
-				fmt.Fprintf(os.Stderr, "Some required fields were missing:\n%s\n", err.Error())
-				os.Exit(1)
-			} else if err != nil {
+			if err != nil {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
 			}

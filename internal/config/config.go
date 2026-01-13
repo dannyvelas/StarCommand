@@ -14,9 +14,9 @@ const (
 )
 
 type config interface {
-	// Validate returns an map of validation results where each element corresponds to a key in the config
+	// Validate receives a map of validation results where each element corresponds to a key in the config
 	// the second return value will be false if at least one key was invalid. otherwise, it will be true
-	Validate(map[string]string, bool) (map[string]string, bool)
+	Validate(map[string]string) bool
 }
 
 type fillableConfig interface {
@@ -24,13 +24,13 @@ type fillableConfig interface {
 	FillInKeys() error
 }
 
-func validateConfig(v any) (map[string]string, bool, error) {
+func validateConfig(v any) (map[string]string, error) {
 	results := make(map[string]string)
 	valid := true
 
 	tagToFieldMap, err := helpers.GetTagToFieldMap(v, "bw", "json")
 	if err != nil {
-		return nil, false, fmt.Errorf("error getting tag to field map: %v", err)
+		return nil, fmt.Errorf("error getting tag to field map: %v", err)
 	}
 
 	for tag, field := range tagToFieldMap {
@@ -46,28 +46,41 @@ func validateConfig(v any) (map[string]string, bool, error) {
 		}
 	}
 
-	config, ok := v.(config)
-	if !ok {
-		return results, ok, nil
+	if config, ok := v.(config); ok {
+		valid = valid && config.Validate(results)
 	}
 
-	results, valid = config.Validate(results, valid)
-	return results, valid, nil
+	if !valid {
+		return results, ErrInvalidFields
+	}
+
+	return results, nil
 }
 
-func UnmarshalInto(r unvalidatedReader, target any) error {
+func UnmarshalInto(r unvalidatedReader, target any) (map[string]string, error) {
 	m, err := r.ReadUnvalidated()
+	if err != nil && !errors.Is(err, ErrInvalidFields) {
+		return nil, fmt.Errorf("error reading: %v", err)
+	}
+
+	diagnosticMap := getDiagnosticMapFromReader(r)
 	if errors.Is(err, ErrInvalidFields) {
-		return err
-	} else if err != nil {
-		return fmt.Errorf("error reading: %v", err)
+		return diagnosticMap, err
 	}
 
 	if err := decode(m, target); err != nil {
-		return fmt.Errorf("error converting map into target: %v", err)
+		return nil, fmt.Errorf("error converting map into target: %v", err)
 	}
 
-	return nil
+	return diagnosticMap, nil
+}
+
+func getDiagnosticMapFromReader(r unvalidatedReader) map[string]string {
+	diagnosticReader, ok := r.(diagnosticReader)
+	if !ok {
+		return nil
+	}
+	return diagnosticReader.GetDiagnosticMap()
 }
 
 func decode(src, dest any) error {

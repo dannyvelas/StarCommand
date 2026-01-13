@@ -3,6 +3,8 @@ package config
 import (
 	"errors"
 	"fmt"
+
+	"github.com/dannyvelas/homelab/internal/helpers"
 )
 
 var hostToConfig = map[string]config{
@@ -10,35 +12,37 @@ var hostToConfig = map[string]config{
 }
 
 var (
-	_ validatedReader   = fullConfigReader{}
-	_ unvalidatedReader = fullConfigReader{}
+	_ unvalidatedReader = (*fullConfigReader)(nil)
+	_ diagnosticReader  = (*fullConfigReader)(nil)
 )
 
 type fullConfigReader struct {
-	hostName string
-	verbose  bool
+	hostName      string
+	verbose       bool
+	diagnosticMap map[string]string
 }
 
-func NewFullConfig(hostName string, verbose bool) fullConfigReader {
-	return fullConfigReader{
-		hostName: hostName,
-		verbose:  verbose,
+func NewFullConfig(hostName string, verbose bool) *fullConfigReader {
+	return &fullConfigReader{
+		hostName:      hostName,
+		verbose:       verbose,
+		diagnosticMap: nil,
 	}
 }
 
-func (p fullConfigReader) ReadValidated() (map[string]string, error) {
+func (p *fullConfigReader) ReadValidated() (map[string]string, error) {
 	hostConfig := hostToConfig[p.hostName]
-	if err := UnmarshalInto(p, hostConfig); errors.Is(err, ErrInvalidFields) {
-		return nil, err
-	} else if err != nil {
+
+	diagnosticMap, err := UnmarshalInto(p, hostConfig)
+	if err != nil && !errors.Is(err, ErrInvalidFields) {
 		return nil, fmt.Errorf("error reading host config into struct: %v", err)
 	}
 
-	validateResult, ok, err := validateConfig(hostConfig)
-	if err != nil {
-		return nil, fmt.Errorf("error validating config: %v", err)
-	} else if !ok {
-		return nil, newErrInvalidFields(validateResult)
+	results, err := validateConfig(hostConfig)
+	if err != nil && !errors.Is(err, ErrInvalidFields) {
+		return nil, err
+	} else if errors.Is(err, ErrInvalidFields) {
+		return nil, fmt.Errorf("invalid or missing fields:\n%s", diagnosticMapToTable(helpers.MergeMaps(diagnosticMap, results)))
 	}
 
 	if fillableConfig, ok := hostConfig.(fillableConfig); ok {
@@ -55,43 +59,53 @@ func (p fullConfigReader) ReadValidated() (map[string]string, error) {
 	return configMap, nil
 }
 
-func (p fullConfigReader) ReadUnvalidated() (map[string]string, error) {
+func (p *fullConfigReader) ReadUnvalidated() (map[string]string, error) {
 	// TODO: make this dynamic
 	usingBitwarden := true
 
 	configMap := make(map[string]string)
 
 	// read files
-	if err := UnmarshalInto(newFileReader(p.hostName, p.verbose), &configMap); err != nil {
+	if _, err := UnmarshalInto(newFileReader(p.hostName, p.verbose), &configMap); err != nil {
 		return nil, fmt.Errorf("error unmarshalling files to map: %v", err)
 	}
 
 	// read env
-	if err := UnmarshalInto(newEnvReader(), &configMap); err != nil {
+	if _, err := UnmarshalInto(newEnvReader(), &configMap); err != nil {
 		return nil, fmt.Errorf("error unmarshalling env to map: %v", err)
 	}
 
 	if usingBitwarden {
-		if err := UnmarshalInto(newBitwardenSecretReader(configMap), &configMap); errors.Is(err, ErrInvalidFields) {
-			return nil, err
-		} else if err != nil {
+		diagnosticMap, err := UnmarshalInto(newBitwardenSecretReader(configMap), &configMap)
+		if err != nil && !errors.Is(err, ErrInvalidFields) {
 			return nil, fmt.Errorf("error unmarshalling bitwarden secrets to map: %v", err)
+		}
+
+		p.diagnosticMap = diagnosticMap
+		if errors.Is(err, ErrInvalidFields) {
+			return nil, err
 		}
 	}
 
 	return configMap, nil
 }
 
-func (p fullConfigReader) DryRun() (string, error) {
+func (p *fullConfigReader) DryRun() (string, error) {
 	hostConfig := hostToConfig[p.hostName]
-	if err := UnmarshalInto(p, hostConfig); err != nil && !errors.Is(err, ErrInvalidFields) {
+
+	diagnosticMap, err := UnmarshalInto(p, hostConfig)
+	if err != nil && !errors.Is(err, ErrInvalidFields) {
 		return "", fmt.Errorf("error reading host config into struct: %v", err)
 	}
 
-	validateResult, _, err := validateConfig(hostConfig)
+	results, err := validateConfig(hostConfig)
 	if err != nil {
 		return "", fmt.Errorf("error validating config: %v", err)
 	}
 
-	return newErrInvalidFields(validateResult).Error(), nil
+	return diagnosticMapToTable(helpers.MergeMaps(diagnosticMap, results)), nil
+}
+
+func (p *fullConfigReader) GetDiagnosticMap() map[string]string {
+	return p.diagnosticMap
 }
