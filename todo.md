@@ -48,11 +48,13 @@
 - [ ] migrate all variables to "./configs" dir, effectively deleting all ansible and terraform config files
 - [ ] test if you can actually store c.client.Secrets() in a variable in client/bitwarden.go
 - [x] maybe rename "resolve" package in go
-- [ ] make it so that every provider doesn't have to call decode
+- [x] make it so that every provider doesn't have to call decode
 - [ ] make it so that reading from bitwarden is optional. now it is required.
-- [ ] add test so that if `validateConfig` runs for something that doesn't implement `config`, it can return `true`. and if it runs for something that does implement `config`, it can return `false`
+- [x] add test so that if `validateConfig` runs for something that doesn't implement `config`, it can return `true`. and if it runs for something that does implement `config`, it can return `false`
+  - NOT NECESSARY anymore
 - [ ] rename "results" to diagnosticMap
 - [ ] rename the name that the receivers of `*reader` structs use to refer to "self". right now it's "p" but that kinda doesn't make sense
+- [ ] remove "unvalidated" from everything. we can just call it readResult or something
 
 ## terraform-provider-proxmox repo
 - [x] make PR to correct the steps necessary to run `make example`
