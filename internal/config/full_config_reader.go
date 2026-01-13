@@ -25,7 +25,7 @@ func NewFullConfig(hostName string, verbose bool) *fullConfigReader {
 	}
 }
 
-func (r *fullConfigReader) Read() (map[string]string, error) {
+func (r *fullConfigReader) Read() (config, error) {
 	hostConfig := hostToConfig[r.hostName]
 
 	diagnosticMapInternalConfig, err := UnmarshalInto(r, hostConfig)
@@ -46,12 +46,7 @@ func (r *fullConfigReader) Read() (map[string]string, error) {
 		}
 	}
 
-	configMap, err := helpers.ToMap(hostConfig)
-	if err != nil {
-		return nil, fmt.Errorf("error transforming host config into config map: %v", err)
-	}
-
-	return configMap, nil
+	return hostConfig, nil
 }
 
 func (r *fullConfigReader) read() (readResult, error) {

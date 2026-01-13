@@ -68,36 +68,6 @@ func FromMap(src map[string]string, dst any) error {
 	return nil
 }
 
-// ToMap takes a struct as an argument and converts it to a map[string]string
-func ToMap(src any) (map[string]string, error) {
-	val := reflect.ValueOf(src)
-	if val.Kind() == reflect.Pointer {
-		val = val.Elem()
-	}
-	if val.Kind() != reflect.Struct {
-		return nil, fmt.Errorf("source must be a struct, got %T", src)
-	}
-
-	dest := make(map[string]string)
-	t := val.Type()
-
-	for i := 0; i < t.NumField(); i++ {
-		f := t.Field(i)
-		fVal := val.Field(i)
-
-		// Only process exported string fields
-		if !fVal.CanInterface() || f.Type.Kind() != reflect.String {
-			continue
-		}
-
-		tag := queryForTags(f, "labctl", []string{"json"})
-		if tag != "" {
-			dest[tag] = fVal.String()
-		}
-	}
-	return dest, nil
-}
-
 // GetTagToFieldMap takes a struct and returns a map where each key is
 // the value of tag `tagName`. each value is a reflect.Value.
 // if `tagName` is not found, it will iterate through `fallbackTags` until it finds a value
