@@ -25,7 +25,7 @@ func NewFullConfig(hostName string, verbose bool) *fullConfigReader {
 	}
 }
 
-func (r *fullConfigReader) ReadValidated() (map[string]string, error) {
+func (r *fullConfigReader) Read() (map[string]string, error) {
 	hostConfig := hostToConfig[r.hostName]
 
 	diagnosticMap, err := UnmarshalInto(r, hostConfig)

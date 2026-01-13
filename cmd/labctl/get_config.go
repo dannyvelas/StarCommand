@@ -31,7 +31,7 @@ func getConfigCmd(verbose bool) *cobra.Command {
 				return
 			}
 
-			c, err := fullConfig.ReadValidated()
+			c, err := fullConfig.Read()
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
