@@ -50,8 +50,7 @@ func diagnosticMapToTable(data map[string]string) string {
 	}
 
 	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, ctx)
-	if err != nil {
+	if err := tmpl.Execute(&buf, ctx); err != nil {
 		panic(err)
 	}
 
