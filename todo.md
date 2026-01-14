@@ -58,6 +58,10 @@
 - [x] probably make `ErrInvalidFields` not public anymore
   - WONT DO: it's needed for when ssh calls `config.UnmarshalInto`
 - [x] use a different tag name than "bw". people won't necessarily use bitwarden. use something like "config" instead.
+- [x] maybe see if we can make "Validate" a little more functional - instead of making it mutate its input argument
+  - eh, Validate implementations don't have any reason to to be forced to create a completely new map. they're going to alter the original map anyway. so, whatever
+- [ ] maybe make env reader more testable
+- [ ] maybe make file reader more testable
 
 ## terraform-provider-proxmox repo
 - [x] make PR to correct the steps necessary to run `make example`
