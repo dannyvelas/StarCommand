@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"maps"
 	"os"
 	"path/filepath"
@@ -17,14 +18,16 @@ var fallbackConfigFile = filepath.Join(configDir, "all.yml")
 var _ Reader = fileReader{}
 
 type fileReader struct {
-	hostName string
-	verbose  bool
+	fileSystem fs.FS
+	hostName   string
+	verbose    bool
 }
 
-func newFileReader(hostName string, verbose bool) fileReader {
+func newFileReader(fileSystem fs.FS, hostName string, verbose bool) fileReader {
 	return fileReader{
-		hostName: hostName,
-		verbose:  verbose,
+		fileSystem: fileSystem,
+		hostName:   hostName,
+		verbose:    verbose,
 	}
 }
 
@@ -33,7 +36,7 @@ func (r fileReader) read() (readResult, error) {
 	hostConfigFile := filepath.Join(configDir, fmt.Sprintf("%s.yml", r.hostName))
 	for _, file := range []string{fallbackConfigFile, hostConfigFile} {
 		tempMap := make(map[string]string)
-		data, err := os.ReadFile(file)
+		data, err := fs.ReadFile(r.fileSystem, file)
 		if errors.Is(err, os.ErrNotExist) {
 			if r.verbose {
 				fmt.Fprintf(os.Stderr, "warning: %s config file not found\n", file)

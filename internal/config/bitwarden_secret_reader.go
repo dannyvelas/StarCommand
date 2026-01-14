@@ -10,19 +10,19 @@ import (
 var _ Reader = (*bitwardenSecretReader)(nil)
 
 type bitwardenSecretReader struct {
-	bitwardenCredReader bitwardenCredReader
+	mapReader mapReader
 }
 
 func newBitwardenSecretReader(configMap map[string]string) *bitwardenSecretReader {
 	return &bitwardenSecretReader{
-		bitwardenCredReader: newBitwardenCredReader(configMap),
+		mapReader: newMapReader(configMap),
 	}
 }
 
 func (r *bitwardenSecretReader) read() (readResult, error) {
 	config := newBitwardenConfig()
 
-	if _, err := UnmarshalInto(r.bitwardenCredReader, &config); err != nil {
+	if _, err := UnmarshalInto(r.mapReader, &config); err != nil {
 		return nil, fmt.Errorf("error unmarshalling bitwarden creds: %v", err)
 	}
 

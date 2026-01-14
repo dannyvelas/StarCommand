@@ -3,6 +3,8 @@ package config
 import (
 	"errors"
 	"fmt"
+	"io/fs"
+	"os"
 
 	"github.com/dannyvelas/homelab/internal/helpers"
 )
@@ -14,15 +16,25 @@ var hostToConfig = map[string]config{
 var _ Reader = (*fullConfigReader)(nil)
 
 type fullConfigReader struct {
-	hostName string
-	verbose  bool
+	fileSystem fs.FS
+	environ    []string
+	hostName   string
+	verbose    bool
 }
 
-func NewFullConfigReader(hostName string, verbose bool) *fullConfigReader {
-	return &fullConfigReader{
-		hostName: hostName,
-		verbose:  verbose,
+func NewFullConfigReader(hostName string, verbose bool, opts ...func(*fullConfigReader)) *fullConfigReader {
+	fullConfigReader := &fullConfigReader{
+		fileSystem: os.DirFS("."),
+		environ:    os.Environ(),
+		hostName:   hostName,
+		verbose:    verbose,
 	}
+
+	for _, opt := range opts {
+		opt(fullConfigReader)
+	}
+
+	return fullConfigReader
 }
 
 func (r *fullConfigReader) Read() (config, error) {
@@ -56,12 +68,12 @@ func (r *fullConfigReader) read() (readResult, error) {
 	configMap := make(map[string]string)
 
 	// read files
-	if _, err := UnmarshalInto(newFileReader(r.hostName, r.verbose), &configMap); err != nil {
+	if _, err := UnmarshalInto(newFileReader(r.fileSystem, r.hostName, r.verbose), &configMap); err != nil {
 		return nil, fmt.Errorf("error unmarshalling files to map: %v", err)
 	}
 
 	// read env
-	if _, err := UnmarshalInto(newEnvReader(), &configMap); err != nil {
+	if _, err := UnmarshalInto(newEnvReader(r.environ), &configMap); err != nil {
 		return nil, fmt.Errorf("error unmarshalling env to map: %v", err)
 	}
 
@@ -92,4 +104,16 @@ func (r *fullConfigReader) DryRun() (string, error) {
 	}
 
 	return diagnosticMapToTable(helpers.MergeMaps(diagnosticMapInternalConfig, diagnosticMapHostConfig)), nil
+}
+
+func WithFilesystem(fileSystem fs.FS) func(*fullConfigReader) {
+	return func(fullConfigReader *fullConfigReader) {
+		fullConfigReader.fileSystem = fileSystem
+	}
+}
+
+func WithEnviron(environ []string) func(*fullConfigReader) {
+	return func(fullConfigReader *fullConfigReader) {
+		fullConfigReader.environ = environ
+	}
 }

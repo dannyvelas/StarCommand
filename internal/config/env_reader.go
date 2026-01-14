@@ -2,34 +2,33 @@ package config
 
 import (
 	"fmt"
-	"os"
 	"strings"
-
-	"github.com/joho/godotenv"
 )
 
 var _ Reader = envReader{}
 
-type envReader struct{}
+type envReader struct {
+	envAsMap map[string]string
+}
 
-func newEnvReader() envReader {
-	godotenv.Load()
-	return envReader{}
+func newEnvReader(environ []string) envReader {
+	envAsMap := make(map[string]string, len(environ))
+	for _, entry := range environ {
+		if entry == "" {
+			continue
+		}
+
+		key, value, _ := split(entry)
+		envAsMap[key] = value
+	}
+
+	return envReader{
+		envAsMap: envAsMap,
+	}
 }
 
 func (r envReader) read() (readResult, error) {
-	environ := os.Environ()
-	envAsMap := make(map[string]string, len(environ))
-	for _, entry := range environ {
-		if entry != "" {
-			key, value, err := split(entry)
-			if err != nil {
-				return nil, fmt.Errorf("error splitting: %v", err)
-			}
-			envAsMap[key] = value
-		}
-	}
-	return simpleReadResult{configMap: envAsMap}, nil
+	return simpleReadResult{configMap: r.envAsMap}, nil
 }
 
 func split(entry string) (string, string, error) {
