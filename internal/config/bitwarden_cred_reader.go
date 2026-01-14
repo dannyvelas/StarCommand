@@ -1,6 +1,6 @@
 package config
 
-var _ reader = bitwardenCredReader{}
+var _ Reader = bitwardenCredReader{}
 
 type bitwardenCredReader struct {
 	configMap map[string]string

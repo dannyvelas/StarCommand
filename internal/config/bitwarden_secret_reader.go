@@ -7,7 +7,7 @@ import (
 	"github.com/dannyvelas/homelab/internal/client"
 )
 
-var _ reader = (*bitwardenSecretReader)(nil)
+var _ Reader = (*bitwardenSecretReader)(nil)
 
 type bitwardenSecretReader struct {
 	bitwardenCredReader bitwardenCredReader

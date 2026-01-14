@@ -17,21 +17,21 @@ func getConfigCmd(verbose bool) *cobra.Command {
 		Short: "Generate a JSON object of configuration values for a given host",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			host := args[0]
-			fullConfig := config.NewFullConfig(host, verbose)
+			hostName := args[0]
+			fullConfigReader := config.NewFullConfigReader(hostName, verbose)
 
 			if dryRun {
-				validation, err := fullConfig.DryRun()
+				validation, err := fullConfigReader.DryRun()
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 					os.Exit(1)
 				}
 
-				fmt.Printf("Config Requirements for %s:\n%s", host, validation)
+				fmt.Printf("Config Requirements for %s:\n%s", hostName, validation)
 				return
 			}
 
-			c, err := fullConfig.Read()
+			c, err := fullConfigReader.Read()
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)

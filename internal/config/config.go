@@ -56,7 +56,7 @@ func validateConfig(v any) (map[string]string, error) {
 	return diagnosticMap, nil
 }
 
-func UnmarshalInto(r reader, target any) (map[string]string, error) {
+func UnmarshalInto(r Reader, target any) (map[string]string, error) {
 	readResult, err := r.read()
 	if err != nil && !errors.Is(err, ErrInvalidFields) {
 		return nil, fmt.Errorf("error reading: %v", err)

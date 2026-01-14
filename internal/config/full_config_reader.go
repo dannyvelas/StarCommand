@@ -11,14 +11,14 @@ var hostToConfig = map[string]config{
 	"proxmox": newProxmoxConfig(),
 }
 
-var _ reader = (*fullConfigReader)(nil)
+var _ Reader = (*fullConfigReader)(nil)
 
 type fullConfigReader struct {
 	hostName string
 	verbose  bool
 }
 
-func NewFullConfig(hostName string, verbose bool) *fullConfigReader {
+func NewFullConfigReader(hostName string, verbose bool) *fullConfigReader {
 	return &fullConfigReader{
 		hostName: hostName,
 		verbose:  verbose,

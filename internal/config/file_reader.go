@@ -14,7 +14,7 @@ const configDir = "./config"
 
 var fallbackConfigFile = filepath.Join(configDir, "all.yml")
 
-var _ reader = fileReader{}
+var _ Reader = fileReader{}
 
 type fileReader struct {
 	hostName string

@@ -8,7 +8,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var _ reader = envReader{}
+var _ Reader = envReader{}
 
 type envReader struct{}
 
