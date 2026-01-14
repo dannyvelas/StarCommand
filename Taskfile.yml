@@ -37,3 +37,5 @@ tasks:
         else
           ansible-playbook -i ansible/inventory.ini ansible/setup-proxmox.yml -u root --ask-vault-pass -e "$CONF_JSON"
         fi
+
+      - ./bin/labctl set ssh proxmox

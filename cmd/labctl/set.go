@@ -2,13 +2,13 @@ package main
 
 import "github.com/spf13/cobra"
 
-func setCmd() *cobra.Command {
+func setCmd(verbose bool) *cobra.Command {
 	setCmd := &cobra.Command{
 		Use:   "set",
 		Short: "Display one or many resources",
 	}
 
-	setCmd.AddCommand(setSSHCmd())
+	setCmd.AddCommand(setSSHCmd(verbose))
 
 	return setCmd
 }
