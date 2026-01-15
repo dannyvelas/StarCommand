@@ -40,17 +40,32 @@ func (r *configMux) read() (readResult, error) {
 	return diagnosticReadResult{configMap: configMap, diagnosticMap: allDiagnostics}, nil
 }
 
-func WithReader(r Reader) func(*configMux) {
+func WithFileReader(opts ...func(*fileReader)) func(*configMux) {
 	return func(configMux *configMux) {
 		configMux.readerFns = append(
 			configMux.readerFns,
-			func(_ map[string]string) Reader { return r },
+			func(_ map[string]string) Reader {
+				return NewFileReader(configMux.hostName, configMux.verbose, opts...)
+			},
 		)
 	}
 }
 
-func WithLazyReader(fn func(configMap map[string]string) Reader) func(*configMux) {
+func WithEnvReader(opts ...func(*envReader)) func(*configMux) {
 	return func(configMux *configMux) {
-		configMux.readerFns = append(configMux.readerFns, fn)
+		configMux.readerFns = append(
+			configMux.readerFns,
+			func(_ map[string]string) Reader {
+				return NewEnvReader(opts...)
+			},
+		)
+	}
+}
+
+func WithBitwardenSecretReader() func(*configMux) {
+	return func(configMux *configMux) {
+		configMux.readerFns = append(configMux.readerFns, func(configMap map[string]string) Reader {
+			return NewBitwardenSecretReader(configMap)
+		})
 	}
 }

@@ -23,11 +23,9 @@ func getConfigCmd(verbose bool) *cobra.Command {
 			configMux := config.NewConfigMux(
 				hostName,
 				verbose,
-				config.WithReader(config.NewFileReader(hostName, verbose)),
-				config.WithReader(config.NewEnvReader()),
-				config.WithLazyReader(func(configMap map[string]string) config.Reader {
-					return config.NewBitwardenSecretReader(configMap)
-				}),
+				config.WithFileReader(),
+				config.WithEnvReader(),
+				config.WithBitwardenSecretReader(),
 			)
 
 			// TODO: change this to be dynamic

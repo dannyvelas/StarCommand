@@ -15,7 +15,7 @@ const configDir = "./config"
 
 var fallbackConfigFile = filepath.Join(configDir, "all.yml")
 
-var _ Reader = fileReader{}
+var _ Reader = (*fileReader)(nil)
 
 type fileReader struct {
 	fileSystem fs.FS
@@ -23,7 +23,7 @@ type fileReader struct {
 	verbose    bool
 }
 
-func NewFileReader(hostName string, verbose bool, opts ...func(*fileReader)) fileReader {
+func NewFileReader(hostName string, verbose bool, opts ...func(*fileReader)) *fileReader {
 	fileReader := fileReader{
 		fileSystem: os.DirFS("."),
 		hostName:   hostName,
@@ -34,10 +34,10 @@ func NewFileReader(hostName string, verbose bool, opts ...func(*fileReader)) fil
 		opt(&fileReader)
 	}
 
-	return fileReader
+	return &fileReader
 }
 
-func (r fileReader) read() (readResult, error) {
+func (r *fileReader) read() (readResult, error) {
 	m := make(map[string]string)
 	hostConfigFile := filepath.Join(configDir, fmt.Sprintf("%s.yml", r.hostName))
 	for _, file := range []string{fallbackConfigFile, hostConfigFile} {
