@@ -13,6 +13,7 @@ type bitwardenSecretReader struct {
 	mapReader mapReader
 }
 
+// NewBitwardenSecretReader creates a new Bitwarden secret reader using the provided config map to authenticate to Bitwarden.
 func NewBitwardenSecretReader(configMap map[string]string) *bitwardenSecretReader {
 	return &bitwardenSecretReader{
 		mapReader: newMapReader(configMap),

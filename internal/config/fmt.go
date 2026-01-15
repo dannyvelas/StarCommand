@@ -6,7 +6,8 @@ import (
 	"strings"
 )
 
-// DiagnosticsToTable takes a diagnostic map and returns a formatted table
+// DiagnosticsToTable takes a diagnostic map and returns it as a pretty-printed formatted table
+// This is useful as a user-friendly report of missing and found configuration values
 func DiagnosticsToTable(data map[string]string) string {
 	// calculate the maximum length of the keys
 	maxKeyLen := 3 // Minimum width to fit the "KEY" header

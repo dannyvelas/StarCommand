@@ -51,6 +51,8 @@ func split(entry string) (string, string, error) {
 	}
 }
 
+// WithEnviron allows specifying a custom environment slice for the envReader
+// By default, it uses os.Environ()
 func WithEnviron(environ []string) func(*envReader) {
 	return func(r *envReader) {
 		r.environ = environ

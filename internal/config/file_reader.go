@@ -60,6 +60,8 @@ func (r *fileReader) Read() (ReadResult, error) {
 	return NewSimpleReadResult(m), nil
 }
 
+// WithFileSystem allows specifying a custom file system for the fileReader
+// By default, it uses the OS file system, os.DirFS(".")
 func WithFileSystem(fileSystem fs.FS) func(*fileReader) {
 	return func(fileReader *fileReader) {
 		fileReader.fileSystem = fileSystem

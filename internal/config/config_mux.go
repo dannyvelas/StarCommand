@@ -13,6 +13,7 @@ type configMux struct {
 	readerFns []func(configMap map[string]string) Reader
 }
 
+// NewConfigMux creates a new config mux which can read from multiple readers
 func NewConfigMux(hostName string, verbose bool, opts ...func(*configMux)) *configMux {
 	configMux := &configMux{
 		hostName: hostName,
@@ -40,6 +41,7 @@ func (r *configMux) Read() (ReadResult, error) {
 	return NewDiagnosticReadResult(configMap, allDiagnostics), nil
 }
 
+// WithFileReader adds a file reader to the config mux
 func WithFileReader(opts ...func(*fileReader)) func(*configMux) {
 	return func(configMux *configMux) {
 		configMux.readerFns = append(
@@ -51,6 +53,7 @@ func WithFileReader(opts ...func(*fileReader)) func(*configMux) {
 	}
 }
 
+// WithEnvReader adds an environment variable reader to the config mux
 func WithEnvReader(opts ...func(*envReader)) func(*configMux) {
 	return func(configMux *configMux) {
 		configMux.readerFns = append(
@@ -62,6 +65,7 @@ func WithEnvReader(opts ...func(*envReader)) func(*configMux) {
 	}
 }
 
+// WithBitwardenSecretReader adds a Bitwarden secret reader to the config mux
 func WithBitwardenSecretReader() func(*configMux) {
 	return func(configMux *configMux) {
 		configMux.readerFns = append(configMux.readerFns, func(configMap map[string]string) Reader {
