@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/dannyvelas/conflux"
-	"github.com/dannyvelas/homelab/internal/hosts"
+	"github.com/dannyvelas/homelab/internal/host"
 	"github.com/spf13/cobra"
 )
 
@@ -20,16 +20,15 @@ func getConfigCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			hostName := args[0]
-			hostConfigPath := fmt.Sprintf("config/%s.yml", hostName)
 
 			configMux := conflux.NewConfigMux(
-				conflux.WithYAMLFileReader("config/all.yml", conflux.WithPath(hostConfigPath)),
+				conflux.WithYAMLFileReader(host.FallbackFile, conflux.WithPath(host.GetConfigPath(hostName))),
 				conflux.WithEnvReader(),
 				conflux.WithBitwardenSecretReader(),
 			)
 
 			// TODO: change this to be dynamic
-			proxmoxConfig := hosts.NewProxmox()
+			proxmoxConfig := host.NewProxmox()
 			diagnostics, err := conflux.Unmarshal(configMux, proxmoxConfig)
 			if err != nil && !errors.Is(err, conflux.ErrInvalidFields) {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())

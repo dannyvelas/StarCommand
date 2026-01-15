@@ -8,40 +8,40 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/dannyvelas/homelab/internal/config"
+	"github.com/dannyvelas/homelab/internal/host"
 	"github.com/kevinburke/ssh_config"
 )
 
 var ErrHostAlreadyExists = errors.New("host already exists in ssh config file")
 
 type SSHSetter struct {
-	hostName     string
-	configReader config.Reader
+	hostName string
+	sshHost  host.SSHHost
 }
 
-func NewSSHSetter(hostName string, configReader config.Reader) SSHSetter {
+func NewSSHSetter(hostName string, sshHost host.SSHHost) SSHSetter {
 	return SSHSetter{
-		hostName:     hostName,
-		configReader: configReader,
+		hostName: hostName,
+		sshHost:  sshHost,
 	}
 }
 
 func (s SSHSetter) UpdateConfig() error {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return fmt.Errorf("error: could not find home directory: %v")
+		return fmt.Errorf("error: could not find home directory: %v", err)
 	}
 	path := filepath.Join(home, ".ssh", "config")
 
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0o600)
 	if err != nil {
-		return fmt.Errorf("error opening ssh config: %v")
+		return fmt.Errorf("error opening ssh config: %v", err)
 	}
 	defer f.Close()
 
 	cfg, err := ssh_config.Decode(f)
 	if err != nil {
-		return fmt.Errorf("error parsing ssh config: %v")
+		return fmt.Errorf("error parsing ssh config: %v", err)
 	}
 
 	// if host already exists, return
@@ -53,16 +53,17 @@ func (s SSHSetter) UpdateConfig() error {
 		}
 	}
 
-	if _, err := config.UnmarshalInto(s.configReader, &sshHost); err != nil {
+	hostBlock := buildHostBlock(s.sshHost)
+	if _, err := f.Seek(0, 2); err != nil {
+		return fmt.Errorf("error seeking to end of ssh config: %v", err)
 	}
 
-	hostBlock := buildHostBlock(hostName)
-	if _, err := f.Seek(0, 2); err == nil {
-		f.WriteString(hostBlock)
-	}
+	f.WriteString(hostBlock)
+
+	return nil
 }
 
-func buildHostBlock(host SSHHost) string {
+func buildHostBlock(host host.SSHHost) string {
 	const hostTmpl = `
 Host {{ .Alias }}
     HostName {{ .HostName }}

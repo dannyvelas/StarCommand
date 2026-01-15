@@ -1,4 +1,4 @@
-package ssh
+package host
 
 type SSHHost struct {
 	Alias         string
