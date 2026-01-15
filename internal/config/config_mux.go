@@ -5,28 +5,28 @@ import (
 	"maps"
 )
 
-var _ Reader = (*fullConfigReader)(nil)
+var _ Reader = (*configMux)(nil)
 
-type fullConfigReader struct {
+type configMux struct {
 	hostName  string
 	verbose   bool
 	readerFns []func(configMap map[string]string) Reader
 }
 
-func NewFullConfigReader(hostName string, verbose bool, opts ...func(*fullConfigReader)) *fullConfigReader {
-	fullConfigReader := &fullConfigReader{
+func NewFullConfigReader(hostName string, verbose bool, opts ...func(*configMux)) *configMux {
+	configMux := &configMux{
 		hostName: hostName,
 		verbose:  verbose,
 	}
 
 	for _, opt := range opts {
-		opt(fullConfigReader)
+		opt(configMux)
 	}
 
-	return fullConfigReader
+	return configMux
 }
 
-func (r *fullConfigReader) read() (readResult, error) {
+func (r *configMux) read() (readResult, error) {
 	configMap, allDiagnostics := make(map[string]string), make(map[string]string)
 	for _, readerFn := range r.readerFns {
 		Reader := readerFn(configMap)
@@ -40,17 +40,17 @@ func (r *fullConfigReader) read() (readResult, error) {
 	return diagnosticReadResult{configMap: configMap, diagnosticMap: allDiagnostics}, nil
 }
 
-func WithReader(r Reader) func(*fullConfigReader) {
-	return func(fullConfigReader *fullConfigReader) {
-		fullConfigReader.readerFns = append(
-			fullConfigReader.readerFns,
+func WithReader(r Reader) func(*configMux) {
+	return func(configMux *configMux) {
+		configMux.readerFns = append(
+			configMux.readerFns,
 			func(_ map[string]string) Reader { return r },
 		)
 	}
 }
 
-func WithLazyReader(fn func(configMap map[string]string) Reader) func(*fullConfigReader) {
-	return func(fullConfigReader *fullConfigReader) {
-		fullConfigReader.readerFns = append(fullConfigReader.readerFns, fn)
+func WithLazyReader(fn func(configMap map[string]string) Reader) func(*configMux) {
+	return func(configMux *configMux) {
+		configMux.readerFns = append(configMux.readerFns, fn)
 	}
 }

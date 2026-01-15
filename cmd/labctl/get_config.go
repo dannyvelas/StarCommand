@@ -20,7 +20,7 @@ func getConfigCmd(verbose bool) *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			hostName := args[0]
-			fullConfigReader := config.NewFullConfigReader(
+			configMux := config.NewFullConfigReader(
 				hostName,
 				verbose,
 				config.WithReader(config.NewFileReader(os.DirFS("."), hostName, verbose)),
@@ -32,7 +32,7 @@ func getConfigCmd(verbose bool) *cobra.Command {
 
 			// TODO: change this to be dynamic
 			proxmoxConfig := hosts.NewProxmox()
-			diagnosticMap, err := config.Unmarshal(fullConfigReader, proxmoxConfig)
+			diagnosticMap, err := config.Unmarshal(configMux, proxmoxConfig)
 			if err != nil && !errors.Is(err, config.ErrInvalidFields) {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
