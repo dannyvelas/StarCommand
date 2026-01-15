@@ -1,6 +1,6 @@
 package config
 
-var _ reader = mapReader{}
+var _ Reader = mapReader{}
 
 type mapReader struct {
 	configMap map[string]string

@@ -57,7 +57,7 @@ func validateStruct(v any) (map[string]string, error) {
 	return diagnosticMap, nil
 }
 
-func Unmarshal(r reader, target any) (map[string]string, error) {
+func Unmarshal(r Reader, target any) (map[string]string, error) {
 	val := reflect.ValueOf(target)
 	if val.Kind() != reflect.Pointer {
 		return nil, fmt.Errorf("target must be a pointer, got %T", target)

@@ -100,7 +100,15 @@ func TestFullConfigReader_Success(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			r := NewFullConfigReader(tc.hostName, false, WithFilesystem(tc.fs), WithEnviron(tc.env))
+			r := NewFullConfigReader(
+				tc.hostName,
+				false,
+				WithReader(NewFileReader(tc.fs, tc.hostName, false)),
+				WithReader(NewEnvReader(tc.env)),
+				WithLazyReader(func(configMap map[string]string) Reader {
+					return NewBitwardenSecretReader(configMap)
+				}),
+			)
 			target := testConfig{}
 			if _, err := Unmarshal(r, &target); err != nil {
 				t.Errorf("unexpected error: %v", err)
@@ -148,7 +156,13 @@ func TestFullConfigReader_Error(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			r := NewFullConfigReader(tc.hostName, false, WithFilesystem(tc.fs), WithEnviron(tc.env))
+			r := NewFullConfigReader(
+				tc.hostName,
+				false,
+				WithReader(NewEnvReader(tc.env)),
+				WithReader(NewFileReader(tc.fs, tc.hostName, false)),
+				WithReader(NewBitwardenSecretReader(map[string]string{})),
+			)
 
 			target := testConfig{}
 			_, err := Unmarshal(r, &target)

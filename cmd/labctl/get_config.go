@@ -20,7 +20,15 @@ func getConfigCmd(verbose bool) *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			hostName := args[0]
-			fullConfigReader := config.NewFullConfigReader(hostName, verbose)
+			fullConfigReader := config.NewFullConfigReader(
+				hostName,
+				verbose,
+				config.WithReader(config.NewFileReader(os.DirFS("."), hostName, verbose)),
+				config.WithReader(config.NewEnvReader(os.Environ())),
+				config.WithLazyReader(func(configMap map[string]string) config.Reader {
+					return config.NewBitwardenSecretReader(configMap)
+				}),
+			)
 
 			// TODO: change this to be dynamic
 			proxmoxConfig := hosts.NewProxmox()

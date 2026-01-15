@@ -5,13 +5,13 @@ import (
 	"strings"
 )
 
-var _ reader = envReader{}
+var _ Reader = envReader{}
 
 type envReader struct {
 	envAsMap map[string]string
 }
 
-func newEnvReader(environ []string) envReader {
+func NewEnvReader(environ []string) envReader {
 	envAsMap := make(map[string]string, len(environ))
 	for _, entry := range environ {
 		if entry == "" {

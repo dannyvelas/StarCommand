@@ -2,25 +2,21 @@ package config
 
 import (
 	"fmt"
-	"io/fs"
-	"os"
+	"maps"
 )
 
-var _ reader = (*fullConfigReader)(nil)
+var _ Reader = (*fullConfigReader)(nil)
 
 type fullConfigReader struct {
-	fileSystem fs.FS
-	environ    []string
-	hostName   string
-	verbose    bool
+	hostName  string
+	verbose   bool
+	readerFns []func(configMap map[string]string) Reader
 }
 
 func NewFullConfigReader(hostName string, verbose bool, opts ...func(*fullConfigReader)) *fullConfigReader {
 	fullConfigReader := &fullConfigReader{
-		fileSystem: os.DirFS("."),
-		environ:    os.Environ(),
-		hostName:   hostName,
-		verbose:    verbose,
+		hostName: hostName,
+		verbose:  verbose,
 	}
 
 	for _, opt := range opts {
@@ -31,35 +27,30 @@ func NewFullConfigReader(hostName string, verbose bool, opts ...func(*fullConfig
 }
 
 func (r *fullConfigReader) read() (readResult, error) {
-	configMap := make(map[string]string)
-
-	// read files
-	if _, err := Unmarshal(newFileReader(r.fileSystem, r.hostName, r.verbose), &configMap); err != nil {
-		return nil, fmt.Errorf("error unmarshalling files to map: %v", err)
+	configMap, allDiagnostics := make(map[string]string), make(map[string]string)
+	for _, readerFn := range r.readerFns {
+		Reader := readerFn(configMap)
+		readerDiagnosticMap, err := Unmarshal(Reader, &configMap)
+		if err != nil {
+			return nil, fmt.Errorf("error unmarshalling bitwarden secrets to map: %v", err)
+		}
+		maps.Copy(allDiagnostics, readerDiagnosticMap)
 	}
 
-	// read env
-	if _, err := Unmarshal(newEnvReader(r.environ), &configMap); err != nil {
-		return nil, fmt.Errorf("error unmarshalling env to map: %v", err)
-	}
-
-	bitwardenSecretReader := newBitwardenSecretReader(configMap)
-	diagnosticMap, err := Unmarshal(bitwardenSecretReader, &configMap)
-	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling bitwarden secrets to map: %v", err)
-	}
-
-	return diagnosticReadResult{configMap: configMap, diagnosticMap: diagnosticMap}, err
+	return diagnosticReadResult{configMap: configMap, diagnosticMap: allDiagnostics}, nil
 }
 
-func WithFilesystem(fileSystem fs.FS) func(*fullConfigReader) {
+func WithReader(r Reader) func(*fullConfigReader) {
 	return func(fullConfigReader *fullConfigReader) {
-		fullConfigReader.fileSystem = fileSystem
+		fullConfigReader.readerFns = append(
+			fullConfigReader.readerFns,
+			func(_ map[string]string) Reader { return r },
+		)
 	}
 }
 
-func WithEnviron(environ []string) func(*fullConfigReader) {
+func WithLazyReader(fn func(configMap map[string]string) Reader) func(*fullConfigReader) {
 	return func(fullConfigReader *fullConfigReader) {
-		fullConfigReader.environ = environ
+		fullConfigReader.readerFns = append(fullConfigReader.readerFns, fn)
 	}
 }

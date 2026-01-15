@@ -7,13 +7,13 @@ import (
 	"github.com/dannyvelas/homelab/internal/client"
 )
 
-var _ reader = (*bitwardenSecretReader)(nil)
+var _ Reader = (*bitwardenSecretReader)(nil)
 
 type bitwardenSecretReader struct {
 	mapReader mapReader
 }
 
-func newBitwardenSecretReader(configMap map[string]string) *bitwardenSecretReader {
+func NewBitwardenSecretReader(configMap map[string]string) *bitwardenSecretReader {
 	return &bitwardenSecretReader{
 		mapReader: newMapReader(configMap),
 	}
