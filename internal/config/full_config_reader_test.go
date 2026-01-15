@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"io/fs"
 	"testing"
 	"testing/fstest"
@@ -19,7 +20,7 @@ func (c *testConfig) Validate(m map[string]string) bool {
 	return true
 }
 
-func TestFullConfigReader_Read(t *testing.T) {
+func TestFullConfigReader_Success(t *testing.T) {
 	cases := []struct {
 		name     string
 		fs       fs.FS
@@ -121,6 +122,38 @@ func TestFullConfigReader_Read(t *testing.T) {
 			}
 			if target.AutoUpdateRebootTime == "" {
 				t.Errorf("AutoUpdateRebootTime was empty. expected: %s.", "05:00")
+			}
+		})
+	}
+}
+
+func TestFullConfigReader_Error(t *testing.T) {
+	cases := []struct {
+		name          string
+		fs            fs.FS
+		env           []string
+		hostName      string
+		expectedError error
+	}{
+		{
+			name: "missing variables",
+			fs: fstest.MapFS{
+				"config/proxmox.yml": {Data: []byte("node_cidr_address: 10.0.0.50/24\n")},
+			},
+			env:           []string{},
+			hostName:      "proxmox",
+			expectedError: ErrInvalidFields,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			r := NewFullConfigReader(tc.hostName, false, WithFilesystem(tc.fs), WithEnviron(tc.env))
+
+			target := testConfig{}
+			_, err := Unmarshal(r, &target)
+			if !errors.Is(err, tc.expectedError) {
+				t.Errorf("expected error to be %v, got %v", tc.expectedError, err)
 			}
 		})
 	}

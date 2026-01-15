@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 
@@ -21,25 +22,23 @@ func getConfigCmd(verbose bool) *cobra.Command {
 			hostName := args[0]
 			fullConfigReader := config.NewFullConfigReader(hostName, verbose)
 
-			if dryRun {
-				//validation, err := fullConfigReader.DryRun()
-				//if err != nil {
-				//	fmt.Fprintf(os.Stderr, "%s\n", err.Error())
-				//	os.Exit(1)
-				//}
-
-				// fmt.Printf("Config Requirements for %s:\n%s", hostName, validation)
-				return
-			}
-
+			// TODO: change this to be dynamic
 			proxmoxConfig := hosts.NewProxmox()
-			c, err := config.Unmarshal(fullConfigReader, proxmoxConfig)
-			if err != nil {
+			diagnosticMap, err := config.Unmarshal(fullConfigReader, proxmoxConfig)
+			if err != nil && !errors.Is(err, config.ErrInvalidFields) {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
 			}
 
-			bytes, err := json.MarshalIndent(c, "", "    ")
+			if dryRun {
+				fmt.Fprintf(os.Stderr, "Configs for %s:\n%s\n", hostName, config.DiagnosticMapToTable(diagnosticMap))
+				return
+			} else if errors.Is(err, config.ErrInvalidFields) {
+				fmt.Fprintf(os.Stderr, "%v for %s:\n%s\n", config.ErrInvalidFields, hostName, config.DiagnosticMapToTable(diagnosticMap))
+				return
+			}
+
+			bytes, err := json.MarshalIndent(proxmoxConfig, "", "    ")
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "error marshalling to JSON: %s", err.Error())
 				os.Exit(1)

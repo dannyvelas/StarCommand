@@ -60,8 +60,12 @@
 - [x] use a different tag name than "bw". people won't necessarily use bitwarden. use something like "config" instead.
 - [x] maybe see if we can make "Validate" a little more functional - instead of making it mutate its input argument
   - eh, Validate implementations don't have any reason to to be forced to create a completely new map. they're going to alter the original map anyway. so, whatever
-- [ ] maybe make env reader more testable
-- [ ] maybe make file reader more testable
+- [ ] make env reader more testable
+- [ ] make file reader more testable
+- [ ] check where `config` interface is being used because maybe it's not needed in those places. in those places, maybe it can be `any` instead. in `validateConfig` we're accepting an `any` anyway..so
+  - [ ] (dependant on above) maybe change name of `config` interface to be called `validator` or something like this
+- [ ] make the constructor for fullConfig name the readers it wants to use
+
 
 ## terraform-provider-proxmox repo
 - [x] make PR to correct the steps necessary to run `make example`
