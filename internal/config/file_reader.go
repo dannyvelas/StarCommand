@@ -26,6 +26,7 @@ func NewFileReader(hostName string, verbose bool, path string, opts ...func(*fil
 		fileSystem: os.DirFS("."),
 		hostName:   hostName,
 		verbose:    verbose,
+		paths:      []string{path},
 	}
 
 	for _, opt := range opts {
