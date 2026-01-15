@@ -34,11 +34,11 @@ func NewProxmox() *proxmox {
 	}
 }
 
-func (c *proxmox) Validate(diagnosticMap map[string]string) bool {
+func (c *proxmox) Validate(diagnostics map[string]string) bool {
 	ok := true
-	if diagnosticMap["node_cidr_address"] == config.StatusLoaded {
+	if diagnostics["node_cidr_address"] == config.StatusLoaded {
 		if _, err := netip.ParsePrefix(c.NodeCIDRAddress); err != nil {
-			diagnosticMap["node_cidr_address"] = fmt.Sprintf("'%s' is not a valid CIDR: %v\n", c.NodeCIDRAddress, err)
+			diagnostics["node_cidr_address"] = fmt.Sprintf("'%s' is not a valid CIDR: %v\n", c.NodeCIDRAddress, err)
 			ok = false
 		}
 	}

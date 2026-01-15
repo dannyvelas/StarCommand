@@ -25,7 +25,7 @@ type fillable interface {
 }
 
 func validateStruct(v any) (map[string]string, error) {
-	diagnosticMap := make(map[string]string)
+	diagnostics := make(map[string]string)
 	valid := true
 
 	tagToFieldMap, err := helpers.GetTagToFieldMap(v, "labctl", "json")
@@ -39,22 +39,22 @@ func validateStruct(v any) (map[string]string, error) {
 		}
 
 		if field.Value.IsZero() {
-			diagnosticMap[tag] = StatusMissing
+			diagnostics[tag] = StatusMissing
 			valid = false
 		} else {
-			diagnosticMap[tag] = StatusLoaded
+			diagnostics[tag] = StatusLoaded
 		}
 	}
 
 	if config, ok := v.(validatable); ok {
-		valid = valid && config.Validate(diagnosticMap)
+		valid = valid && config.Validate(diagnostics)
 	}
 
 	if !valid {
-		return diagnosticMap, ErrInvalidFields
+		return diagnostics, ErrInvalidFields
 	}
 
-	return diagnosticMap, nil
+	return diagnostics, nil
 }
 
 func Unmarshal(r Reader, target any) (map[string]string, error) {
@@ -75,19 +75,19 @@ func Unmarshal(r Reader, target any) (map[string]string, error) {
 		return nil, fmt.Errorf("error converting map into target: %v", err)
 	}
 
-	readDiagnosticMap := getDiagnosticMap(readResult)
+	readDiagnostics := getDiagnostics(readResult)
 
 	val = val.Elem()
 	if val.Kind() == reflect.Map {
-		return readDiagnosticMap, nil
+		return readDiagnostics, nil
 	}
 
-	targetDiagnosticMap, err := validateStruct(target)
+	targetDiagnostics, err := validateStruct(target)
 	if err != nil && !errors.Is(err, ErrInvalidFields) {
 		return nil, fmt.Errorf("error unmarhsalling into config: %v", err)
 	}
 
-	mergedDiagnostics := helpers.MergeMaps(readDiagnosticMap, targetDiagnosticMap)
+	mergedDiagnostics := helpers.MergeMaps(readDiagnostics, targetDiagnostics)
 	if errors.Is(err, ErrInvalidFields) {
 		return mergedDiagnostics, ErrInvalidFields
 	}
@@ -101,9 +101,9 @@ func Unmarshal(r Reader, target any) (map[string]string, error) {
 	return mergedDiagnostics, nil
 }
 
-func getDiagnosticMap(r readResult) map[string]string {
+func getDiagnostics(r readResult) map[string]string {
 	if v, ok := r.(diagnosticReadResult); ok {
-		return v.diagnosticMap
+		return v.diagnostics
 	}
 	return nil
 }

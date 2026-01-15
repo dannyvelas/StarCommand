@@ -29,15 +29,15 @@ func NewConfigMux(hostName string, verbose bool, opts ...func(*configMux)) *conf
 func (r *configMux) read() (readResult, error) {
 	configMap, allDiagnostics := make(map[string]string), make(map[string]string)
 	for _, readerFn := range r.readerFns {
-		Reader := readerFn(configMap)
-		readerDiagnosticMap, err := Unmarshal(Reader, &configMap)
+		reader := readerFn(configMap)
+		readerDiagnostics, err := Unmarshal(reader, &configMap)
 		if err != nil {
 			return nil, fmt.Errorf("error unmarshalling bitwarden secrets to map: %v", err)
 		}
-		maps.Copy(allDiagnostics, readerDiagnosticMap)
+		maps.Copy(allDiagnostics, readerDiagnostics)
 	}
 
-	return diagnosticReadResult{configMap: configMap, diagnosticMap: allDiagnostics}, nil
+	return diagnosticReadResult{configMap: configMap, diagnostics: allDiagnostics}, nil
 }
 
 func WithFileReader(opts ...func(*fileReader)) func(*configMux) {

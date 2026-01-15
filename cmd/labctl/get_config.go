@@ -30,17 +30,17 @@ func getConfigCmd(verbose bool) *cobra.Command {
 
 			// TODO: change this to be dynamic
 			proxmoxConfig := hosts.NewProxmox()
-			diagnosticMap, err := config.Unmarshal(configMux, proxmoxConfig)
+			diagnostics, err := config.Unmarshal(configMux, proxmoxConfig)
 			if err != nil && !errors.Is(err, config.ErrInvalidFields) {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
 			}
 
 			if dryRun {
-				fmt.Fprintf(os.Stderr, "Configs for %s:\n%s\n", hostName, config.DiagnosticMapToTable(diagnosticMap))
+				fmt.Fprintf(os.Stderr, "Configs for %s:\n%s\n", hostName, config.DiagnosticsToTable(diagnostics))
 				return
 			} else if errors.Is(err, config.ErrInvalidFields) {
-				fmt.Fprintf(os.Stderr, "%v for %s:\n%s\n", config.ErrInvalidFields, hostName, config.DiagnosticMapToTable(diagnosticMap))
+				fmt.Fprintf(os.Stderr, "%v for %s:\n%s\n", config.ErrInvalidFields, hostName, config.DiagnosticsToTable(diagnostics))
 				return
 			}
 

@@ -18,7 +18,7 @@ func (r simpleReadResult) getConfigMap() map[string]string {
 
 type diagnosticReadResult struct {
 	configMap     map[string]string
-	diagnosticMap map[string]string
+	diagnostics map[string]string
 }
 
 func (r diagnosticReadResult) getConfigMap() map[string]string {
