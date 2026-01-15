@@ -12,6 +12,6 @@ func newMapReader(configMap map[string]string) mapReader {
 	}
 }
 
-func (r mapReader) read() (readResult, error) {
-	return simpleReadResult(r), nil
+func (r mapReader) Read() (ReadResult, error) {
+	return SimpleReadResult(r), nil
 }

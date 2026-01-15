@@ -12,6 +12,7 @@ type envReader struct {
 	environ []string
 }
 
+// NewEnvReader creates a new reader which gets key-value pairs from the environment
 func NewEnvReader(opts ...func(*envReader)) envReader {
 	r := envReader{}
 	for _, opt := range opts {
@@ -25,7 +26,7 @@ func NewEnvReader(opts ...func(*envReader)) envReader {
 	return r
 }
 
-func (r envReader) read() (readResult, error) {
+func (r envReader) Read() (ReadResult, error) {
 	envAsMap := make(map[string]string, len(r.environ))
 	for _, entry := range r.environ {
 		if entry == "" {
@@ -35,7 +36,7 @@ func (r envReader) read() (readResult, error) {
 		key, value, _ := split(entry)
 		envAsMap[key] = value
 	}
-	return simpleReadResult{configMap: envAsMap}, nil
+	return NewSimpleReadResult(envAsMap), nil
 }
 
 func split(entry string) (string, string, error) {

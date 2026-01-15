@@ -23,6 +23,7 @@ type fileReader struct {
 	verbose    bool
 }
 
+// NewFileReader creates a new reader which gets key-value pairs from YML files from specified directories/files
 func NewFileReader(hostName string, verbose bool, opts ...func(*fileReader)) *fileReader {
 	fileReader := fileReader{
 		fileSystem: os.DirFS("."),
@@ -37,7 +38,7 @@ func NewFileReader(hostName string, verbose bool, opts ...func(*fileReader)) *fi
 	return &fileReader
 }
 
-func (r *fileReader) read() (readResult, error) {
+func (r *fileReader) Read() (ReadResult, error) {
 	m := make(map[string]string)
 	hostConfigFile := filepath.Join(configDir, fmt.Sprintf("%s.yml", r.hostName))
 	for _, file := range []string{fallbackConfigFile, hostConfigFile} {
@@ -56,7 +57,7 @@ func (r *fileReader) read() (readResult, error) {
 		}
 		maps.Copy(m, tempMap)
 	}
-	return simpleReadResult{configMap: m}, nil
+	return NewSimpleReadResult(m), nil
 }
 
 func WithFileSystem(fileSystem fs.FS) func(*fileReader) {

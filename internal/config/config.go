@@ -63,7 +63,7 @@ func Unmarshal(r Reader, target any) (map[string]string, error) {
 		return nil, fmt.Errorf("target must be a pointer, got %T", target)
 	}
 
-	readResult, err := r.read()
+	readResult, err := r.Read()
 	if err != nil && !errors.Is(err, ErrInvalidFields) {
 		return nil, fmt.Errorf("error reading: %v", err)
 	}
@@ -71,7 +71,7 @@ func Unmarshal(r Reader, target any) (map[string]string, error) {
 	// because its possible that after helpers.FromMap, the
 	// resulting target will have all required fields regardless
 
-	if err := helpers.FromMap(readResult.getConfigMap(), target); err != nil {
+	if err := helpers.FromMap(readResult.GetConfigMap(), target); err != nil {
 		return nil, fmt.Errorf("error converting map into target: %v", err)
 	}
 
@@ -101,8 +101,8 @@ func Unmarshal(r Reader, target any) (map[string]string, error) {
 	return mergedDiagnostics, nil
 }
 
-func getDiagnostics(r readResult) map[string]string {
-	if v, ok := r.(diagnosticReadResult); ok {
+func getDiagnostics(r ReadResult) map[string]string {
+	if v, ok := r.(DiagnosticReadResult); ok {
 		return v.diagnostics
 	}
 	return nil
