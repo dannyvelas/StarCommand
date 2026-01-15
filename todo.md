@@ -65,10 +65,12 @@
 - [x] check where `config` interface is being used because maybe it's not needed in those places. in those places, maybe it can be `any` instead. in `validateConfig` we're accepting an `any` anyway..so
   - [x] (dependant on above) maybe change name of `config` interface to be called `validator` or something like this
 - [x] make the constructor for fullConfig name the readers it wants to use
-- [ ] make the constructor for file_reader specify the files it wants to read
+- [x] make the constructor for file_reader specify the files it wants to read
 - [ ] maybe make bitwarden secrets read things piecemeal, instead of just dumping everything into a map
-- [ ] add signature descriptions to every public function
+- [x] add signature descriptions to every public function
 - [x] test if you can use a custom reader
+- [x] make sure there are no instances of SimpleReadResult{}, or DiagnosticReadResult{}
+- [ ] change file reader name to be FileReaderYAML or something like this
 
 ## terraform-provider-proxmox repo
 - [x] make PR to correct the steps necessary to run `make example`
