@@ -58,12 +58,12 @@ func (s SSHSetter) UpdateConfig() error {
 		return fmt.Errorf("error seeking to end of ssh config: %v", err)
 	}
 
-	f.WriteString(hostBlock)
+	f.Write(hostBlock)
 
 	return nil
 }
 
-func buildHostBlock(host host.SSHHost) string {
+func buildHostBlock(host host.SSHHost) []byte {
 	const hostTmpl = `
 Host {{ .Alias }}
     HostName {{ .HostName }}
@@ -82,5 +82,5 @@ Host {{ .Alias }}
 		panic(err)
 	}
 
-	return buf.String()
+	return buf.Bytes()
 }

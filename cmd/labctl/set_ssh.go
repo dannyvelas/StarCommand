@@ -36,7 +36,7 @@ func setSSHCmd() *cobra.Command {
 			}
 
 			sshSetter := ssh.NewSSHSetter(hostName, sshHost)
-			if err := sshSetter.UpdateConfig(); err != nil {
+			if err := sshSetter.UpdateConfig(); err != nil && !errors.Is(err, ssh.ErrHostAlreadyExists) {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
 			}
