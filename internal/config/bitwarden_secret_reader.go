@@ -34,7 +34,6 @@ func (r *bitwardenSecretReader) read() (readResult, error) {
 		config.IdentityURL,
 		config.AccessToken,
 		config.OrganizationID,
-		config.ProjectID,
 		config.StateFilePath,
 	)
 	if err != nil {
@@ -47,7 +46,7 @@ func (r *bitwardenSecretReader) read() (readResult, error) {
 	}
 
 	return diagnosticReadResult{
-		configMap:     bitwardenSecrets,
+		configMap:   bitwardenSecrets,
 		diagnostics: diagnostics,
 	}, nil
 }

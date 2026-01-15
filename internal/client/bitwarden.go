@@ -8,11 +8,10 @@ import (
 
 type BitwardenClient struct {
 	organizationID string
-	projectID      string
 	client         sdk.BitwardenClientInterface
 }
 
-func NewBitwardenClient(apiURL, identityURL, accessToken, organizationID, projectID, stateFile string) (BitwardenClient, error) {
+func NewBitwardenClient(apiURL, identityURL, accessToken, organizationID, stateFile string) (BitwardenClient, error) {
 	bitwardenClient, err := sdk.NewBitwardenClient(&apiURL, &identityURL)
 	if err != nil {
 		return BitwardenClient{}, fmt.Errorf("error initializing bitwarden client: %v", err)
@@ -24,7 +23,6 @@ func NewBitwardenClient(apiURL, identityURL, accessToken, organizationID, projec
 
 	return BitwardenClient{
 		organizationID: organizationID,
-		projectID:      projectID,
 		client:         bitwardenClient,
 	}, nil
 }
