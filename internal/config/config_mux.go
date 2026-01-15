@@ -42,12 +42,12 @@ func (r *configMux) Read() (ReadResult, error) {
 }
 
 // WithFileReader adds a file reader to the config mux
-func WithFileReader(opts ...func(*fileReader)) func(*configMux) {
+func WithFileReader(path string, opts ...func(*fileReader)) func(*configMux) {
 	return func(configMux *configMux) {
 		configMux.readerFns = append(
 			configMux.readerFns,
 			func(_ map[string]string) Reader {
-				return NewFileReader(configMux.hostName, configMux.verbose, opts...)
+				return NewFileReader(configMux.hostName, configMux.verbose, path, opts...)
 			},
 		)
 	}

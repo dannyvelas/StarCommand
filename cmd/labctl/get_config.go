@@ -20,10 +20,12 @@ func getConfigCmd(verbose bool) *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			hostName := args[0]
+			hostConfigPath := fmt.Sprintf("config/%s.yml", hostName)
+
 			configMux := config.NewConfigMux(
 				hostName,
 				verbose,
-				config.WithFileReader(),
+				config.WithFileReader("config/all.yml", config.WithPath(hostConfigPath)),
 				config.WithEnvReader(),
 				config.WithBitwardenSecretReader(),
 			)

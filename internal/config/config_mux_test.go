@@ -103,7 +103,7 @@ func TestConfigMux_Success(t *testing.T) {
 			r := NewConfigMux(
 				tc.hostName,
 				false,
-				WithFileReader(WithFileSystem(tc.fs)),
+				WithFileReader("config/all.yml", WithPath("config/proxmox.yml"), WithFileSystem(tc.fs)),
 				WithEnvReader(WithEnviron(tc.env)),
 				WithBitwardenSecretReader(),
 			)
@@ -157,7 +157,7 @@ func TestConfigMux_Error(t *testing.T) {
 			r := NewConfigMux(
 				tc.hostName,
 				false,
-				WithFileReader(WithFileSystem(tc.fs)),
+				WithFileReader("config/all.yml", WithPath("config/proxmox.yml"), WithFileSystem(tc.fs)),
 				WithEnvReader(WithEnviron(tc.env)),
 				WithBitwardenSecretReader(),
 			)

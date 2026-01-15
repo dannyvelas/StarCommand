@@ -57,6 +57,7 @@ func validateStruct(v any) (map[string]string, error) {
 	return diagnostics, nil
 }
 
+// Unmarshal reads key-value pairs from the provided Reader and unmarshals them into the target struct or map.
 func Unmarshal(r Reader, target any) (map[string]string, error) {
 	val := reflect.ValueOf(target)
 	if val.Kind() != reflect.Pointer {
