@@ -6,8 +6,8 @@ import (
 	"strings"
 )
 
-// diagnosticMapToTable takes a map and returns a formatted table
-func diagnosticMapToTable(data map[string]string) string {
+// DiagnosticMapToTable takes a diagnostic map and returns a formatted table
+func DiagnosticMapToTable(data map[string]string) string {
 	// calculate the maximum length of the keys
 	maxKeyLen := 3 // Minimum width to fit the "KEY" header
 	for k := range data {

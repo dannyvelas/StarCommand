@@ -52,15 +52,6 @@ func (r *fullConfigReader) read() (readResult, error) {
 	return diagnosticReadResult{configMap: configMap, diagnosticMap: diagnosticMap}, err
 }
 
-//func (r *fullConfigReader) DryRun() (string, error) {
-//	diagnosticMap, err := UnmarshalIntoStruct(r, hostConfig)
-//	if err != nil && !errors.Is(err, ErrInvalidFields) {
-//		return "", fmt.Errorf("error reading host config into struct: %v", err)
-//	}
-//
-//	return diagnosticMapToTable(diagnosticMap), nil
-//}
-
 func WithFilesystem(fileSystem fs.FS) func(*fullConfigReader) {
 	return func(fullConfigReader *fullConfigReader) {
 		fullConfigReader.fileSystem = fileSystem

@@ -89,7 +89,7 @@ func Unmarshal(r Reader, target any) (map[string]string, error) {
 
 	mergedDiagnostics := helpers.MergeMaps(readDiagnosticMap, targetDiagnosticMap)
 	if errors.Is(err, ErrInvalidFields) {
-		return nil, fmt.Errorf("%w:\n%s", ErrInvalidFields, diagnosticMapToTable(mergedDiagnostics))
+		return mergedDiagnostics, ErrInvalidFields
 	}
 
 	if fillableTarget, ok := target.(fillable); ok {
