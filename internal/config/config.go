@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/dannyvelas/homelab/internal/helpers"
 )
@@ -56,17 +57,30 @@ func validateStruct(v any) (map[string]string, error) {
 	return diagnosticMap, nil
 }
 
-func UnmarshalIntoStruct(r Reader, target any) (map[string]string, error) {
+func Unmarshal(r Reader, target any) (map[string]string, error) {
+	val := reflect.ValueOf(target)
+	if val.Kind() != reflect.Pointer {
+		return nil, fmt.Errorf("target must be a pointer, got %T", target)
+	}
+
 	readResult, err := r.read()
 	if err != nil && !errors.Is(err, ErrInvalidFields) {
 		return nil, fmt.Errorf("error reading: %v", err)
-	} // if errors.Is(err, ErrInvalidFields) we want to continue because we can want to show a report of all missing diagnostics
+	}
+	// if errors.Is(err, ErrInvalidFields) we want to continue
+	// because its possible that after helpers.FromMap, the
+	// resulting target will have all required fields regardless
 
 	if err := helpers.FromMap(readResult.getConfigMap(), target); err != nil {
 		return nil, fmt.Errorf("error converting map into target: %v", err)
 	}
 
 	readDiagnosticMap := getDiagnosticMap(readResult)
+
+	val = val.Elem()
+	if val.Kind() == reflect.Map {
+		return readDiagnosticMap, nil
+	}
 
 	targetDiagnosticMap, err := validateStruct(target)
 	if err != nil && !errors.Is(err, ErrInvalidFields) {
@@ -75,7 +89,7 @@ func UnmarshalIntoStruct(r Reader, target any) (map[string]string, error) {
 
 	mergedDiagnostics := helpers.MergeMaps(readDiagnosticMap, targetDiagnosticMap)
 	if errors.Is(err, ErrInvalidFields) {
-		return nil, fmt.Errorf("invalid or missing fields:\n%s", diagnosticMapToTable(mergedDiagnostics))
+		return nil, fmt.Errorf("%w:\n%s", ErrInvalidFields, diagnosticMapToTable(mergedDiagnostics))
 	}
 
 	if fillableTarget, ok := target.(fillable); ok {
@@ -84,25 +98,7 @@ func UnmarshalIntoStruct(r Reader, target any) (map[string]string, error) {
 		}
 	}
 
-	return mergedDiagnostics, err
-}
-
-func unmarshalIntoMap(r Reader, target *map[string]string) (map[string]string, error) {
-	readResult, err := r.read()
-	if err != nil && !errors.Is(err, ErrInvalidFields) {
-		return nil, fmt.Errorf("error reading: %v", err)
-	}
-
-	diagnosticMap := getDiagnosticMap(readResult)
-	if errors.Is(err, ErrInvalidFields) {
-		return diagnosticMap, ErrInvalidFields
-	}
-
-	if err := helpers.FromMap(readResult.getConfigMap(), target); err != nil {
-		return nil, fmt.Errorf("error converting map into target: %v", err)
-	}
-
-	return diagnosticMap, nil
+	return mergedDiagnostics, nil
 }
 
 func getDiagnosticMap(r readResult) map[string]string {

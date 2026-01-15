@@ -4,4 +4,4 @@ import (
 	"errors"
 )
 
-var ErrInvalidFields = errors.New("invalid fields")
+var ErrInvalidFields = errors.New("invalid or missing fields")

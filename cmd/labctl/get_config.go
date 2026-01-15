@@ -33,7 +33,7 @@ func getConfigCmd(verbose bool) *cobra.Command {
 			}
 
 			proxmoxConfig := hosts.NewProxmox()
-			c, err := config.UnmarshalIntoStruct(fullConfigReader, proxmoxConfig)
+			c, err := config.Unmarshal(fullConfigReader, proxmoxConfig)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)

@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -32,32 +31,25 @@ func NewFullConfigReader(hostName string, verbose bool, opts ...func(*fullConfig
 }
 
 func (r *fullConfigReader) read() (readResult, error) {
-	// TODO: make this dynamic
-	usingBitwarden := true
-
 	configMap := make(map[string]string)
 
 	// read files
-	if _, err := unmarshalIntoMap(newFileReader(r.fileSystem, r.hostName, r.verbose), &configMap); err != nil {
+	if _, err := Unmarshal(newFileReader(r.fileSystem, r.hostName, r.verbose), &configMap); err != nil {
 		return nil, fmt.Errorf("error unmarshalling files to map: %v", err)
 	}
 
 	// read env
-	if _, err := unmarshalIntoMap(newEnvReader(r.environ), &configMap); err != nil {
+	if _, err := Unmarshal(newEnvReader(r.environ), &configMap); err != nil {
 		return nil, fmt.Errorf("error unmarshalling env to map: %v", err)
 	}
 
-	if usingBitwarden {
-		bitwardenSecretReader := newBitwardenSecretReader(configMap)
-		diagnosticMap, err := unmarshalIntoMap(bitwardenSecretReader, &configMap)
-		if err != nil && !errors.Is(err, ErrInvalidFields) {
-			return nil, fmt.Errorf("error unmarshalling bitwarden secrets to map: %v", err)
-		}
-
-		return diagnosticReadResult{configMap: configMap, diagnosticMap: diagnosticMap}, err
+	bitwardenSecretReader := newBitwardenSecretReader(configMap)
+	diagnosticMap, err := Unmarshal(bitwardenSecretReader, &configMap)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshalling bitwarden secrets to map: %v", err)
 	}
 
-	return simpleReadResult{configMap: configMap}, nil
+	return diagnosticReadResult{configMap: configMap, diagnosticMap: diagnosticMap}, err
 }
 
 //func (r *fullConfigReader) DryRun() (string, error) {

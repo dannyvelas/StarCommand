@@ -22,7 +22,7 @@ func newBitwardenSecretReader(configMap map[string]string) *bitwardenSecretReade
 func (r *bitwardenSecretReader) read() (readResult, error) {
 	config := newBitwardenConfig()
 
-	diagnosticMap, err := UnmarshalIntoStruct(r.mapReader, &config)
+	diagnosticMap, err := Unmarshal(r.mapReader, &config)
 	if errors.Is(err, ErrInvalidFields) {
 		return diagnosticReadResult{configMap: nil, diagnosticMap: diagnosticMap}, ErrInvalidFields
 	} else if err != nil {
