@@ -1,26 +1,42 @@
 package config
 
 type Reader interface {
-	read() (readResult, error)
+	Read() (ReadResult, error)
 }
 
-type readResult interface {
-	getConfigMap() map[string]string
+type ReadResult interface {
+	readResult()
+	GetConfigMap() map[string]string
 }
 
-type simpleReadResult struct {
+type SimpleReadResult struct {
 	configMap map[string]string
 }
 
-func (r simpleReadResult) getConfigMap() map[string]string {
+func NewSimpleReadResult(configMap map[string]string) SimpleReadResult {
+	return SimpleReadResult{configMap: configMap}
+}
+
+func (r SimpleReadResult) readResult() {}
+
+func (r SimpleReadResult) GetConfigMap() map[string]string {
 	return r.configMap
 }
 
-type diagnosticReadResult struct {
-	configMap     map[string]string
+type DiagnosticReadResult struct {
+	configMap   map[string]string
 	diagnostics map[string]string
 }
 
-func (r diagnosticReadResult) getConfigMap() map[string]string {
+func NewDiagnosticReadResult(configMap, diagnostics map[string]string) DiagnosticReadResult {
+	return DiagnosticReadResult{
+		configMap:   configMap,
+		diagnostics: diagnostics,
+	}
+}
+
+func (r DiagnosticReadResult) readResult() {}
+
+func (r DiagnosticReadResult) GetConfigMap() map[string]string {
 	return r.configMap
 }

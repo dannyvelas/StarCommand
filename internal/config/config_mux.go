@@ -26,7 +26,7 @@ func NewConfigMux(hostName string, verbose bool, opts ...func(*configMux)) *conf
 	return configMux
 }
 
-func (r *configMux) read() (readResult, error) {
+func (r *configMux) Read() (ReadResult, error) {
 	configMap, allDiagnostics := make(map[string]string), make(map[string]string)
 	for _, readerFn := range r.readerFns {
 		reader := readerFn(configMap)
@@ -37,7 +37,7 @@ func (r *configMux) read() (readResult, error) {
 		maps.Copy(allDiagnostics, readerDiagnostics)
 	}
 
-	return diagnosticReadResult{configMap: configMap, diagnostics: allDiagnostics}, nil
+	return NewDiagnosticReadResult(configMap, allDiagnostics), nil
 }
 
 func WithFileReader(opts ...func(*fileReader)) func(*configMux) {
@@ -67,5 +67,38 @@ func WithBitwardenSecretReader() func(*configMux) {
 		configMux.readerFns = append(configMux.readerFns, func(configMap map[string]string) Reader {
 			return NewBitwardenSecretReader(configMap)
 		})
+	}
+}
+
+// WithCustomReader lets you add your own custom reader to the mux
+// your custom reader just needs to implement the "Reader" interface
+// The difference between WithCustomReader and WithCustomLazyReader is:
+// - WithCustomReader asks for an already-initialized reader
+// - WithCustomLazyReader asks for a function to initialize a reader
+// This function is useful if your reader can be initialized at
+// the same time as the mux.
+// WithCustomLazyReader is more powerful, but WithCustomReader is
+// simpler to use and syntactically terse
+func WithCustomReader(r Reader) func(*configMux) {
+	return func(configMux *configMux) {
+		configMux.readerFns = append(
+			configMux.readerFns,
+			func(_ map[string]string) Reader { return r },
+		)
+	}
+}
+
+// WithCustomLazyReader lets you add your own custom reader to the mux
+// The difference between WithCustomReader and WithCustomLazyReader is:
+// - WithCustomReader asks for an already-initialized reader
+// - WithCustomLazyReader asks for a function to initialize a reader
+// This function is useful if your reader needs to be initialized after
+// some config values have already been read.
+// For example, the BitwardenSecretReader would need to be initialized this way
+// because it expects a map of configs as an argument.
+// It uses this map to try to authenticate to Bitwarden
+func WithCustomLazyReader(fn func(configMap map[string]string) Reader) func(*configMux) {
+	return func(configMux *configMux) {
+		configMux.readerFns = append(configMux.readerFns, fn)
 	}
 }

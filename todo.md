@@ -49,7 +49,7 @@
 - [x] test if you can actually store c.client.Secrets() in a variable in client/bitwarden.go
 - [x] maybe rename "resolve" package in go
 - [x] make it so that every provider doesn't have to call decode
-- [ ] make it so that reading from bitwarden is optional. now it is required.
+- [x] make it so that reading from bitwarden is optional. now it is required.
 - [x] add test so that if `validateConfig` runs for something that doesn't implement `config`, it can return `true`. and if it runs for something that does implement `config`, it can return `false`
   - NOT NECESSARY anymore
 - [x] rename "results" to diagnosticMap
@@ -64,7 +64,11 @@
 - [x] make file reader more testable
 - [x] check where `config` interface is being used because maybe it's not needed in those places. in those places, maybe it can be `any` instead. in `validateConfig` we're accepting an `any` anyway..so
   - [x] (dependant on above) maybe change name of `config` interface to be called `validator` or something like this
-- [ ] make the constructor for fullConfig name the readers it wants to use
+- [x] make the constructor for fullConfig name the readers it wants to use
+- [ ] make the constructor for file_reader specify the files it wants to read
+- [ ] maybe make bitwarden secrets read things piecemeal, instead of just dumping everything into a map
+- [ ] add signature descriptions to every public function
+- [x] test if you can use a custom reader
 
 ## terraform-provider-proxmox repo
 - [x] make PR to correct the steps necessary to run `make example`
