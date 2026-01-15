@@ -70,7 +70,7 @@
 - [x] add signature descriptions to every public function
 - [x] test if you can use a custom reader
 - [x] make sure there are no instances of SimpleReadResult{}, or DiagnosticReadResult{}
-- [ ] change file reader name to be FileReaderYAML or something like this
+- [x] change file reader name to be FileReaderYAML or something like this
 
 ## terraform-provider-proxmox repo
 - [x] make PR to correct the steps necessary to run `make example`
