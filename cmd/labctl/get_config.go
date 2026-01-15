@@ -20,7 +20,7 @@ func getConfigCmd(verbose bool) *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			hostName := args[0]
-			configMux := config.NewFullConfigReader(
+			configMux := config.NewConfigMux(
 				hostName,
 				verbose,
 				config.WithReader(config.NewFileReader(os.DirFS("."), hostName, verbose)),

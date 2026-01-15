@@ -13,7 +13,7 @@ type configMux struct {
 	readerFns []func(configMap map[string]string) Reader
 }
 
-func NewFullConfigReader(hostName string, verbose bool, opts ...func(*configMux)) *configMux {
+func NewConfigMux(hostName string, verbose bool, opts ...func(*configMux)) *configMux {
 	configMux := &configMux{
 		hostName: hostName,
 		verbose:  verbose,

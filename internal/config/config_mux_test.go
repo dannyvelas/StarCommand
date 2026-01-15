@@ -20,7 +20,7 @@ func (c *testConfig) Validate(m map[string]string) bool {
 	return true
 }
 
-func TestFullConfigReader_Success(t *testing.T) {
+func TestConfigMux_Success(t *testing.T) {
 	cases := []struct {
 		name     string
 		fs       fs.FS
@@ -100,7 +100,7 @@ func TestFullConfigReader_Success(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			r := NewFullConfigReader(
+			r := NewConfigMux(
 				tc.hostName,
 				false,
 				WithReader(NewFileReader(tc.fs, tc.hostName, false)),
@@ -135,7 +135,7 @@ func TestFullConfigReader_Success(t *testing.T) {
 	}
 }
 
-func TestFullConfigReader_Error(t *testing.T) {
+func TestConfigMux_Error(t *testing.T) {
 	cases := []struct {
 		name          string
 		fs            fs.FS
@@ -156,7 +156,7 @@ func TestFullConfigReader_Error(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			r := NewFullConfigReader(
+			r := NewConfigMux(
 				tc.hostName,
 				false,
 				WithReader(NewEnvReader(tc.env)),
