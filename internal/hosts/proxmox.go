@@ -5,7 +5,7 @@ import (
 	"net/netip"
 	"os"
 
-	"github.com/dannyvelas/homelab/internal/config"
+	"github.com/dannyvelas/conflux"
 	"github.com/dannyvelas/homelab/internal/helpers"
 )
 
@@ -15,7 +15,7 @@ type proxmox struct {
 	NodeCIDRAddress      string `json:"node_cidr_address" required:"true"`
 	GatewayAddress       string `json:"gateway_address" required:"true"`
 	PhysicalNIC          string `json:"physical_nic" required:"true"`
-	AdminPassword        string `json:"admin_password" required:"true" labctl:"proxmox_admin_password"`
+	AdminPassword        string `json:"admin_password" required:"true" conflux:"proxmox_admin_password"`
 	SSHPort              string `json:"ssh_port" required:"true"`
 	AutoUpdateRebootTime string `json:"auto_update_reboot_time" required:"true"`
 	AdminEmail           string `json:"admin_email" required:"true"`
@@ -36,7 +36,7 @@ func NewProxmox() *proxmox {
 
 func (c *proxmox) Validate(diagnostics map[string]string) bool {
 	ok := true
-	if diagnostics["node_cidr_address"] == config.StatusLoaded {
+	if diagnostics["node_cidr_address"] == conflux.StatusLoaded {
 		if _, err := netip.ParsePrefix(c.NodeCIDRAddress); err != nil {
 			diagnostics["node_cidr_address"] = fmt.Sprintf("'%s' is not a valid CIDR: %v\n", c.NodeCIDRAddress, err)
 			ok = false

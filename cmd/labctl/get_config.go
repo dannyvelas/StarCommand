@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dannyvelas/homelab/internal/config"
+	"github.com/dannyvelas/conflux"
 	"github.com/dannyvelas/homelab/internal/hosts"
 	"github.com/spf13/cobra"
 )
@@ -22,27 +22,25 @@ func getConfigCmd(verbose bool) *cobra.Command {
 			hostName := args[0]
 			hostConfigPath := fmt.Sprintf("config/%s.yml", hostName)
 
-			configMux := config.NewConfigMux(
-				hostName,
-				verbose,
-				config.WithFileReader("config/all.yml", config.WithPath(hostConfigPath)),
-				config.WithEnvReader(),
-				config.WithBitwardenSecretReader(),
+			configMux := conflux.NewConfigMux(
+				conflux.WithYAMLFileReader("config/all.yml", conflux.WithPath(hostConfigPath)),
+				conflux.WithEnvReader(),
+				conflux.WithBitwardenSecretReader(),
 			)
 
 			// TODO: change this to be dynamic
 			proxmoxConfig := hosts.NewProxmox()
-			diagnostics, err := config.Unmarshal(configMux, proxmoxConfig)
-			if err != nil && !errors.Is(err, config.ErrInvalidFields) {
+			diagnostics, err := conflux.Unmarshal(configMux, proxmoxConfig)
+			if err != nil && !errors.Is(err, conflux.ErrInvalidFields) {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
 			}
 
 			if dryRun {
-				fmt.Fprintf(os.Stderr, "Configs for %s:\n%s\n", hostName, config.DiagnosticsToTable(diagnostics))
+				fmt.Fprintf(os.Stderr, "Configs for %s:\n%s\n", hostName, conflux.DiagnosticsToTable(diagnostics))
 				return
-			} else if errors.Is(err, config.ErrInvalidFields) {
-				fmt.Fprintf(os.Stderr, "%v for %s:\n%s\n", config.ErrInvalidFields, hostName, config.DiagnosticsToTable(diagnostics))
+			} else if errors.Is(err, conflux.ErrInvalidFields) {
+				fmt.Fprintf(os.Stderr, "%v for %s:\n%s\n", conflux.ErrInvalidFields, hostName, conflux.DiagnosticsToTable(diagnostics))
 				return
 			}
 
