@@ -144,6 +144,7 @@ func TestConfigMux_Error(t *testing.T) {
 		{
 			name: "missing variables",
 			fs: fstest.MapFS{
+				"config/all.yml":     {Data: []byte("node_cidr_address: 192.0.0.50/24\n")},
 				"config/proxmox.yml": {Data: []byte("node_cidr_address: 10.0.0.50/24\n")},
 			},
 			env:           []string{},
