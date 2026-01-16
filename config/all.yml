@@ -1,3 +1,4 @@
+ssh_user: "admin"
 ssh_port: 17031
 ssh_public_key_path: "~/.ssh/id_ed25519.pub"
 gateway_address: 10.0.0.1

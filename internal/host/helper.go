@@ -4,6 +4,6 @@ import "fmt"
 
 var FallbackFile = "config/all.yml"
 
-func GetConfigPath(hostName string) string {
-	return fmt.Sprintf("config/%s.yml", hostName)
+func GetConfigPath(hostAlias string) string {
+	return fmt.Sprintf("config/%s.yml", hostAlias)
 }

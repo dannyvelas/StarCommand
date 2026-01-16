@@ -15,14 +15,14 @@ func getConfigCmd() *cobra.Command {
 	var dryRun bool
 
 	getConfigCmd := &cobra.Command{
-		Use:   "config <host-name>",
+		Use:   "config <host-alias>",
 		Short: "Generate a JSON object of configuration values for a given host",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			hostName := args[0]
+			hostAlias := args[0]
 
 			configMux := conflux.NewConfigMux(
-				conflux.WithYAMLFileReader(host.FallbackFile, conflux.WithPath(host.GetConfigPath(hostName))),
+				conflux.WithYAMLFileReader(host.FallbackFile, conflux.WithPath(host.GetConfigPath(hostAlias))),
 				conflux.WithEnvReader(),
 				conflux.WithBitwardenSecretReader(),
 			)
@@ -36,10 +36,10 @@ func getConfigCmd() *cobra.Command {
 			}
 
 			if dryRun {
-				fmt.Fprintf(os.Stderr, "Configs for %s:\n%s\n", hostName, conflux.DiagnosticsToTable(diagnostics))
+				fmt.Fprintf(os.Stderr, "Configs for %s:\n%s\n", hostAlias, conflux.DiagnosticsToTable(diagnostics))
 				return
 			} else if errors.Is(err, conflux.ErrInvalidFields) {
-				fmt.Fprintf(os.Stderr, "%v for %s:\n%s\n", conflux.ErrInvalidFields, hostName, conflux.DiagnosticsToTable(diagnostics))
+				fmt.Fprintf(os.Stderr, "%v for %s:\n%s\n", conflux.ErrInvalidFields, hostAlias, conflux.DiagnosticsToTable(diagnostics))
 				return
 			}
 
@@ -53,7 +53,7 @@ func getConfigCmd() *cobra.Command {
 		},
 	}
 
-	getConfigCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Print report of found/missing keys for <host-name>")
+	getConfigCmd.Flags().BoolVar(&dryRun, "dry-run", false, "Print report of found/missing keys for <host-alias>")
 
 	return getConfigCmd
 }

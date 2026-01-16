@@ -13,30 +13,37 @@ import (
 
 func setSSHCmd() *cobra.Command {
 	setSSHCmd := &cobra.Command{
-		Use:   "ssh <host-name>",
+		Use:   "ssh <host-alias>",
 		Short: "Update the `~/.ssh/config` file to connect to a given host",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			hostName := args[0]
-
-			configMux := conflux.NewConfigMux(
-				conflux.WithYAMLFileReader(host.FallbackFile, conflux.WithPath(host.GetConfigPath(hostName))),
-				conflux.WithEnvReader(),
-				conflux.WithBitwardenSecretReader(),
-			)
-
-			var sshHost host.SSHHost
-			diagnostics, err := conflux.Unmarshal(configMux, &sshHost)
-			if errors.Is(err, conflux.ErrInvalidFields) {
-				fmt.Fprintf(os.Stderr, "%v for %s:\n%s\n", conflux.ErrInvalidFields, hostName, conflux.DiagnosticsToTable(diagnostics))
+			hostAlias := args[0]
+			sshSetter, err := ssh.NewSSHSetter(hostAlias)
+			if errors.Is(err, ssh.ErrHostAlreadyExists) {
+				fmt.Println("Host already exists in ssh config file, skipping...")
 				return
 			} else if err != nil {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
 			}
 
-			sshSetter := ssh.NewSSHSetter(hostName, sshHost)
-			if err := sshSetter.UpdateConfig(); err != nil && !errors.Is(err, ssh.ErrHostAlreadyExists) {
+			configMux := conflux.NewConfigMux(
+				conflux.WithYAMLFileReader(host.FallbackFile, conflux.WithPath(host.GetConfigPath(hostAlias))),
+				conflux.WithEnvReader(),
+				conflux.WithBitwardenSecretReader(),
+			)
+
+			sshHost := host.NewSSHHost(hostAlias)
+			diagnostics, err := conflux.Unmarshal(configMux, sshHost)
+			if errors.Is(err, conflux.ErrInvalidFields) {
+				fmt.Fprintf(os.Stderr, "%v for setting ssh for %s host:\n%s\n", conflux.ErrInvalidFields, hostAlias, conflux.DiagnosticsToTable(diagnostics))
+				return
+			} else if err != nil {
+				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+				os.Exit(1)
+			}
+
+			if err := sshSetter.UpdateConfig(sshHost); err != nil {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
 			}
