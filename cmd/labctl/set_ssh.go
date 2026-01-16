@@ -6,7 +6,8 @@ import (
 	"os"
 
 	"github.com/dannyvelas/conflux"
-	"github.com/dannyvelas/homelab/internal/host"
+	"github.com/dannyvelas/homelab/internal/helpers"
+	"github.com/dannyvelas/homelab/internal/models"
 	"github.com/dannyvelas/homelab/internal/ssh"
 	"github.com/spf13/cobra"
 )
@@ -28,12 +29,12 @@ func setSSHCmd() *cobra.Command {
 			}
 
 			configMux := conflux.NewConfigMux(
-				conflux.WithYAMLFileReader(host.FallbackFile, conflux.WithPath(host.GetConfigPath(hostAlias))),
+				conflux.WithYAMLFileReader(helpers.FallbackFile, conflux.WithPath(helpers.GetConfigPath(hostAlias))),
 				conflux.WithEnvReader(),
 				conflux.WithBitwardenSecretReader(),
 			)
 
-			sshHost := host.NewSSHHost(hostAlias)
+			sshHost := models.NewSSHHost(hostAlias)
 			diagnostics, err := conflux.Unmarshal(configMux, sshHost)
 			if errors.Is(err, conflux.ErrInvalidFields) {
 				fmt.Fprintf(os.Stderr, "%v for setting ssh for %s host:\n%s\n", conflux.ErrInvalidFields, hostAlias, conflux.DiagnosticsToTable(diagnostics))

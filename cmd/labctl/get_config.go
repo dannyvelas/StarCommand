@@ -7,7 +7,8 @@ import (
 	"os"
 
 	"github.com/dannyvelas/conflux"
-	"github.com/dannyvelas/homelab/internal/host"
+	"github.com/dannyvelas/homelab/internal/helpers"
+	"github.com/dannyvelas/homelab/internal/models"
 	"github.com/spf13/cobra"
 )
 
@@ -22,13 +23,13 @@ func getConfigCmd() *cobra.Command {
 			hostAlias := args[0]
 
 			configMux := conflux.NewConfigMux(
-				conflux.WithYAMLFileReader(host.FallbackFile, conflux.WithPath(host.GetConfigPath(hostAlias))),
+				conflux.WithYAMLFileReader(helpers.FallbackFile, conflux.WithPath(helpers.GetConfigPath(hostAlias))),
 				conflux.WithEnvReader(),
 				conflux.WithBitwardenSecretReader(),
 			)
 
 			// TODO: change this to be dynamic
-			proxmoxConfig := host.NewProxmox()
+			proxmoxConfig := models.NewProxmox()
 			diagnostics, err := conflux.Unmarshal(configMux, proxmoxConfig)
 			if err != nil && !errors.Is(err, conflux.ErrInvalidFields) {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())

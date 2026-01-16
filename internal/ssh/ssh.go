@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/dannyvelas/homelab/internal/host"
+	"github.com/dannyvelas/homelab/internal/models"
 	"github.com/kevinburke/ssh_config"
 )
 
@@ -41,7 +41,7 @@ func NewSSHSetter(hostAlias string) (SSHSetter, error) {
 	return SSHSetter{hostAlias: hostAlias}, nil
 }
 
-func (s SSHSetter) UpdateConfig(host *host.SSHHost) error {
+func (s SSHSetter) UpdateConfig(host *models.SSHHost) error {
 	f, err := openHomeSSHFile()
 	if err != nil {
 		return fmt.Errorf("error opening ssh config file: %v", err)
@@ -72,7 +72,7 @@ func openHomeSSHFile() (*os.File, error) {
 	return f, nil
 }
 
-func buildHostBlock(host *host.SSHHost) []byte {
+func buildHostBlock(host *models.SSHHost) []byte {
 	const hostTmpl = `
 Host {{ .Alias }}
   HostName {{ .HostName }}
