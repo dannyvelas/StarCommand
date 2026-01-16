@@ -21,7 +21,7 @@ tasks:
     desc: "Print report of found/missing proxmox variables"
     deps: [build:labctl]
     cmds:
-      - ./bin/labctl get config proxmox --dry-run
+      - ./bin/labctl check reqs proxmox
     run: once
 
   setup:proxmox:
