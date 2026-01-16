@@ -32,7 +32,8 @@ tasks:
       - |
         CONF_JSON=$(./bin/labctl get config proxmox)
         NODE_IP=$(echo $CONF_JSON | jq -r '.node_ip')
-        if ssh -p 17031 -o ConnectTimeout=3 admin@{{.NODE_IP}} exit 2>/dev/null; then
+        SSH_PORT=$(echo $CONF_JSON | jq -r '.ssh_port')
+        if ssh -p "$SSH_PORT" -o ConnectTimeout=3 "admin@$NODE_IP" exit 2>/dev/null; then
           ansible-playbook -i ansible/inventory.ini ansible/setup-proxmox.yml --ask-vault-pass -e "$CONF_JSON"
         else
           ansible-playbook -i ansible/inventory.ini ansible/setup-proxmox.yml -u root --ask-vault-pass -e "$CONF_JSON"
