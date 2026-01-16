@@ -8,14 +8,7 @@
 * [Go](https://go.dev/) installed on that computer.
 * A C toolchain on that computer. You can install this on macOS with `xcode-select --install`.
 * A [Tailscale](https://login.tailscale.com/start) account.
-* Some playbooks will send you an email when your server automatically updates. For this, you'll need an SMTP username and password. If you use Gmail, you can't use your regular password. You'll need to get a 16-character code:
-  * Go to your Google Account settings.
-  * Search for "App Passwords".
-  * Create one called "Ansible Server".
-  * Copy the 16-character code.
 * A Bitwarden account with an organization that uses [Secrets Manager](https://bitwarden.com/help/secrets-manager-quick-start/).
-* Some env variables inside if `.env` (needed to access Bitwarden).
-  * Run: `cp .env.example .env` and enter the missing values.
 
 <details>
 
@@ -45,17 +38,11 @@
 
 <summary><h2>Set up Proxmox with Ansible</h2></summary>
 
-- Run `task setup:proxmox:check` to see the configs that you need to add to your `./config/all.yml`, `./config/proxmox.yml`, or Bitwarden secrets vault.
+- Run `task setup:proxmox:check` to see the configs that you need. These configs can be added in any combination of:
+`./config/all.yml`, `./config/proxmox.yml`, the environment, or `.env`, a Bitwarden secrets vault.
+  - You don't have to use Bitwarden if you don't want to. You can put all your sensitive secrets in `.env`. But, if you do decide to use Bitwarden to store your secrets, I recommend running `cp .env.example .env` and filling out those values so that Bitwarden authentication works.
 - Run `task setup:proxmox`.
 - That will show you the API token that was created for the Terraform Proxmox user. Save this in Bitwarden.
-- Add the following to your `~/.ssh/config` file, this will be used by the `./ansible/setup-proxmox.yml` playbook:
-  ```
-  Host proxmox
-    Hostname 1.2.3.4
-    User admin
-    IdentityFile /path/to/your/private/.ssh/key
-    Port 17031
-  ```
 
 </details>
 
