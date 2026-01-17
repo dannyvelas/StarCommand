@@ -7,7 +7,7 @@ import (
 func getCmd() *cobra.Command {
 	getCmd := &cobra.Command{
 		Use:   "get",
-		Short: "Display one or many resources",
+		Short: "Display information for a resource",
 	}
 
 	getCmd.AddCommand(getConfigCmd())

@@ -15,7 +15,7 @@ import (
 func checkReqsCmd() *cobra.Command {
 	checkReqsCmd := &cobra.Command{
 		Use:   "reqs <host-alias>",
-		Short: "Generate a table showing all the configurations that are needed to bootstrap a given host. Each configuration is shown with diagnostic information indicating whether it was found or not",
+		Short: "Print a diagnostic report of all the configs that were found/missing for a given resource",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			hostAlias := args[0]

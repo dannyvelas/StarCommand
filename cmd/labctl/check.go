@@ -7,7 +7,7 @@ import (
 func checkCmd() *cobra.Command {
 	checkCmd := &cobra.Command{
 		Use:   "check",
-		Short: "Get diagnostics for a resource",
+		Short: "Check whether some resource is in a valid state",
 	}
 
 	checkCmd.AddCommand(checkReqsCmd())
