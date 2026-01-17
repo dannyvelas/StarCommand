@@ -45,8 +45,6 @@
 - [ ] make Ansible playbook send terraform API token directly to Bitwarden Secrets Manager (BWS)
 - [ ] figure out a way to make it so that plex data (about watch history, users with access to my plex) is stored somewhere externally so that if I nuke Proxmox, it doesn't get lost.
 - [x] make setup:proxmox taskfile task idempotently update the ssh file if needed
-- [ ] migrate all variables to "./configs" dir, effectively deleting all ansible and terraform config files
-- [ ] add support for other host-aliases other than proxmox. right now `labctl get config` and `labctl check reqs` pretty much will only work for proxmox because it's hardcoded
 - [x] test if you can actually store c.client.Secrets() in a variable in client/bitwarden.go
 - [x] maybe rename "resolve" package in go
 - [x] make it so that every provider doesn't have to call decode
@@ -67,11 +65,13 @@
   - [x] (dependant on above) maybe change name of `config` interface to be called `validator` or something like this
 - [x] make the constructor for fullConfig name the readers it wants to use
 - [x] make the constructor for file_reader specify the files it wants to read
-- [ ] maybe make bitwarden secrets read things piecemeal, instead of just dumping everything into a map
 - [x] add signature descriptions to every public function
 - [x] test if you can use a custom reader
 - [x] make sure there are no instances of SimpleReadResult{}, or DiagnosticReadResult{}
 - [x] change file reader name to be FileReaderYAML or something like this
+- [ ] maybe make bitwarden secrets read things piecemeal, instead of just dumping everything into a map
+- [ ] add support for other host-aliases other than proxmox. right now `labctl get config` and `labctl check reqs` pretty much will only work for proxmox because it's hardcoded
+- [ ] migrate all variables to "./configs" dir, effectively deleting all ansible and terraform config files
 
 ## terraform-provider-proxmox repo
 - [x] make PR to correct the steps necessary to run `make example`
