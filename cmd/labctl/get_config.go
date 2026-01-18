@@ -4,15 +4,19 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 
 	"github.com/dannyvelas/conflux"
 	"github.com/dannyvelas/homelab/internal/helpers"
 	"github.com/dannyvelas/homelab/internal/models"
+	"github.com/go-viper/mapstructure/v2"
 	"github.com/spf13/cobra"
 )
 
 func getConfigCmd() *cobra.Command {
+	var targets []string
+
 	getConfigCmd := &cobra.Command{
 		Use:   "config <host-alias>",
 		Short: "Generate a JSON object of configuration values for a given host",
@@ -26,17 +30,35 @@ func getConfigCmd() *cobra.Command {
 				conflux.WithBitwardenSecretReader(),
 			)
 
-			proxmoxConfig := models.NewProxmox()
-			diagnostics, err := conflux.Unmarshal(configMux, proxmoxConfig)
-			if errors.Is(err, conflux.ErrInvalidFields) {
-				fmt.Fprintf(os.Stderr, "%v for %s:\n%s\n", conflux.ErrInvalidFields, hostAlias, conflux.DiagnosticsToTable(diagnostics))
-				return
-			} else if err != nil {
+			configStructs, err := models.AliasToStruct(hostAlias, targets)
+			if err != nil {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
 			}
 
-			bytes, err := json.MarshalIndent(proxmoxConfig, "", "    ")
+			allConfigs, allDiagnostics := make(map[string]string), make(map[string]string)
+			for _, configStruct := range configStructs {
+				diagnostics, err := conflux.Unmarshal(configMux, configStruct)
+				if errors.Is(err, conflux.ErrInvalidFields) {
+					maps.Copy(allDiagnostics, diagnostics)
+					continue
+				} else if err != nil {
+					fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+					os.Exit(1)
+				}
+
+				if err := mapstructure.Decode(configStruct, &allConfigs); err != nil {
+					fmt.Fprintf(os.Stderr, "internal error merging config struct to map: %s\n", err.Error())
+					os.Exit(1)
+				}
+			}
+
+			if len(allDiagnostics) > 0 {
+				fmt.Fprintf(os.Stderr, "%v for %s:\n%s\n", conflux.ErrInvalidFields, hostAlias, conflux.DiagnosticsToTable(allDiagnostics))
+				return
+			}
+
+			bytes, err := json.MarshalIndent(allConfigs, "", "    ")
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "error marshalling to JSON: %s", err.Error())
 				os.Exit(1)
@@ -45,6 +67,8 @@ func getConfigCmd() *cobra.Command {
 			fmt.Println(string(bytes))
 		},
 	}
+
+	getConfigCmd.Flags().StringSliceVar(&targets, "for", []string{"ansible"}, "Get config for specific integration (e.g. ansible, ssh)")
 
 	return getConfigCmd
 }

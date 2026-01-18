@@ -9,7 +9,7 @@ import (
 	"github.com/dannyvelas/homelab/internal/helpers"
 )
 
-type proxmox struct {
+type ansibleProxmoxConfig struct {
 	// Required
 	SSHPublicKeyPath     string `json:"ssh_public_key_path" required:"true"`
 	NodeCIDRAddress      string `json:"node_cidr_address" required:"true"`
@@ -26,15 +26,15 @@ type proxmox struct {
 	SSHPublicKey string `json:"ssh_public_key"`
 }
 
-// NewProxmox returns a pointer to a Proxmox struct with some defaults
-func NewProxmox() *proxmox {
-	return &proxmox{
+// NewAnsibleProxmoxConfig returns a pointer to a Proxmox struct with some defaults
+func NewAnsibleProxmoxConfig() *ansibleProxmoxConfig {
+	return &ansibleProxmoxConfig{
 		SSHPort:              "22",
 		AutoUpdateRebootTime: "05:00",
 	}
 }
 
-func (c *proxmox) Validate(diagnostics map[string]string) bool {
+func (c *ansibleProxmoxConfig) Validate(diagnostics map[string]string) bool {
 	ok := true
 	if diagnostics["node_cidr_address"] == conflux.StatusLoaded {
 		if _, err := netip.ParsePrefix(c.NodeCIDRAddress); err != nil {
@@ -46,7 +46,7 @@ func (c *proxmox) Validate(diagnostics map[string]string) bool {
 	return ok
 }
 
-func (c *proxmox) FillInKeys() error {
+func (c *ansibleProxmoxConfig) FillInKeys() error {
 	// ParsePrefix returns the prefix and an error if it's invalid
 	prefix, err := netip.ParsePrefix(c.NodeCIDRAddress)
 	if err != nil {

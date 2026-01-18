@@ -5,6 +5,8 @@ github.com/dannyvelas/conflux v0.2.0 h1:1BoJTM8OaOTeMDs98QuDDmfzIj4+4WB2q/MvSQJ8
 github.com/dannyvelas/conflux v0.2.0/go.mod h1:19zg4Dxnabuy84FS4bV0GQOhXnUa2Ja7PlsQsQd/nG0=
 github.com/dannyvelas/conflux v0.4.0 h1:BnSMTvhgEy/p8b1jqmr5Z0wEjAOEq5Slhe1EnibzI0k=
 github.com/dannyvelas/conflux v0.4.0/go.mod h1:19zg4Dxnabuy84FS4bV0GQOhXnUa2Ja7PlsQsQd/nG0=
+github.com/go-viper/mapstructure/v2 v2.5.0 h1:vM5IJoUAy3d7zRSVtIwQgBj7BiWtMPfmPEgAXnvj1Ro=
+github.com/go-viper/mapstructure/v2 v2.5.0/go.mod h1:oJDH3BJKyqBA2TXFhDsKDGDTlndYOZ6rGS0BRZIxGhM=
 github.com/goccy/go-yaml v1.19.2 h1:PmFC1S6h8ljIz6gMRBopkjP1TVT7xuwrButHID66PoM=
 github.com/goccy/go-yaml v1.19.2/go.mod h1:XBurs7gK8ATbW4ZPGKgcbrY1Br56PdM69F7LkFRi1kA=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
