@@ -13,9 +13,10 @@ func getConfigCmd() *cobra.Command {
 	var targets []string
 
 	getConfigCmd := &cobra.Command{
-		Use:   "config <host-alias>",
-		Short: "Generate a JSON object of configuration values for a given host",
-		Args:  cobra.ExactArgs(1),
+		Use:       "config <host-alias>",
+		ValidArgs: []string{"proxmox"},
+		Short:     "Generate a JSON object of configuration values for a given host",
+		Args:      cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			hostAlias := args[0]
 			a, err := app.New(hostAlias, targets)
