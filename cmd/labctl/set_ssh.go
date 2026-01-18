@@ -14,9 +14,10 @@ import (
 
 func setSSHCmd() *cobra.Command {
 	setSSHCmd := &cobra.Command{
-		Use:   "ssh <host-alias>",
-		Short: "Update the `~/.ssh/config` file to connect to a given host",
-		Args:  cobra.ExactArgs(1),
+		Use:       "ssh <host-alias>",
+		ValidArgs: []string{"proxmox"},
+		Short:     "Update the `~/.ssh/config` file to connect to a given host",
+		Args:      cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			hostAlias := args[0]
 			sshSetter, err := ssh.NewSSHSetter(hostAlias)
