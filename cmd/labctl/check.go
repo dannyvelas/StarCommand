@@ -10,7 +10,7 @@ func checkCmd() *cobra.Command {
 		Short: "Check whether some resource is in a valid state",
 	}
 
-	checkCmd.AddCommand(checkReqsCmd())
+	checkCmd.AddCommand(checkConfigCmd())
 
 	return checkCmd
 }
