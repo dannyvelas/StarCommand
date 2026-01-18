@@ -70,6 +70,8 @@
 - [x] make sure there are no instances of SimpleReadResult{}, or DiagnosticReadResult{}
 - [x] change file reader name to be FileReaderYAML or something like this
 - [x] change `check reqs proxmox` command be `check config proxmox` instead.
+- [ ] see if there's a way to reduce duplication: in `models.AliasToStruct` you are listing all the aliases you support. you are again listing those same aliasas in the cobra configs of `getConfig` and `checkConfig`, in the `ValidArgs` field.
+- [ ] remove conflux stuff from set_ssh
 - [ ] make `get config proxmox` accept a flag that looks like this: `--for <target>` where target could be a `ansible` or `ssh`. you can also supply multiple targets like this: `--for ansible --for ssh` or like this: `--for ansible,ssh`. If no flag is passed, `ansible` is assumed.
 - [ ] make `check config proxmox` accept a flag that looks like this: `--for <target>` where target could be a `ansible` or `ssh`. you can also supply multiple targets like this: `--for ansible --for ssh` or like this: `--for ansible,ssh`. If no flag is passed, `ansible` is assumed.
 - [ ] maybe make bitwarden secrets read things piecemeal, instead of just dumping everything into a map
