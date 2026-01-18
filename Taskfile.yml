@@ -21,7 +21,7 @@ tasks:
     desc: "Print report of found/missing proxmox variables"
     deps: [build:labctl]
     cmds:
-      - ./bin/labctl check reqs proxmox
+      - ./bin/labctl check config proxmox --for ansible,ssh
     run: once
 
   setup:proxmox:
@@ -30,7 +30,7 @@ tasks:
 
     cmds:
       - |
-        CONF_JSON=$(./bin/labctl get config proxmox)
+        CONF_JSON=$(./bin/labctl get config proxmox --for ansible)
         NODE_IP=$(echo $CONF_JSON | jq -r '.node_ip')
         SSH_PORT=$(echo $CONF_JSON | jq -r '.ssh_port')
         if ssh -p "$SSH_PORT" -o ConnectTimeout=3 "admin@$NODE_IP" exit 2>/dev/null; then
