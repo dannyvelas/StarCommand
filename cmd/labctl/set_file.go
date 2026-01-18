@@ -31,7 +31,7 @@ func setFileCmd() *cobra.Command {
 			}
 
 			for _, diagnostic := range diagnostics {
-				fmt.Println(diagnostic)
+				fmt.Printf("- %s\n", diagnostic)
 			}
 
 			fmt.Println("SSH config updated successfully!")

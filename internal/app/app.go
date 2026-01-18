@@ -101,7 +101,7 @@ func (a App) SetFile() ([]string, error) {
 	for _, writableFile := range writableFiles {
 		var errAlreadyExists *models.ErrAlreadyExists
 		if err := writableFile.SetFile(); errors.As(err, &errAlreadyExists) {
-			diagnostics = append(diagnostics, "skipping write to %s because %s already exists in that file", errAlreadyExists.Name, errAlreadyExists.Resource)
+			diagnostics = append(diagnostics, fmt.Sprintf("skipping write to %s because %s already exists in that file", errAlreadyExists.Name, errAlreadyExists.Resource))
 		} else if err != nil {
 			return nil, fmt.Errorf("error writing to file: %v", err)
 		}
