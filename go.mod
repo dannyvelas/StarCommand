@@ -3,7 +3,7 @@ module github.com/dannyvelas/homelab
 go 1.25.1
 
 require (
-	github.com/dannyvelas/conflux v0.4.0
+	github.com/dannyvelas/conflux v0.5.0
 	github.com/joho/godotenv v1.5.1
 	github.com/kevinburke/ssh_config v1.4.0
 	github.com/spf13/cobra v1.10.2

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dannyvelas/conflux"
 	"github.com/dannyvelas/homelab/internal/app"
 	"github.com/spf13/cobra"
 )
@@ -19,14 +18,19 @@ func checkConfigCmd() *cobra.Command {
 		Args:      cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			hostAlias := args[0]
+			a, err := app.New(hostAlias, targets)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "%s", err.Error())
+				os.Exit(1)
+			}
 
-			diagnostics, err := app.CheckConfig(hostAlias, targets)
+			diagnostics, err := a.CheckConfig()
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "internal error: %s", err.Error())
 				os.Exit(1)
 			}
 
-			fmt.Printf("Configs for %s:\n%s\n", hostAlias, conflux.DiagnosticsToTable(diagnostics))
+			fmt.Printf("Configs for %s:\n%s\n", hostAlias, app.DiagnosticsToTable(diagnostics))
 		},
 	}
 

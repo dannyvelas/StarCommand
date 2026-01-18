@@ -11,21 +11,33 @@ import (
 	"github.com/go-viper/mapstructure/v2"
 )
 
-func GetConfig(hostAlias string, targets []string) (map[string]string, map[string]string, error) {
+type App struct {
+	configMux     *conflux.ConfigMux
+	configStructs []any
+}
+
+func New(hostAlias string, targets []string) (App, error) {
 	configMux := conflux.NewConfigMux(
 		conflux.WithYAMLFileReader(helpers.FallbackFile, conflux.WithPath(helpers.GetConfigPath(hostAlias))),
 		conflux.WithEnvReader(),
 		conflux.WithBitwardenSecretReader(),
 	)
 
-	configStructs, err := models.AliasToStruct(hostAlias, targets)
+	configStructs, err := aliasAndTargetsToStructs(hostAlias, targets)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error getting alias to struct: %v", err)
+		return App{}, fmt.Errorf("error: %w: no supported combination for hostAlias(%s) and targets(%v)", ErrInvalidArgs, hostAlias, targets)
 	}
 
+	return App{
+		configMux:     configMux,
+		configStructs: configStructs,
+	}, nil
+}
+
+func (a App) GetConfig() (map[string]string, map[string]string, error) {
 	allConfigs, allDiagnostics := make(map[string]string), make(map[string]string)
-	for _, configStruct := range configStructs {
-		diagnostics, err := conflux.Unmarshal(configMux, configStruct)
+	for _, configStruct := range a.configStructs {
+		diagnostics, err := conflux.Unmarshal(a.configMux, configStruct)
 		if errors.Is(err, conflux.ErrInvalidFields) {
 			maps.Copy(allDiagnostics, diagnostics)
 			continue
@@ -41,28 +53,29 @@ func GetConfig(hostAlias string, targets []string) (map[string]string, map[strin
 	return allConfigs, allDiagnostics, nil
 }
 
-func CheckConfig(hostAlias string, targets []string) (map[string]string, error) {
-	configMux := conflux.NewConfigMux(
-		conflux.WithYAMLFileReader(helpers.FallbackFile, conflux.WithPath(helpers.GetConfigPath(hostAlias))),
-		conflux.WithEnvReader(),
-		conflux.WithBitwardenSecretReader(),
-	)
-
-	configStructs, err := models.AliasToStruct(hostAlias, targets)
-	if err != nil {
-		return nil, fmt.Errorf("error getting alias to struct: %v", err)
-	}
-
+func (a App) CheckConfig() (map[string]string, error) {
 	allDiagnostics := make(map[string]string)
-	for _, configStruct := range configStructs {
-		diagnostics, err := conflux.Unmarshal(configMux, configStruct)
-		if errors.Is(err, conflux.ErrInvalidFields) {
-			maps.Copy(allDiagnostics, diagnostics)
-			continue
-		} else if err != nil {
+	for _, configStruct := range a.configStructs {
+		diagnostics, err := conflux.Unmarshal(a.configMux, configStruct)
+		if err != nil {
 			return nil, fmt.Errorf("error unmarshalling: %v", err)
 		}
+		maps.Copy(allDiagnostics, diagnostics)
 	}
 
 	return allDiagnostics, nil
+}
+
+func aliasAndTargetsToStructs(alias string, targets []string) ([]any, error) {
+	result := make([]any, 0, len(targets))
+	for _, target := range targets {
+		if alias == "proxmox" && target == "ansible" {
+			result = append(result, models.NewAnsibleProxmoxConfig())
+		} else if target == "ssh" {
+			result = append(result, models.NewSSHHost(alias))
+		} else {
+			return nil, fmt.Errorf("unexpected alias(%s) and target(%s) combination", alias, target)
+		}
+	}
+	return result, nil
 }
