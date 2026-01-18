@@ -53,11 +53,17 @@ func (a App) GetConfig() (map[string]string, map[string]string, error) {
 			maps.Copy(allDiagnostics, diagnostics)
 			continue
 		} else if err != nil {
-			return nil, nil, fmt.Errorf("error unmarshalling: %v", err)
+			return nil, nil, fmt.Errorf("internal error unmarshalling: %v", err)
 		}
 
-		if err := mapstructure.Decode(targetStruct.Struct, &allConfigs); err != nil {
-			return nil, nil, fmt.Errorf("error merging config struct to map: %v", err)
+		config := &mapstructure.DecoderConfig{TagName: "json", Result: &allConfigs}
+		decoder, err := mapstructure.NewDecoder(config)
+		if err != nil {
+			return nil, nil, fmt.Errorf("internal error creating new decoder: %v", err)
+		}
+
+		if err := decoder.Decode(targetStruct.Struct); err != nil {
+			return nil, nil, fmt.Errorf("internal error merging config struct to map: %v", err)
 		}
 	}
 
