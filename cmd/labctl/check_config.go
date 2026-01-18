@@ -12,9 +12,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func checkReqsCmd() *cobra.Command {
-	checkReqsCmd := &cobra.Command{
-		Use:   "reqs <host-alias>",
+func checkConfigCmd() *cobra.Command {
+	checkConfigCmd := &cobra.Command{
+		Use:   "config <host-alias>",
 		Short: "Print a diagnostic report of all the configs that were found/missing for a given resource",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
@@ -47,5 +47,5 @@ func checkReqsCmd() *cobra.Command {
 		},
 	}
 
-	return checkReqsCmd
+	return checkConfigCmd
 }
