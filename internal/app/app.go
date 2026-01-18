@@ -69,7 +69,7 @@ func (a App) CheckConfig() (map[string]string, error) {
 	for _, targetStruct := range a.targetStructs {
 		diagnostics, err := conflux.Unmarshal(a.configMux, targetStruct.Struct)
 		if err != nil {
-			return nil, fmt.Errorf("error unmarshalling: %v", err)
+			return nil, fmt.Errorf("internal error unmarshalling: %v", err)
 		}
 		maps.Copy(allDiagnostics, diagnostics)
 	}
@@ -77,7 +77,7 @@ func (a App) CheckConfig() (map[string]string, error) {
 	return allDiagnostics, nil
 }
 
-func (a App) SetFile() error {
+func (a App) SetFile() ([]string, error) {
 	writableFiles, nonWritableTargets := make([]WritableFile, 0), make([]string, 0)
 	for _, configStruct := range a.targetStructs {
 		if writableFile, ok := configStruct.Struct.(WritableFile); !ok {
@@ -88,16 +88,20 @@ func (a App) SetFile() error {
 	}
 
 	if len(nonWritableTargets) > 0 {
-		return fmt.Errorf("error: the following targets cannot be used to write to a file: %v", nonWritableTargets)
+		return nil, fmt.Errorf("error: %w: the following targets do not support writing to a file: %v", ErrInvalidArgs, nonWritableTargets)
 	}
 
+	diagnostics := make([]string, 0)
 	for _, writableFile := range writableFiles {
-		if err := writableFile.SetFile(); err != nil {
-			return fmt.Errorf("error writing to file: %v", err)
+		var errAlreadyExists *models.ErrAlreadyExists
+		if err := writableFile.SetFile(); errors.As(err, &errAlreadyExists) {
+			diagnostics = append(diagnostics, "skipping write to %s because %s already exists in that file", errAlreadyExists.Name, errAlreadyExists.Resource)
+		} else if err != nil {
+			return nil, fmt.Errorf("error writing to file: %v", err)
 		}
 	}
 
-	return nil
+	return diagnostics, nil
 }
 
 func aliasAndTargetsToStructs(alias string, targets []string) ([]TargetStruct, error) {

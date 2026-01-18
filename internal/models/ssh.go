@@ -53,7 +53,7 @@ func (s *SSHHost) SetFile() error {
 	for _, host := range cfg.Hosts {
 		for _, pattern := range host.Patterns {
 			if pattern.String() == s.Alias {
-				return fmt.Errorf("host already exists")
+				return NewErrAlreadyExists("ssh", "host")
 			}
 		}
 	}

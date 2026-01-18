@@ -20,13 +20,18 @@ func setFileCmd() *cobra.Command {
 			hostAlias := args[0]
 			a, err := app.New(hostAlias, targets)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "%s", err.Error())
+				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
 			}
 
-			if err := a.SetFile(); err != nil {
+			diagnostics, err := a.SetFile()
+			if err != nil {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
+			}
+
+			for _, diagnostic := range diagnostics {
+				fmt.Println(diagnostic)
 			}
 
 			fmt.Println("SSH config updated successfully!")

@@ -20,13 +20,13 @@ func checkConfigCmd() *cobra.Command {
 			hostAlias := args[0]
 			a, err := app.New(hostAlias, targets)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "%s", err.Error())
+				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
 			}
 
 			diagnostics, err := a.CheckConfig()
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "internal error: %s", err.Error())
+				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
 			}
 
