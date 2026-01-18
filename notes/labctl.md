@@ -24,7 +24,7 @@ Flags:
 | Action | Resource | Host-Alias | Flags             |
 |--------|----------|------------|-------------------|
 | get    | config   | proxmox    | --for ansible     |
-| set    | ssh      | proxmox    |                   |
+| set    | file     | proxmox    | --for ssh         |
 | check  | config   | proxmox    | --for ansible,ssh |
 
 ## prompt
