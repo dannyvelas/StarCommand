@@ -2,24 +2,23 @@
 
 An internal CLI to configure a homelab
 
-Usage:
-* labctl [command]
+## labctl grammar v1
 
-Style 1:
-* labctl resolve <host-alias>: Generate a JSON object of configuration values for a given host.
-* labctl resolve <host-alias> --dry-run: Generate a table showing all the keys that were found, as well as all the keys that are missing.
-* labctl setup-ssh <host-alias>: Update `~/.ssh/config` file to connect to `<host-alias>`.
+| Action    | Host-Alias | Flags     |
+|-----------|------------|-----------|
+| resolve   | proxmox    |           |
+| resolve   | proxmox    | --dry-run |
+| setup-ssh | proxmox    |           |
 
-Sytle 2:
-* labctl get config <host-alias>: Generate a JSON object of configuration values for a given host
-* labctl set ssh <host-alias>: Update `~/.ssh/config` file to connect to `<host-alias>`.
-* labctl check reqs <host-alias>: Check whether configs are set for proxmox
+## labctl grammar v2
 
-Flags:
-* -h, --help: help for labctl
-* -v, --verbose: verbose mode
+| Action | Resource | Host-Alias |
+|--------|----------|------------|
+| get    | config   | proxmox    |
+| set    | ssh      | proxmox    |
+| check  | reqs     | proxmox    |
 
-## labctl grammar
+## labctl grammar v3
 
 | Action | Resource | Host-Alias | Flags             |
 |--------|----------|------------|-------------------|
