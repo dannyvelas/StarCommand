@@ -7,7 +7,6 @@ import (
 
 	"github.com/dannyvelas/conflux"
 	"github.com/dannyvelas/homelab/internal/handlers"
-	"github.com/dannyvelas/homelab/internal/helpers"
 	"github.com/dannyvelas/homelab/internal/models"
 	"github.com/go-viper/mapstructure/v2"
 )
@@ -27,13 +26,7 @@ var handlerMap = map[string]handlers.Handler{
 	"proxmox": handlers.NewProxmoxHandler(),
 }
 
-func New(hostAlias string, targets []string) (App, error) {
-	configMux := conflux.NewConfigMux(
-		conflux.WithYAMLFileReader(helpers.FallbackFile, conflux.WithPath(helpers.GetConfigPath(hostAlias))),
-		conflux.WithEnvReader(),
-		conflux.WithBitwardenSecretReader(),
-	)
-
+func New(configMux *conflux.ConfigMux, hostAlias string, targets []string) (App, error) {
 	handler, ok := handlerMap[hostAlias]
 	if !ok {
 		return App{}, fmt.Errorf("error: %w: unsupported host(%s)", ErrInvalidArgs, hostAlias)
