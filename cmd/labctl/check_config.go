@@ -15,7 +15,7 @@ func checkConfigCmd() *cobra.Command {
 
 	checkConfigCmd := &cobra.Command{
 		Use:       "config <host-alias>",
-		ValidArgs: []string{"proxmox"},
+		ValidArgs: app.GetSupportedHostAliases(),
 		Short:     "Print a diagnostic report of all the configs that were found/missing for a given resource",
 		Args:      cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {

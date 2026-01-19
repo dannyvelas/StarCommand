@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"maps"
+	"slices"
 
 	"github.com/dannyvelas/conflux"
 	"github.com/dannyvelas/homelab/internal/handlers"
@@ -15,15 +16,15 @@ type WritableFile interface {
 	SetFile() error
 }
 
+var handlerMap = map[string]handlers.Handler{
+	"proxmox": handlers.NewProxmoxHandler(),
+}
+
 type App struct {
 	hostAlias string
 	targets   []string
 	configMux *conflux.ConfigMux
 	handler   handlers.Handler
-}
-
-var handlerMap = map[string]handlers.Handler{
-	"proxmox": handlers.NewProxmoxHandler(),
 }
 
 func New(configMux *conflux.ConfigMux, hostAlias string, targets []string) (App, error) {
@@ -119,4 +120,8 @@ func (a App) SetFile() ([]string, error) {
 	}
 
 	return diagnostics, nil
+}
+
+func GetSupportedHostAliases() []string {
+	return slices.Collect(maps.Keys(handlerMap))
 }

@@ -15,7 +15,7 @@ func setFileCmd() *cobra.Command {
 
 	setFileCmd := &cobra.Command{
 		Use:       "file <host-alias>",
-		ValidArgs: []string{"proxmox"},
+		ValidArgs: app.GetSupportedHostAliases(),
 		Short:     "Update the `~/.ssh/config` file to connect to a given host",
 		Args:      cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
