@@ -107,20 +107,55 @@ Cons
 ## Alternative solution: Host handlers
 
 - Have a "handler" for each host. Each method in the handler is an action+resource.
+- Have a map that maps to those handlers
 ```
-class Proxmox {
+class ProxmoxHandler {
   GetConfig(targets: []string)
   CheckConfig(targets: []string)
   SetFile(targets: []string)
 }
-class Plex {
+class PlexHandler {
   GetConfig(targets: []string)
   CheckConfig(targets: []string)
   SetFile(targets: []string)
 }
-class VM {
+class VMHandler {
   GetConfig(targets: []string)
   CheckConfig(targets: []string)
   SetFile(targets: []string)
+}
+
+var handlerMap = map[string]any{
+  "proxmox": ProxmoxHandler{},
+  "plex": PlexHandler{},
+  "vm": VMHandler{},
 }
 ```
+
+Implementation:
+
+`get_config.go`
+```
+	getConfigCmd := &cobra.Command{
+    ...
+		Run: func(cmd *cobra.Command, args []string) {
+			hostAlias := args[0]
+
+      handler := handlerMap[hostAlias]
+      if !handler: return ErrInvalidHost
+
+      if handler.GetConfig == null: return ErrNotSupportedForHost
+
+      return handler.GetConfig(targets)
+		},
+```
+
+### Evaluation
+
+Pros:
+- Extensible
+- Can get hosts from thing
+- `GetConfig()` abstracts the whole merging configs for multiple targets part
+
+## todo
+- in mutliple dispatch, what about making "targets" not be one of the dispatching arguments and just a regular input argument, an array of strings?
