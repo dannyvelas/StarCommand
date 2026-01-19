@@ -33,11 +33,7 @@ if host == "proxmox" && target == "ansible" {
 }
 ```
 
-## Alternative solution: Double dispatch
-
-I'm not sure how this would work with Cobra. Ideally, I'd take advantage of the dispatching powers that Cobra is already giving me for free, but I'm not sure how. I'll show how I think it would work without Cobra and a spec of how it might work with Cobra.
-
-### Without using cobra to resolve action+resource for me
+## Alternative solution: Multiple dispatch without cobra dispatching
 
 Define multiple "execute" functions, each for a unique permutation:
 ```
@@ -77,10 +73,19 @@ This would roughly look like this:
 
       print(json.Marshal(combinedConfigs))
 		},
-
 ```
 
-### With Cobra
+### Evaluation
+
+Pros
+- Extensible
+
+Cons
+- I don't like having to run multiple `execute` functions in a for-loop when multiple targets are passed in
+- Doesn't give us a way to get the list of supported hosts
+- I'm not taking advantage of the dispatching powers that Cobra is already giving me for free.
+
+## Alternative solution: Multiple dispatch with Cobra dispatching
 
 Same as above but only dispatch on target and host alias
 ```
@@ -92,17 +97,35 @@ execute(target: SSH, hostAlias: Plex)
 execute(target: SSH, hostAlias: VM)
 ```
 
+### Evaluation
+
+Cons:
 - Not sure how this would work though. Consider the implementation of the first `execute` function that should only dispatch for `target==Ansible` and `hostAlias==Proxmox`. When you're implementing this function, how would you know what the action and resource are? In other words, how would you know what this function needs to do? Would it be getting the config, checking the config, setting a file?
-- I suppose you could have the be methods that have a `action` and `resource` field embedded in the receiver object. But then that just creates the same problem all over again. Now you need to do nested multiple dispatch on `action`+`resource`. At that point just go for the full multiple dispatch solution without Cobra, I would think.
+  - I suppose you could have the be methods that have a `action` and `resource` field embedded in the receiver object. But then that just creates the same problem all over again. Now you need to do nested multiple dispatch on `action`+`resource`. At that point just go for the full multiple dispatch solution without Cobra, I would think.
+
+## Alternative solution: Multiple dispatch but have target be a non-dispatching argument which is an array of strings
+
+Define multiple "execute" functions, each for a unique permutation:
+```
+execute(action: Get, resource: Config, hostAlias: Proxmox, targets: []string)
+execute(action: Get, resource: Config, hostAlias: Plex, targets: []string)
+execute(action: Get, resource: Config, hostAlias: VM, targets: []string)
+execute(action: Check, resource: Config, hostAlias: Plex, targets: []string)
+execute(action: Check, resource: Config, hostAlias: Proxmox, targets: []string)
+execute(action: Check, resource: Config, hostAlias: VM, targets: []string)
+execute(action: Set, resource: File, hostAlias: Plex, targets: []string)
+execute(action: Set, resource: File, hostAlias: Proxmox, targets: []string)
+execute(action: Set, resource: File, hostAlias: VM, targets: []string)
+```
 
 ### Evaluation
 
-Pros
+Pros:
 - Extensible
+- `execute(Get, Config, <host>)` abstracts the whole merging configs for multiple targets part
 
-Cons
-- I don't like having to run multiple `execute` functions in a for-loop when multiple targets are passed in
-- Doesn't give us a way to get the list of supported hosts
+Cons:
+- Can't get hosts from thing
 
 ## Alternative solution: Host handlers
 
@@ -155,7 +178,4 @@ Implementation:
 Pros:
 - Extensible
 - Can get hosts from thing
-- `GetConfig()` abstracts the whole merging configs for multiple targets part
-
-## todo
-- in mutliple dispatch, what about making "targets" not be one of the dispatching arguments and just a regular input argument, an array of strings?
+- `<host>.GetConfig()` abstracts the whole merging configs for multiple targets part
