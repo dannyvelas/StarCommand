@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/dannyvelas/conflux"
 	"github.com/dannyvelas/homelab/internal/app"
+	"github.com/dannyvelas/homelab/internal/helpers"
 	"github.com/spf13/cobra"
 )
 
@@ -19,7 +21,13 @@ func getConfigCmd() *cobra.Command {
 		Args:      cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			hostAlias := args[0]
-			a, err := app.New(hostAlias, targets)
+			configMux := conflux.NewConfigMux(
+				conflux.WithYAMLFileReader(helpers.FallbackFile, conflux.WithPath(helpers.GetConfigPath(hostAlias))),
+				conflux.WithEnvReader(),
+				conflux.WithBitwardenSecretReader(),
+			)
+
+			a, err := app.New(configMux, hostAlias, targets)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
