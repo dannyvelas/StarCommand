@@ -38,7 +38,7 @@ func getConfigCmd() *cobra.Command {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
 			} else if len(diagnostics) > 0 {
-				fmt.Fprintf(os.Stderr, "%v for %s:\n%s\n", app.ErrInvalidFields, hostAlias, app.DiagnosticsToTable(diagnostics))
+				fmt.Fprintf(os.Stderr, "invalid or missing configs for %s:\n%s\n", hostAlias, app.DiagnosticsToTable(diagnostics))
 				return
 			}
 
