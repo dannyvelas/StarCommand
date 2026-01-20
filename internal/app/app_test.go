@@ -33,6 +33,20 @@ func TestGetConfig(t *testing.T) {
 			},
 			expectedDiagnostics: map[string]string{},
 		},
+		{
+			name:      "ssh as target",
+			hostAlias: "proxmox",
+			targets:   []string{"ssh"},
+			expectedConfig: map[string]string{
+				"alias":               "proxmox",
+				"host_name":           "10.0.0.50",
+				"ssh_user":            "admin",
+				"ssh_public_key_path": "~/.ssh/id_ed25519.pub",
+				"ssh_port":            "17031",
+				"node_cidr_address":   "10.0.0.50/24",
+			},
+			expectedDiagnostics: map[string]string{},
+		},
 	}
 
 	for _, tc := range cases {

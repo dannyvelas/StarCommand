@@ -13,7 +13,7 @@ import (
 
 type SSHHost struct {
 	Alias           string `json:"alias"`
-	HostName        string `json:"hostName"`
+	HostName        string `json:"host_name"`
 	User            string `json:"ssh_user" required:"true"`
 	PublicKeyPath   string `json:"ssh_public_key_path" required:"true"`
 	Port            string `json:"ssh_port" required:"true"`
