@@ -7,6 +7,8 @@ github.com/dannyvelas/conflux v0.4.0 h1:BnSMTvhgEy/p8b1jqmr5Z0wEjAOEq5Slhe1Enibz
 github.com/dannyvelas/conflux v0.4.0/go.mod h1:19zg4Dxnabuy84FS4bV0GQOhXnUa2Ja7PlsQsQd/nG0=
 github.com/dannyvelas/conflux v0.5.0 h1:O/xrBLKBAFj9CZ8ru7WY+K5pOmRxDjfRHd9bH5rr7Do=
 github.com/dannyvelas/conflux v0.5.0/go.mod h1:19zg4Dxnabuy84FS4bV0GQOhXnUa2Ja7PlsQsQd/nG0=
+github.com/dannyvelas/conflux v0.6.0 h1:thwD5eXrmRso/DP61Rqy9/r77Yeq+dkV1BxfYaDpxR0=
+github.com/dannyvelas/conflux v0.6.0/go.mod h1:19zg4Dxnabuy84FS4bV0GQOhXnUa2Ja7PlsQsQd/nG0=
 github.com/go-viper/mapstructure/v2 v2.5.0 h1:vM5IJoUAy3d7zRSVtIwQgBj7BiWtMPfmPEgAXnvj1Ro=
 github.com/go-viper/mapstructure/v2 v2.5.0/go.mod h1:oJDH3BJKyqBA2TXFhDsKDGDTlndYOZ6rGS0BRZIxGhM=
 github.com/goccy/go-yaml v1.19.2 h1:PmFC1S6h8ljIz6gMRBopkjP1TVT7xuwrButHID66PoM=
