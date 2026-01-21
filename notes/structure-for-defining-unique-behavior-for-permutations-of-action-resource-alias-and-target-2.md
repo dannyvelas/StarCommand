@@ -94,16 +94,41 @@ func New(configMux, action, resource, targets []string, hostAlias: Option[string
 
 `app/app.go`:
 ```go
-type Rule struct {
-  Match  func(host, target string) bool
-  Action func(host, target string)
+func New(configMux) {
+	return App{
+		configMux: configMux,
+	}
 }
 
-func New(configMux, action, resource, targets []string, hostAlias: Option[string]) {
-  
+func (a App) GetConfig(hostAlias string, targets []string) (map[string]string, map[string]string, error) {
+	return injectHandler(hostAlias, a.getConfig)(targets)
+}
+
+func (a App) CheckConfig(hostAlias string, targets []string) (map[string]string, error) {
+	return injectHandler(hostAlias, a.checkConfig)(targets)
+}
+
+func (a App) getConfig(handler Handler, targets []string) (map[string]string, map[string]string, error) {
+	return handler.GetConfig(targets)
+}
+
+func (a App) checkConfig(handler Handler, targets []string) (map[string]string, error) {
+	return handler.CheckConfig(targets)
+}
+
+func injectHandler(hostAlias string, fn func(Handler, []string) ? ) func(targets []string) ? {
+  handler, ok := handlerMap[hostAlias]
+  if !ok {
+    // handle error
+  }
+
+  return func(targets []string) ? {
+    return fn(handler, targets)
+  }
 }
 ```
 
 ### Evaluation
 
-- How could we have one function signature for "GetConfig"/"SetConfig"/"SetFile" etc when all of these functions have different signatures? (e.g. have different parameters and return values)?
+- The `injectHandler` pattern seems nice to share middleware between `GetConfig` and `CheckConfig`, but unfortunately since these have different return types, i'm not sure how it would work, unless i just forced both of them to get the same return type.
+- I guess I theoretically could do this. But what about SetFile?
