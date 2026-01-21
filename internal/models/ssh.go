@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/netip"
 	"os"
+	"path/filepath"
 	"text/template"
 
 	"github.com/kevinburke/ssh_config"
@@ -19,7 +20,7 @@ type SSHHost struct {
 	Port            string `json:"ssh_port" required:"true"`
 	NodeCIDRAddress string `json:"node_cidr_address" required:"true"`
 
-	path string
+	homeDir string
 }
 
 func NewSSHHost(hostAlias string, opts ...func(*SSHHost)) (*SSHHost, error) {
@@ -31,16 +32,16 @@ func NewSSHHost(hostAlias string, opts ...func(*SSHHost)) (*SSHHost, error) {
 		opt(sshHost)
 	}
 
-	if sshHost.path != "" {
+	if sshHost.homeDir != "" {
 		return sshHost, nil
 	}
 
-	// if path was not passed in, default to user home
+	// if homeDir was not passed in, default to user home
 	userHome, err := os.UserHomeDir()
 	if err != nil {
 		return nil, fmt.Errorf("error getting user home dir: %v", err)
 	}
-	sshHost.path = userHome
+	sshHost.homeDir = userHome
 
 	return sshHost, nil
 }
@@ -65,7 +66,9 @@ func (s *SSHHost) FillInKeys() error {
 }
 
 func (s *SSHHost) ContentAlreadyExists(fs afero.Fs) (bool, error) {
-	f, err := fs.OpenFile(s.path, os.O_RDWR|os.O_CREATE, 0o600)
+	sshFile := filepath.Join(s.homeDir, ".ssh", "config")
+
+	f, err := fs.OpenFile(sshFile, os.O_RDWR|os.O_CREATE, 0o600)
 	if err != nil {
 		return false, fmt.Errorf("error opening ssh config file: %v", err)
 	}
@@ -88,7 +91,9 @@ func (s *SSHHost) ContentAlreadyExists(fs afero.Fs) (bool, error) {
 }
 
 func (s *SSHHost) SetFile(fs afero.Fs) error {
-	f, err := fs.OpenFile(s.path, os.O_RDWR|os.O_CREATE, 0o600)
+	sshFile := filepath.Join(s.homeDir, ".ssh", "config")
+
+	f, err := fs.OpenFile(sshFile, os.O_RDWR|os.O_CREATE, 0o600)
 	if err != nil {
 		return fmt.Errorf("error opening ssh config file: %v", err)
 	}
@@ -125,8 +130,8 @@ Host {{ .Alias }}
 	return buf.Bytes()
 }
 
-func WithPath(path string) func(*SSHHost) {
+func WithHomeDir(homeDir string) func(*SSHHost) {
 	return func(sshHost *SSHHost) {
-		sshHost.path = path
+		sshHost.homeDir = homeDir
 	}
 }
