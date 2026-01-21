@@ -71,9 +71,9 @@ Goals:
 
 | Sub-command       | Action | Host-Alias   | Description                                              |
 |-------------------|--------|--------------|----------------------------------------------------------|
-| ansible-inventory | add    | <host>       | default logic to add a host to an ansible inventory file |
-| ansible-playbook  | run    | <host>       | run default ansible playbook for host <host>             |
-| ssh               | add    | <host>       | default logic to add a host to home ssh config file      |
+| ansible-inventory | add    | &lt;host&gt; | default logic to add a host to an ansible inventory file |
+| ansible-playbook  | run    | &lt;host&gt; | run default ansible playbook for host &lt;host&gt;       |
+| ssh               | add    | &lt;host&gt; | default logic to add a host to home ssh config file      |
 | terraform         | apply  | proxmox      | apply specialized terraform project for proxmox          |
 | ansible-playbook  | run    | proxmox      | run specialized ansible playbook for proxmox             |
 | terraform         | apply  | plex         | apply specialized terraform project for plex             |
@@ -82,13 +82,9 @@ Goals:
 | ansible-playbook  | run    | wireguard-vm | run specialized ansible playbook for wireguard-vm        |
 
 
-| Sub-command | Action       | Key |
-|-------------|--------------|-----|
-| secret      | set          | *   |
-
 | Sub-command | Host         | Arguments (minimum one of the following)                     |
 |-------------|--------------|--------------------------------------------------------------|
-| check       | proxmox      | terraform ansible-inventory-add ansible-playbook-run ssh-add |
-| check       | plex         | terraform ansible-inventory-add ansible-playbook-run ssh-add |
-| check       | wireguard-vm | terraform ansible-inventory-add ansible-playbook-run ssh-add |
-| check       | *            | ansible-inventory-add ansible-playbook-run ssh-add           |
+| check       | proxmox      | terraform ansible-inventory:add ansible-playbook:run ssh:add |
+| check       | plex         | terraform ansible-inventory:add ansible-playbook:run ssh:add |
+| check       | wireguard-vm | terraform ansible-inventory:add ansible-playbook:run ssh:add |
+| check       | &lt;host&gt; | ansible-inventory:add ansible-playbook:run ssh:add           |

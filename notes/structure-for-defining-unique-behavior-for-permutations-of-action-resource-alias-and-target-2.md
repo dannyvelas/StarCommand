@@ -132,7 +132,6 @@ Cons:
 - kind of duplicate logic where every top-level function will have to query `handlerMap` which is annoying
 - doesn't meet requirement #2
 
-
 ## Approach: App struct inject handler
 
 `get_config.go`
@@ -225,7 +224,6 @@ Cons:
 - Doesn't meet requirement no.2
 - The `injectHandler` pattern seems nice to share middleware between `GetConfig` and `CheckConfig`, but unfortunately since these have different return types, i'm not sure how it would work, unless i just forced both of them to get the same return type.
 - I guess I theoretically could do this. But is it worth it for only these two functions? `SetFile` will probably not be able to have a merged return type with these, neither will `SetSecret`.
-
 
 ## Approach: Mix of App dispatcher and multiple dispatch with targets
 
