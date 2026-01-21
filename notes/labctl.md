@@ -69,28 +69,26 @@ Goals:
 - One command to check whether the multiple actions for the same host `h` will work (e.g. check if applying the terraform project of `h` will work, check if updating the ansible inventory file to include `h` will work, check if running the ansible playbook for `h` will work, check if updating the ssh config file to include `h` will work)
 - One command to set a bitwarden secret
 
-| Sub-command | Action | Host-Alias   | Flags                                   |
-|-------------|--------|--------------|-----------------------------------------|
-| ansible     | run    | proxmox      |                                         |
-| terraform   | run    | proxmox      |                                         |
-| ansible     | run    | plex         |                                         |
-| ansible     | set    | plex         |                                         |
-| terraform   | run    | plex         |                                         |
-| terraform   | run    | wireguard-vm |                                         |
-| ansible     | run    | *            |                                         |
-| ssh         | set    | proxmox      |                                         |
-| ssh         | set    | plex         |                                         |
-| ssh         | set    | wireguard-vm |                                         |
-| ssh         | set    | *            |                                         |
+| Sub-command       | Action | Host-Alias   | Description                                              |
+|-------------------|--------|--------------|----------------------------------------------------------|
+| ansible-inventory | add    | <host>       | default logic to add a host to an ansible inventory file |
+| ansible-playbook  | run    | <host>       | run default ansible playbook for host <host>             |
+| ssh               | add    | <host>       | default logic to add a host to home ssh config file      |
+| terraform         | apply  | proxmox      | apply specialized terraform project for proxmox          |
+| ansible-playbook  | run    | proxmox      | run specialized ansible playbook for proxmox             |
+| terraform         | apply  | plex         | apply specialized terraform project for plex             |
+| ansible-playbook  | run    | plex         | run specialized ansible playbook for plex                |
+| terraform         | apply  | wireguard-vm | apply specialized terraform project for wireguard-vm     |
+| ansible-playbook  | run    | wireguard-vm | run specialized ansible playbook for wireguard-vm        |
 
 
 | Sub-command | Action       | Key |
 |-------------|--------------|-----|
 | secret      | set          | *   |
 
-| Sub-command | Host         | Arguments (minimum one of the following) |
-|-------------|--------------|------------------------------------------|
-| check       | proxmox      | terraform ansible-set ansible-run ssh    |
-| check       | plex         | terraform ansible-set ansible-run ssh    |
-| check       | wireguard-vm | terraform ansible-set ansible-run ssh    |
-| check       | *            | ansible-set ansible-run ssh              |
+| Sub-command | Host         | Arguments (minimum one of the following)                     |
+|-------------|--------------|--------------------------------------------------------------|
+| check       | proxmox      | terraform ansible-inventory-add ansible-playbook-run ssh-add |
+| check       | plex         | terraform ansible-inventory-add ansible-playbook-run ssh-add |
+| check       | wireguard-vm | terraform ansible-inventory-add ansible-playbook-run ssh-add |
+| check       | *            | ansible-inventory-add ansible-playbook-run ssh-add           |
