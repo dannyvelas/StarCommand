@@ -60,6 +60,28 @@ ssh_user: "admin"
 			},
 			expectedDiagnostics: map[string]string{},
 		},
+		{
+			name:      "ansible and ssh as targets",
+			hostAlias: "proxmox",
+			targets:   []string{"ansible", "ssh"},
+			expectedConfig: map[string]string{
+				"admin_email":             "admin@example.com",
+				"admin_password":          "not-a-password",
+				"alias":                   "proxmox",
+				"auto_update_reboot_time": "05:00",
+				"gateway_address":         "10.0.0.1",
+				"host_name":               "10.0.0.50",
+				"node_cidr_address":       "10.0.0.50/24",
+				"node_ip":                 "10.0.0.50",
+				"physical_nic":            "enx6c1ff7135975",
+				"smtp_password":           "not-a-password",
+				"smtp_user":               "admin",
+				"ssh_port":                "17031",
+				"ssh_public_key_path":     "~/.ssh/id_ed25519.pub",
+				"ssh_user":                "admin",
+			},
+			expectedDiagnostics: map[string]string{},
+		},
 	}
 
 	for _, tc := range cases {
