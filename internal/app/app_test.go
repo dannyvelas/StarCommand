@@ -1,8 +1,6 @@
 package app
 
 import (
-	"bytes"
-	"html/template"
 	"testing"
 	"testing/fstest"
 
@@ -11,22 +9,18 @@ import (
 )
 
 func TestGetConfig(t *testing.T) {
-	const (
-		adminEmail           = "admin@example.com"
-		adminPassword        = "not-a-password"
-		alias                = "proxmox"
-		autoUpdateRebootTime = "05:00"
-		gatewayAddress       = "10.0.0.1"
-		hostName             = "10.0.0.50"
-		nodeCIDRAddress      = "10.0.0.50/24"
-		nodeIP               = "10.0.0.50"
-		physicalNIC          = "enx6c1ff7135975"
-		smtpPassword         = "not-a-password"
-		smtpUser             = "admin"
-		sshPort              = "17031"
-		sshPublicKeyPath     = "~/.ssh/id_ed25519.pub"
-		sshUser              = "admin"
-	)
+	const sampleYAML = `admin_email: "admin@example.com"
+auto_update_reboot_time: "05:00"
+gateway_address: 10.0.0.1
+node_cidr_address: 10.0.0.50/24
+physical_nic: "enx6c1ff7135975"
+proxmox_admin_password: "not-a-password"
+smtp_password: "not-a-password"
+smtp_user: "admin"
+ssh_port: 17031
+ssh_public_key_path: "~/.ssh/id_ed25519.pub"
+ssh_user: "admin"
+`
 
 	cases := []struct {
 		name                string
@@ -40,15 +34,15 @@ func TestGetConfig(t *testing.T) {
 			hostAlias: "proxmox",
 			targets:   []string{"ansible"},
 			expectedConfig: map[string]string{
-				"admin_email":             adminEmail,
-				"admin_password":          adminPassword,
-				"auto_update_reboot_time": autoUpdateRebootTime,
-				"gateway_address":         gatewayAddress,
-				"physical_nic":            physicalNIC,
-				"smtp_password":           smtpPassword,
-				"smtp_user":               smtpUser,
-				"ssh_port":                sshPort,
-				"ssh_public_key_path":     sshPublicKeyPath,
+				"ssh_port":                "17031",
+				"ssh_public_key_path":     "~/.ssh/id_ed25519.pub",
+				"gateway_address":         "10.0.0.1",
+				"physical_nic":            "enx6c1ff7135975",
+				"auto_update_reboot_time": "05:00",
+				"admin_email":             "admin@example.com",
+				"admin_password":          "not-a-password",
+				"smtp_user":               "admin",
+				"smtp_password":           "not-a-password",
 			},
 			expectedDiagnostics: map[string]string{},
 		},
@@ -57,12 +51,12 @@ func TestGetConfig(t *testing.T) {
 			hostAlias: "proxmox",
 			targets:   []string{"ssh"},
 			expectedConfig: map[string]string{
-				"alias":               alias,
-				"host_name":           hostName,
-				"ssh_user":            sshUser,
-				"ssh_public_key_path": sshPublicKeyPath,
-				"ssh_port":            sshPort,
-				"node_cidr_address":   nodeCIDRAddress,
+				"alias":               "proxmox",
+				"host_name":           "10.0.0.50",
+				"ssh_user":            "admin",
+				"ssh_public_key_path": "~/.ssh/id_ed25519.pub",
+				"ssh_port":            "17031",
+				"node_cidr_address":   "10.0.0.50/24",
 			},
 			expectedDiagnostics: map[string]string{},
 		},
@@ -70,55 +64,7 @@ func TestGetConfig(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			const configTemplate = `admin_email: "{{.AdminEmail}}"
-auto_update_reboot_time: "{{.AutoUpdateRebootTime}}"
-gateway_address: {{.GatewayAddress}}
-node_cidr_address: {{.NodeCIDRAddress}}
-physical_nic: "{{.PhysicalNIC}}"
-proxmox_admin_password: "{{.ProxmoxAdminPassword}}"
-smtp_password: "{{.SMTPPassword}}"
-smtp_user: "{{.SMTPUser}}"
-ssh_port: {{.SSHPort}}
-ssh_public_key_path: "{{.SSHPublicKeyPath}}"
-ssh_user: "{{.SSHUser}}"
-`
-
-			// 2. Prepare the data (using a struct or a map)
-			data := struct {
-				AdminEmail           string
-				AutoUpdateRebootTime string
-				GatewayAddress       string
-				NodeCIDRAddress      string
-				PhysicalNIC          string
-				ProxmoxAdminPassword string
-				SMTPPassword         string
-				SMTPUser             string
-				SSHPort              string
-				SSHPublicKeyPath     string
-				SSHUser              string
-			}{
-				AdminEmail:           adminEmail,
-				AutoUpdateRebootTime: autoUpdateRebootTime,
-				GatewayAddress:       gatewayAddress,
-				NodeCIDRAddress:      nodeCIDRAddress,
-				PhysicalNIC:          physicalNIC,
-				ProxmoxAdminPassword: adminPassword,
-				SMTPPassword:         smtpPassword,
-				SMTPUser:             smtpUser,
-				SSHPort:              sshPort,
-				SSHPublicKeyPath:     sshPublicKeyPath,
-				SSHUser:              sshUser,
-			}
-
-			// 3. Render the template
-			var tpl bytes.Buffer
-			tmpl := template.Must(template.New("config").Parse(configTemplate))
-			if err := tmpl.Execute(&tpl, data); err != nil {
-				t.Fatalf("failed to render template: %v", err)
-			}
-
-			// 4. Use it in MapFS
-			mockFS := fstest.MapFS{"config/all.yml": {Data: tpl.Bytes()}}
+			mockFS := fstest.MapFS{"config/all.yml": {Data: []byte(sampleYAML)}}
 
 			configMux := conflux.NewConfigMux(conflux.WithYAMLFileReader("config/all.yml", conflux.WithFileSystem(mockFS)))
 
