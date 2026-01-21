@@ -86,6 +86,7 @@
 
 ## coding todos
 - [x] make `handler.SetFile` more testable
+- [ ] make it so that `/Users/dannyvelasquez/` doesn't have to be hardcoded in the tests for `SetFile`
 - [ ] (CONFLUX) make conflux read configs once instead of every single time that `conflux.Unmarshal` is called. file reads and bitwarden api calls are expensive.
 - [ ] (CONFLUX) maybe make bitwarden secrets read things piecemeal, instead of just dumping everything into a map
 
