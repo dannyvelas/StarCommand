@@ -49,7 +49,91 @@ func New(configMux, action, resource, targets []string, hostAlias: Option[string
 
 - How could we have one function signature for "GetConfig"/"SetConfig"/"SetFile" etc when all of these functions have different signatures? (e.g. have different parameters and return values)?
 
-## Multiple dispatch v2 Solution
+## Approach: App dispatcher
+
+`get_config.go`
+```go
+	getConfigCmd := &cobra.Command{
+    ...
+		Run: func(cmd *cobra.Command, args []string) {
+			hostAlias := args[0]
+      configMux := //
+
+      a, err := app.New(configMux)
+      if err != nil {
+        // handle error
+      }
+
+      configs, diagnostics, err := a.GetConfig(hostAlias, targets)
+      if err != nil {
+        // handle error
+      }
+
+      // remaining logic
+		},
+```
+
+`set_secret.go`
+```go
+	getConfigCmd := &cobra.Command{
+    ...
+		Run: func(cmd *cobra.Command, args []string) {
+			hostAlias := args[0]
+      configMux := //
+
+      a, err := app.New(configMux)
+      if err != nil {
+        // handle error
+      }
+
+      if err := a.SetSecret(secret); err != nil {
+        // handle error
+      }
+		},
+```
+
+`app/app.go`:
+```go
+func New(configMux) {
+	return App{
+		configMux: configMux,
+	}
+}
+
+func (a App) GetConfig(hostAlias string, targets []string) (map[string]string, map[string]string, error) {
+	handler, ok := handlerMap[hostAlias]
+	if !ok {
+		// handle error
+	}
+
+	return handler.GetConfig(targets)
+}
+
+func (a App) CheckConfig(hostAlias string, targets []string) (map[string]string, error) {
+	handler, ok := handlerMap[hostAlias]
+	if !ok {
+		// handle error
+	}
+
+	return handler.GetConfig(targets)
+}
+
+func (a App) SetSecret(s string) error {
+	// logic to set secret
+}
+```
+
+### Evaluation
+
+Pros:
+- meets requirement #1
+
+Cons:
+- kind of duplicate logic where every top-level function will have to query `handlerMap` which is annoying
+- doesn't meet requirement #2
+
+
+## Approach: App struct inject handler
 
 `get_config.go`
 ```go
@@ -108,6 +192,10 @@ func (a App) CheckConfig(hostAlias string, targets []string) (map[string]string,
 	return injectHandler(hostAlias, a.checkConfig)(targets)
 }
 
+func (a App) SetSecret(secret string) error {
+  // logic to set secret
+}
+
 func (a App) getConfig(handler Handler, targets []string) (map[string]string, map[string]string, error) {
 	return handler.GetConfig(targets)
 }
@@ -130,5 +218,110 @@ func injectHandler(hostAlias string, fn func(Handler, []string) ? ) func(targets
 
 ### Evaluation
 
+Pros:
+- Meets requirement no.1
+
+Cons:
+- Doesn't meet requirement no.2
 - The `injectHandler` pattern seems nice to share middleware between `GetConfig` and `CheckConfig`, but unfortunately since these have different return types, i'm not sure how it would work, unless i just forced both of them to get the same return type.
-- I guess I theoretically could do this. But what about SetFile?
+- I guess I theoretically could do this. But is it worth it for only these two functions? `SetFile` will probably not be able to have a merged return type with these, neither will `SetSecret`.
+
+
+## Approach: Mix of App dispatcher and multiple dispatch with targets
+
+`get_config.go`
+```go
+	getConfigCmd := &cobra.Command{
+    ...
+		Run: func(cmd *cobra.Command, args []string) {
+			hostAlias := args[0]
+      configMux := //
+
+      a, err := app.New(configMux)
+      if err != nil {
+        // handle error
+      }
+
+      configs, diagnostics, err := a.GetConfig(hostAlias, targets)
+      if err != nil {
+        // handle error
+      }
+
+      // remaining logic
+		},
+```
+
+`set_secret.go`
+```go
+	getConfigCmd := &cobra.Command{
+    ...
+		Run: func(cmd *cobra.Command, args []string) {
+			hostAlias := args[0]
+      configMux := //
+
+      a, err := app.New(configMux)
+      if err != nil {
+        // handle error
+      }
+
+      if err := a.SetSecret(secret); err != nil {
+        // handle error
+      }
+		},
+```
+
+`app/app.go`:
+```go
+func New(configMux) {
+	return App{
+		configMux: configMux,
+	}
+}
+
+func (a App) GetConfig(hostAlias string, targets []string) (map[string]string, map[string]string, error) {
+  allConfigs, allDiagnostics := make(map[string]string), make(map[string]string)
+  for _, target := range targets {
+    result := dispatch("get", "config", hostAlias, target)
+    configs, diagnostics, err := result.(map[string]string, map[string]string, error)
+    if errors.Is(err, ErrInvalidFields) {
+      // handle err
+    } else if err != nil {
+      allDiagnotics.merge(diagnostics)
+      continue
+    }
+
+    allConfigs.merge(configs)
+  }
+  return allConfigs
+}
+
+func (a App) CheckConfig(hostAlias string, targets []string) (map[string]string, error) {
+  allDiagnostics := make(map[string]string)
+  for _, target := range targets {
+    result := dispatch("check", "config", hostAlias, target)
+    diagnostics, err := result.(map[string]string, error)
+    if err != nil {
+      // handle error
+    }
+
+    allDiagnostics.merge(diagnostics)
+  }
+  return allDiagnostics
+}
+
+func (a App) SetSecret(secret string) error {
+  result := dispatch("set", "secret", nil, nil)
+  return result.(error)
+}
+```
+
+### Evaluation
+
+Originally, I was upset of having to do merging logic in outside of the logic that ran `conflux.Unmarshal`. But, I don't think this requirement actually matters. the merging logic has to happen somewhere. it's just happening one layer of abstraction below the highest-level and above the lowest level. this is fine.
+
+Pros:
+- Meets requirement no.1
+- Meets requirement no.2
+
+Cons:
+- You lose static typing. It's going to be a bit hacky and ugly to figure out how to cast `any` to `(map[string]string, map[string]string, error)`.
