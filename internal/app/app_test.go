@@ -1,6 +1,7 @@
 package app
 
 import (
+	"errors"
 	"testing"
 	"testing/fstest"
 
@@ -184,6 +185,40 @@ func TestCheckConfig(t *testing.T) {
 
 			if diff := cmp.Diff(tc.expectedDiagnostics, gotDiagnostics); diff != "" {
 				t.Errorf("diagnostics mismatch (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestSetFile_Error(t *testing.T) {
+	cases := []struct {
+		name          string
+		hostAlias     string
+		targets       []string
+		expectedError error
+	}{
+		{
+			name:          "ansible as target for set file",
+			hostAlias:     "proxmox",
+			targets:       []string{"ansible"},
+			expectedError: ErrInvalidArgs,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockFS := fstest.MapFS{"config/all.yml": {Data: []byte(testYAML)}}
+
+			configMux := conflux.NewConfigMux(conflux.WithYAMLFileReader("config/all.yml", conflux.WithFileSystem(mockFS)))
+
+			a, err := New(configMux, tc.hostAlias, tc.targets)
+			if err != nil {
+				t.Fatalf("unexpected error initializing app: %v", err)
+			}
+
+			_, err = a.SetFile()
+			if !errors.Is(err, tc.expectedError) {
+				t.Fatalf("expected error, got %v", err)
 			}
 		})
 	}
