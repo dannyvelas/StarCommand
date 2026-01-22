@@ -105,3 +105,10 @@ Goals:
 | terraform         | apply  | proxmox      | apply specialized terraform project for proxmox          |
 | terraform         | apply  | plex         | apply specialized terraform project for plex             |
 | terraform         | apply  | wireguard-vm | apply specialized terraform project for wireguard-vm     |
+
+| Sub-command | Host         | Arguments (minimum one of the following)                     |
+|-------------|--------------|--------------------------------------------------------------|
+| check       | proxmox      | terraform ansible-inventory:add ansible-playbook:run ssh:add |
+| check       | plex         | terraform ansible-inventory:add ansible-playbook:run ssh:add |
+| check       | wireguard-vm | terraform ansible-inventory:add ansible-playbook:run ssh:add |
+| check       | &lt;host&gt; | ansible-inventory:add ansible-playbook:run ssh:add           |
