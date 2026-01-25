@@ -6,9 +6,9 @@ The command structure changed to be this:
 |-------------------|--------|--------------|----------------------------------------------------------|
 | ansible-inventory | add    | &lt;host&gt; | default logic to add a host to an ansible inventory file |
 | ansible-playbook  | run    | &lt;host&gt; | run default ansible playbook for host &lt;host&gt;       |
-| ssh               | add    | &lt;host&gt; | default logic to add a host to home ssh config file      |
+| *ssh               | add    | &lt;host&gt; | default logic to add a host to home ssh config file      |
 | terraform         | apply  | proxmox      | apply specialized terraform project for proxmox          |
-| ansible-playbook  | run    | proxmox      | run specialized ansible playbook for proxmox             |
+| *ansible-playbook  | run    | proxmox      | run specialized ansible playbook for proxmox             |
 | terraform         | apply  | plex         | apply specialized terraform project for plex             |
 | ansible-playbook  | run    | plex         | run specialized ansible playbook for plex                |
 | terraform         | apply  | wireguard-vm | apply specialized terraform project for wireguard-vm     |
