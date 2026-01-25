@@ -15,8 +15,9 @@ func ansibleRunCmd() *cobra.Command {
 	var targets []string
 
 	ansibleRunCmd := &cobra.Command{
-		Use:       "config <host-alias>",
-		ValidArgs: handlers.GetSupportedHostAliases(),
+		Use: "run <host-alias>",
+		// TODO: fix
+		ValidArgs: nil,
 		Short:     "Generate a JSON object of configuration values for a given host",
 		Args:      cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
