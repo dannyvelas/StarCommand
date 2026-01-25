@@ -11,15 +11,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func ansibleRunCmd() *cobra.Command {
+func ansiblePlaybookRunCmd() *cobra.Command {
 	var targets []string
 
 	ansibleRunCmd := &cobra.Command{
 		Use: "run <host-alias>",
 		// TODO: fix
 		ValidArgs: nil,
-		Short:     "Generate a JSON object of configuration values for a given host",
-		Args:      cobra.ExactArgs(1),
+		// TODO: fix
+		Short: "Generate a JSON object of configuration values for a given host",
+		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			hostAlias := args[0]
 			configMux := conflux.NewConfigMux(
