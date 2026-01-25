@@ -39,8 +39,8 @@
 <summary><h2>Set up Proxmox with Ansible</h2></summary>
 
 - Run `task setup:proxmox:check` to see the configs that you need.
-  - These configs can be added in any combination of: `./config/all.yml`, `./config/proxmox.yml`, the environment (or `.env`), and a Bitwarden secrets vault.
-  - You don't have to use Bitwarden if you don't want to. You can put all your sensitive secrets in `.env`. But, if you do want to use Bitwarden to store your secrets, I recommend running `cp .env.example .env` and filling out those values so that Bitwarden authentication works.
+  - Run `cp .env.example .env` and fill out those values to authenticate to Bitwarden.
+  - Add your configs in any combination of: `./config/all.yml`, `./config/proxmox.yml`, the environment (or `.env`), and a Bitwarden secrets vault.
 - Run `task setup:proxmox`.
 - That will show you the API token that was created for the Terraform Proxmox user. Save this in Bitwarden.
 
