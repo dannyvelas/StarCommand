@@ -10,9 +10,10 @@ import (
 )
 
 type rule struct {
-	Name    string
-	Match   func(resource Resource, action Action, hostAlias string) bool
-	Execute func(configMux *conflux.ConfigMux, hostAlias string, dryRun bool) (map[string]string, error)
+	Name           string
+	Match          func(resource Resource, action Action, hostAlias string) bool
+	GetConfig      func() any
+	ExecuteCommand func(configs map[string]string) error
 }
 
 var registry = []rule{
@@ -21,34 +22,8 @@ var registry = []rule{
 		Match: func(resource Resource, action Action, host string) bool {
 			return resource == AnsiblePlaybookResource && action == RunAction && host == "proxmox"
 		},
-		Execute: func(configMux *conflux.ConfigMux, host string, dryRun bool) (map[string]string, error) {
-			targetStruct := models.NewAnsibleProxmoxConfig()
-			diagnostics, err := conflux.Unmarshal(configMux, targetStruct)
-			if errors.Is(err, conflux.ErrInvalidFields) {
-				return diagnostics, fmt.Errorf("error getting configs for running ansible playbook on proxmox host:\n%s", DiagnosticsToTable(diagnostics))
-			} else if err != nil {
-				return nil, fmt.Errorf("internal error unmarshalling configs to struct for ansible playbook on proxmox host: %v", err)
-			}
-
-			if dryRun {
-				return diagnostics, nil
-			}
-
-			proxmoxAnsibleConfigMap := make(map[string]string)
-			config := &mapstructure.DecoderConfig{TagName: "json", Result: &proxmoxAnsibleConfigMap}
-			decoder, err := mapstructure.NewDecoder(config)
-			if err != nil {
-				return nil, fmt.Errorf("internal error creating new decoder: %v", err)
-			}
-
-			if err := decoder.Decode(targetStruct); err != nil {
-				return nil, fmt.Errorf("internal error merging config struct to map: %v", err)
-			}
-
-			fmt.Println("running ansible...")
-			fmt.Println("ran ansible...")
-
-			return map[string]string{}, nil
+		GetConfig: func() any {
+			return models.NewAnsibleProxmoxConfig()
 		},
 	},
 	{
@@ -56,19 +31,63 @@ var registry = []rule{
 		Match: func(resource Resource, action Action, host string) bool {
 			return resource == AnsiblePlaybookResource && action == RunAction
 		},
-		Execute: func(configMux *conflux.ConfigMux, host string, dryRun bool) (map[string]string, error) {
+		GetConfig: func() any {
 			// ... Logic
-			return map[string]string{}, nil
+			return map[string]string{}
 		},
 	},
 }
 
 func execute(configMux *conflux.ConfigMux, resource Resource, action Action, hostAlias string, dryRun bool) (map[string]string, error) {
+	rule, err := findRule(resource, action, hostAlias)
+	if err != nil {
+		return nil, err
+	}
+
+	configStruct := rule.GetConfig()
+	diagnostics, err := conflux.Unmarshal(configMux, configStruct)
+	if errors.Is(err, conflux.ErrInvalidFields) {
+		return diagnostics, fmt.Errorf("error getting configs for running %s on %s host:\n%s", resource, hostAlias, DiagnosticsToTable(diagnostics))
+	} else if err != nil {
+		return nil, fmt.Errorf("internal error unmarshalling configs to struct for %s on %s: %v", resource, hostAlias, err)
+	}
+
+	if dryRun {
+		return diagnostics, nil
+	}
+
+	_, err = configAsMap(configStruct)
+	if err != nil {
+		return nil, fmt.Errorf("internal error converting config to map: %v", err)
+	}
+
+	fmt.Println("running ansible...")
+	fmt.Println("ran ansible...")
+
+	return map[string]string{}, nil
+}
+
+func findRule(resource Resource, action Action, hostAlias string) (rule, error) {
 	for _, rule := range registry {
 		if rule.Match(resource, action, hostAlias) {
-			return rule.Execute(configMux, hostAlias, dryRun)
+			return rule, nil
 		}
 	}
 
-	return nil, fmt.Errorf("error: unsupported combination of resource(%s), action(%s), and hostAlias(%s)", resource, action, hostAlias)
+	return rule{}, fmt.Errorf("error: unsupported combination of resource(%s), action(%s), and hostAlias(%s)", resource, action, hostAlias)
+}
+
+func configAsMap(config any) (map[string]string, error) {
+	configMap := make(map[string]string)
+	decoderConfig := &mapstructure.DecoderConfig{TagName: "json", Result: &configMap}
+	decoder, err := mapstructure.NewDecoder(decoderConfig)
+	if err != nil {
+		return nil, fmt.Errorf("internal error creating new decoder: %v", err)
+	}
+
+	if err := decoder.Decode(config); err != nil {
+		return nil, fmt.Errorf("internal error merging config struct to map: %v", err)
+	}
+
+	return configMap, nil
 }
