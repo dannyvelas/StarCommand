@@ -1,30 +1,32 @@
 package app
 
 import (
+	"errors"
 	"fmt"
 	"maps"
 
 	"github.com/dannyvelas/conflux"
 	"github.com/dannyvelas/homelab/internal/models"
+	"github.com/mitchellh/mapstructure"
 )
 
 type rule struct {
 	Name    string
-	Match   func(resource models.Resource, action models.Action, hostAlias string) bool
+	Match   func(resource Resource, action Action, hostAlias string) bool
 	Execute func(configMux *conflux.ConfigMux, hostAlias string, dryRun bool) (map[string]string, error)
 }
 
 type Target struct {
-	Resource models.Resource
-	Action   models.Action
+	Resource Resource
+	Action   Action
 }
 
 func AnsibleRun(configMux *conflux.ConfigMux, hostAlias string) (map[string]string, error) {
-	return execute(configMux, models.AnsiblePlaybookResource, models.RunAction, hostAlias, false)
+	return execute(configMux, AnsiblePlaybookResource, RunAction, hostAlias, false)
 }
 
 func SSHAdd(configMux *conflux.ConfigMux, hostAlias string) (map[string]string, error) {
-	return execute(configMux, models.SSHResource, models.RunAction, hostAlias, false)
+	return execute(configMux, SSHResource, RunAction, hostAlias, false)
 }
 
 func Check(configMux *conflux.ConfigMux, hostAlias string, targets []Target) (map[string]string, error) {
@@ -40,7 +42,7 @@ func Check(configMux *conflux.ConfigMux, hostAlias string, targets []Target) (ma
 	return allDiagnostics, nil
 }
 
-func execute(configMux *conflux.ConfigMux, resource models.Resource, action models.Action, hostAlias string, dryRun bool) (map[string]string, error) {
+func execute(configMux *conflux.ConfigMux, resource Resource, action Action, hostAlias string, dryRun bool) (map[string]string, error) {
 	for _, rule := range registry {
 		if rule.Match(resource, action, hostAlias) {
 			return rule.Execute(configMux, hostAlias, dryRun)
@@ -53,21 +55,43 @@ func execute(configMux *conflux.ConfigMux, resource models.Resource, action mode
 var registry = []rule{
 	{
 		Name: "ansible run proxmox",
-		Match: func(resource models.Resource, action models.Action, host string) bool {
-			return resource == models.AnsiblePlaybookResource && action == models.RunAction && host == "proxmox"
+		Match: func(resource Resource, action Action, host string) bool {
+			return resource == AnsiblePlaybookResource && action == RunAction && host == "proxmox"
 		},
 		Execute: func(configMux *conflux.ConfigMux, host string, dryRun bool) (map[string]string, error) {
-			if dryRun {
-				return map[string]string{"terraform": "Plan: Create VM"}, nil
+			targetStruct := models.NewAnsibleProxmoxConfig()
+			diagnostics, err := conflux.Unmarshal(configMux, targetStruct)
+			if errors.Is(err, conflux.ErrInvalidFields) {
+				return diagnostics, fmt.Errorf("error getting configs for running ansible playbook on proxmox host:\n%s\n", DiagnosticsToTable(diagnostics))
+			} else if err != nil {
+				return nil, fmt.Errorf("internal error unmarshalling configs to struct for ansible playbook on proxmox host: %v", err)
 			}
-			// ... Actual Logic
+
+			if dryRun {
+				return diagnostics, nil
+			}
+
+			proxmoxAnsibleConfigMap := make(map[string]string)
+			config := &mapstructure.DecoderConfig{TagName: "json", Result: &proxmoxAnsibleConfigMap}
+			decoder, err := mapstructure.NewDecoder(config)
+			if err != nil {
+				return nil, fmt.Errorf("internal error creating new decoder: %v", err)
+			}
+
+			if err := decoder.Decode(targetStruct); err != nil {
+				return nil, fmt.Errorf("internal error merging config struct to map: %v", err)
+			}
+
+			fmt.Println("running ansible...")
+			fmt.Println("ran ansible...")
+
 			return map[string]string{}, nil
 		},
 	},
 	{
 		Name: "Default Ansible",
-		Match: func(resource models.Resource, action models.Action, host string) bool {
-			return resource == models.AnsiblePlaybookResource && action == models.RunAction
+		Match: func(resource Resource, action Action, host string) bool {
+			return resource == AnsiblePlaybookResource && action == RunAction
 		},
 		Execute: func(configMux *conflux.ConfigMux, host string, dryRun bool) (map[string]string, error) {
 			// ... Logic

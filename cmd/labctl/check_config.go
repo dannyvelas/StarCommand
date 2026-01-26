@@ -8,7 +8,6 @@ import (
 	"github.com/dannyvelas/conflux"
 	"github.com/dannyvelas/homelab/internal/app"
 	"github.com/dannyvelas/homelab/internal/helpers"
-	"github.com/dannyvelas/homelab/internal/models"
 	"github.com/spf13/cobra"
 )
 
@@ -58,14 +57,14 @@ func toTargets(slice []string) ([]app.Target, error) {
 		}
 
 		resourceString := split[amtArgs-2]
-		resource, err := models.StringToResource(resourceString)
+		resource, err := app.StringToResource(resourceString)
 		if err != nil {
 			malformedArgs = append(malformedArgs, el)
 			continue
 		}
 
 		actionString := split[amtArgs-1]
-		action, err := models.StringToAction(actionString)
+		action, err := app.StringToAction(actionString)
 		if err != nil {
 			malformedArgs = append(malformedArgs, el)
 			continue
