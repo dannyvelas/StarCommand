@@ -13,9 +13,7 @@ import (
 
 func checkConfigCmd() *cobra.Command {
 	checkConfigCmd := &cobra.Command{
-		Use: "config <host-alias>",
-		// TODO: fix
-		// ValidArgs: handlers.GetSupportedHostAliases(),
+		Use:   "config <host-alias>",
 		Short: "Print a diagnostic report of all the configs that were found/missing for a given resource",
 		Args:  cobra.MinimumNArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {

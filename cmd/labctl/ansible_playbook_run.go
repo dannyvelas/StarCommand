@@ -12,11 +12,9 @@ import (
 
 func ansiblePlaybookRunCmd() *cobra.Command {
 	ansiblePlaybookRunCmd := &cobra.Command{
-		Use: "run <host-alias>",
-		// TODO: fix
-		ValidArgs: nil,
-		Short:     "Run the ansible playbook corresponding to the given host",
-		Args:      cobra.ExactArgs(1),
+		Use:   "run <host-alias>",
+		Short: "Run the ansible playbook corresponding to the given host",
+		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			hostAlias := args[0]
 			configMux := conflux.NewConfigMux(

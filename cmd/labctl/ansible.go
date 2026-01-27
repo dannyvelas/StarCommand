@@ -7,7 +7,7 @@ import (
 func ansibleCmd() *cobra.Command {
 	ansibleCmd := &cobra.Command{
 		Use:   "ansible",
-		Short: "Display information for a resource",
+		Short: "Execute ansible commands",
 	}
 
 	ansibleCmd.AddCommand(ansiblePlaybookCmd())

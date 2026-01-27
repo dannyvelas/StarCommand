@@ -12,9 +12,7 @@ import (
 
 func sshAddCmd() *cobra.Command {
 	sshAddCmd := &cobra.Command{
-		Use: "add <host-alias>",
-		// TODO: fix
-		// ValidArgs: handlers.GetSupportedHostAliases(),
+		Use:   "add <host-alias>",
 		Short: "Update the `~/.ssh/config` file to connect to a given host",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
