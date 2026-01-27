@@ -5,7 +5,7 @@ import "github.com/spf13/cobra"
 func sshCmd() *cobra.Command {
 	sshCmd := &cobra.Command{
 		Use:   "ssh",
-		Short: "Create a resource",
+		Short: "Execute ssh commands",
 	}
 
 	sshCmd.AddCommand(sshAddCmd())
