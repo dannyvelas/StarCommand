@@ -3,38 +3,32 @@ package app
 import (
 	"errors"
 	"fmt"
+	"maps"
 
 	"github.com/dannyvelas/conflux"
-	"github.com/dannyvelas/homelab/internal/models"
 	"github.com/go-viper/mapstructure/v2"
 )
 
 type rule struct {
-	Name           string
-	Match          func(resource Resource, action Action, hostAlias string) bool
-	GetConfig      func() any
-	ExecuteCommand func(configs map[string]string) error
+	Name    string
+	Match   func(resource Resource, action Action, hostAlias string) bool
+	Handler Handler
 }
 
 var registry = []rule{
 	{
 		Name: "ansible run proxmox",
-		Match: func(resource Resource, action Action, host string) bool {
-			return resource == AnsiblePlaybookResource && action == RunAction && host == "proxmox"
+		Match: func(resource Resource, action Action, hostAlias string) bool {
+			return resource == AnsiblePlaybookResource && action == RunAction && hostAlias == "proxmox"
 		},
-		GetConfig: func() any {
-			return models.NewAnsibleProxmoxConfig()
-		},
+		Handler: NewAnsibleProxmoxHandler(),
 	},
 	{
-		Name: "Default Ansible",
-		Match: func(resource Resource, action Action, host string) bool {
-			return resource == AnsiblePlaybookResource && action == RunAction
+		Name: "ssh add <any-host-alias>",
+		Match: func(resource Resource, action Action, hostAlias string) bool {
+			return resource == SSHResource && action == AddAction
 		},
-		GetConfig: func() any {
-			// ... Logic
-			return map[string]string{}
-		},
+		Handler: NewSSHHandler(),
 	},
 }
 
@@ -44,27 +38,30 @@ func execute(configMux *conflux.ConfigMux, resource Resource, action Action, hos
 		return nil, err
 	}
 
-	configStruct := rule.GetConfig()
+	configStruct := rule.Handler.GetConfig(hostAlias)
 	diagnostics, err := conflux.Unmarshal(configMux, configStruct)
 	if errors.Is(err, conflux.ErrInvalidFields) {
-		return diagnostics, fmt.Errorf("error getting configs for running %s on %s host:\n%s", resource, hostAlias, DiagnosticsToTable(diagnostics))
+		return diagnostics, fmt.Errorf("error getting config for running %s on %s host:\n%s", resource, hostAlias, DiagnosticsToTable(diagnostics))
 	} else if err != nil {
-		return nil, fmt.Errorf("internal error unmarshalling configs to struct for %s on %s: %v", resource, hostAlias, err)
+		return nil, fmt.Errorf("internal error unmarshalling config to struct for %s on %s: %v", resource, hostAlias, err)
 	}
 
 	if dryRun {
 		return diagnostics, nil
 	}
 
-	_, err = configAsMap(configStruct)
+	configMap, err := configAsMap(configStruct)
 	if err != nil {
 		return nil, fmt.Errorf("internal error converting config to map: %v", err)
 	}
 
-	fmt.Println("running ansible...")
-	fmt.Println("ran ansible...")
+	handlerDiagnostics, err := rule.Handler.Execute(configMap, hostAlias)
+	if err != nil {
+		return nil, fmt.Errorf("error executing command: %v", err)
+	}
+	maps.Copy(diagnostics, handlerDiagnostics)
 
-	return map[string]string{}, nil
+	return diagnostics, nil
 }
 
 func findRule(resource Resource, action Action, hostAlias string) (rule, error) {
