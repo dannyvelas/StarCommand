@@ -17,7 +17,7 @@ func AnsibleRun(configMux *conflux.ConfigMux, hostAlias string) (map[string]stri
 }
 
 func SSHAdd(configMux *conflux.ConfigMux, hostAlias string) (map[string]string, error) {
-	return execute(configMux, SSHResource, RunAction, hostAlias, false)
+	return execute(configMux, SSHResource, AddAction, hostAlias, false)
 }
 
 func Check(configMux *conflux.ConfigMux, hostAlias string, targets []Target) (map[string]string, error) {

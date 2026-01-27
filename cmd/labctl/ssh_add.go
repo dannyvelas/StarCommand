@@ -23,9 +23,14 @@ func sshAddCmd() *cobra.Command {
 				conflux.WithBitwardenSecretReader(),
 			)
 
-			if _, err := app.SSHAdd(configMux, hostAlias); err != nil {
+			diagnostics, err := app.SSHAdd(configMux, hostAlias)
+			if err != nil {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
+			}
+
+			if len(diagnostics) > 0 {
+				fmt.Printf("%s\n", app.DiagnosticsToTable(diagnostics))
 			}
 		},
 	}

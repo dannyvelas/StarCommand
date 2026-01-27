@@ -43,7 +43,7 @@ func (h SSHHandler) Execute(config map[string]string, hostAlias string) (map[str
 	}
 
 	if alreadyExists {
-		diagnostics[sshFilePath] = fmt.Sprintf("skipping write because %s already exists in that file", hostAlias)
+		diagnostics[sshFilePath] = fmt.Sprintf("skipping write: %s host already present", hostAlias)
 		return diagnostics, nil
 	}
 

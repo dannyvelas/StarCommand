@@ -3,9 +3,8 @@ module github.com/dannyvelas/homelab
 go 1.25.1
 
 require (
-	github.com/dannyvelas/conflux v0.6.0
+	github.com/dannyvelas/conflux v0.7.0
 	github.com/go-viper/mapstructure/v2 v2.5.0
-	github.com/google/go-cmp v0.7.0
 	github.com/joho/godotenv v1.5.1
 	github.com/kevinburke/ssh_config v1.4.0
 	github.com/spf13/afero v1.15.0

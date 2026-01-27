@@ -3,7 +3,6 @@ package app
 import (
 	"errors"
 	"fmt"
-	"maps"
 
 	"github.com/dannyvelas/conflux"
 	"github.com/go-viper/mapstructure/v2"
@@ -41,7 +40,7 @@ func execute(configMux *conflux.ConfigMux, resource Resource, action Action, hos
 	configStruct := rule.Handler.GetConfig(hostAlias)
 	diagnostics, err := conflux.Unmarshal(configMux, configStruct)
 	if errors.Is(err, conflux.ErrInvalidFields) {
-		return diagnostics, fmt.Errorf("error getting config for running %s on %s host:\n%s", resource, hostAlias, DiagnosticsToTable(diagnostics))
+		return diagnostics, fmt.Errorf("error getting config for running %s on %s host:\n%s", resource, hostAlias, conflux.DiagnosticsToTable(diagnostics))
 	} else if err != nil {
 		return nil, fmt.Errorf("internal error unmarshalling config to struct for %s on %s: %v", resource, hostAlias, err)
 	}
@@ -59,9 +58,8 @@ func execute(configMux *conflux.ConfigMux, resource Resource, action Action, hos
 	if err != nil {
 		return nil, fmt.Errorf("error executing command: %v", err)
 	}
-	maps.Copy(diagnostics, handlerDiagnostics)
 
-	return diagnostics, nil
+	return handlerDiagnostics, nil
 }
 
 func findRule(resource Resource, action Action, hostAlias string) (rule, error) {
