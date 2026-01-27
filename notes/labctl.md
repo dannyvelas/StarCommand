@@ -106,9 +106,32 @@ Goals:
 | terraform         | apply  | plex         | apply specialized terraform project for plex             |
 | terraform         | apply  | wireguard-vm | apply specialized terraform project for wireguard-vm     |
 
-| Sub-command | Host         | Arguments (minimum one of the following)                     |
-|-------------|--------------|--------------------------------------------------------------|
-| check       | proxmox      | terraform ansible-inventory:add ansible-playbook:run ssh:add |
-| check       | plex         | terraform ansible-inventory:add ansible-playbook:run ssh:add |
-| check       | wireguard-vm | terraform ansible-inventory:add ansible-playbook:run ssh:add |
-| check       | &lt;host&gt; | ansible-inventory:add ansible-playbook:run ssh:add           |
+| Sub-command | Host         | Arguments (minimum one of the following)                           |
+|-------------|--------------|--------------------------------------------------------------------|
+| check       | proxmox      | terraform:apply ansible:inventory:add ansible:playbook:run ssh:add |
+| check       | plex         | terraform:apply ansible:inventory:add ansible:playbook:run ssh:add |
+| check       | wireguard-vm | terraform:apply ansible:inventory:add ansible:playbook:run ssh:add |
+| check       | &lt;host&gt; | ansible-inventory:add ansible-playbook:run ssh:add                 |
+
+```
+command = resource action host
+        | CHECK host check-arguments
+
+resource = ANSIBLE ansible-subcommand
+         | single-resource
+
+single-resource = SSH
+                | TERRAFORM
+
+action = ADD
+       | RUN
+       | APPLY
+
+host = STRING
+
+check-arguments = ANSIBLE ":" ansible-subcommand ":" action
+                | single-resource ":" action
+
+ansible-subcommand = INVENTORY
+                   | PLAYBOOK
+```
