@@ -59,7 +59,8 @@ var m = map[string]token{
 type token int
 
 const (
-	terraform token = iota
+	invalid token = iota
+	terraform
 	ssh
 	check
 
@@ -78,8 +79,7 @@ const (
 
 func toTargets(args []string) ([]app.Target, error) {
 	for _, arg := range args {
-		scanner := newScanner()
-		_ = scanner.scan(arg)
+		_, _ = scan(arg)
 
 		// parser := newParser(tokens)
 		// parser.parseTargets()
@@ -87,74 +87,66 @@ func toTargets(args []string) ([]app.Target, error) {
 	return nil, nil
 }
 
-type scanner struct {
-	tokens []token
-}
-
-func newScanner() *scanner {
-	return &scanner{}
-}
-
-func (s *scanner) scan(source string) []token {
+func scan(source string) ([]token, []error) {
+	errors := make([]error, 0)
+	tokens := make([]token, 0)
 	start, current := 0, 0
-	for !s.isAtEnd(source, current) {
+	for current < len(source) {
 		start = current
-		s.scanToken(source, start, current)
+		token, err := scanToken(source, start, current)
+		if err != nil {
+			errors = append(errors, err)
+			continue
+		}
+		tokens = append(tokens, token)
 	}
 
-	s.tokens = append(s.tokens, eof)
-	return s.tokens
+	tokens = append(tokens, eof)
+	return tokens, errors
 }
 
-func (s *scanner) scanToken(source string, start, current int) {
-	newCurrent, c := s.advance(source, current)
+func scanToken(source string, start, current int) (token, error) {
+	newCurrent, c := advance(source, current)
 
 	if c == ':' {
-		s.tokens = append(s.tokens, colon)
-		return
+		return colon, nil
 	}
 
-	if s.isLower(c) {
-		s.identifier(source, start, newCurrent)
-		return
+	if isLower(c) {
+		return identifier(source, start, newCurrent)
 	}
 
-	fmt.Println("Unexpected character.")
+	return invalid, fmt.Errorf("invalid token")
 }
 
-func (s *scanner) identifier(source string, start, current int) {
-	for s.isLower(s.peek(source, current)) {
-		s.advance(source, current)
+func identifier(source string, start, current int) (token, error) {
+	for isLower(peek(source, current)) {
+		advance(source, current)
 	}
 
 	lexeme := source[start:current]
 	tok, ok := m[lexeme]
 	if !ok {
-		fmt.Printf("unrecognized token")
-		return
+		return invalid, fmt.Errorf("unrecognized token")
 	}
 
-	s.tokens = append(s.tokens, tok)
+	return tok, nil
 }
 
-func (s *scanner) isLower(b byte) bool {
+func isLower(b byte) bool {
 	return b >= 'a' && b <= 'z'
 }
 
-func (s *scanner) advance(source string, current int) (int, byte) {
+func advance(source string, current int) (int, byte) {
 	return current + 1, source[current]
 }
 
-func (s *scanner) peek(source string, current int) byte {
-	if s.isAtEnd(source, current) {
+func peek(source string, current int) byte {
+	if current >= len(source) {
 		return 0
 	}
 
 	return source[current]
-}
-
-func (s *scanner) isAtEnd(source string, current int) bool {
-	return current >= len(source)
 }
 
 //type parser struct {
