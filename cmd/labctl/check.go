@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -79,12 +80,13 @@ const (
 
 func toTargets(args []string) ([]app.Target, error) {
 	for _, arg := range args {
-		_, _ = scan(arg)
-
+		tokens, errors := scan(arg)
+		fmt.Println(tokens)
+		fmt.Println(errors)
 		// parser := newParser(tokens)
 		// parser.parseTargets()
 	}
-	return nil, nil
+	return nil, errors.New("unimplemented")
 }
 
 func scan(source string) ([]token, []error) {
@@ -96,9 +98,9 @@ func scan(source string) ([]token, []error) {
 		token, newCurrent, err := scanToken(source, start, current)
 		if err != nil {
 			errors = append(errors, err)
-			continue
+		} else {
+			tokens = append(tokens, token)
 		}
-		tokens = append(tokens, token)
 		current = newCurrent
 	}
 
@@ -117,7 +119,7 @@ func scanToken(source string, start, current int) (token, int, error) {
 		return invalid, newCurrent, fmt.Errorf("invalid token")
 	}
 
-	for isLower(source[newCurrent]) {
+	for newCurrent < len(source) && isLower(source[newCurrent]) {
 		newCurrent += 1
 	}
 
