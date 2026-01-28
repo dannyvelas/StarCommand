@@ -88,10 +88,8 @@ func toTargets(args []string) ([]app.Target, error) {
 }
 
 type scanner struct {
-	source  string
-	start   int
-	current int
-	tokens  []token
+	source string
+	tokens []token
 }
 
 func newScanner(source string) *scanner {
@@ -101,17 +99,18 @@ func newScanner(source string) *scanner {
 }
 
 func (s *scanner) scan() []token {
-	for !s.isAtEnd() {
-		s.start = s.current
-		s.scanToken()
+	start, current := 0, 0
+	for !s.isAtEnd(current) {
+		start = current
+		s.scanToken(start, current)
 	}
 
 	s.tokens = append(s.tokens, eof)
 	return s.tokens
 }
 
-func (s *scanner) scanToken() {
-	c := s.advance()
+func (s *scanner) scanToken(start, current int) {
+	newCurrent, c := s.advance(current)
 
 	if c == ':' {
 		s.tokens = append(s.tokens, colon)
@@ -119,19 +118,19 @@ func (s *scanner) scanToken() {
 	}
 
 	if s.isLower(c) {
-		s.identifier()
+		s.identifier(start, newCurrent)
 		return
 	}
 
 	fmt.Println("Unexpected character.")
 }
 
-func (s *scanner) identifier() {
-	for s.isLower(s.peek()) {
-		s.advance()
+func (s *scanner) identifier(start, current int) {
+	for s.isLower(s.peek(current)) {
+		s.advance(current)
 	}
 
-	lexeme := s.source[s.start:s.current]
+	lexeme := s.source[start:current]
 	tok, ok := m[lexeme]
 	if !ok {
 		fmt.Printf("unrecognized token")
@@ -145,22 +144,20 @@ func (s *scanner) isLower(b byte) bool {
 	return b >= 'a' && b <= 'z'
 }
 
-func (s *scanner) advance() byte {
-	currToken := s.source[s.current]
-	s.current += 1
-	return currToken
+func (s *scanner) advance(current int) (int, byte) {
+	return current + 1, s.source[current]
 }
 
-func (s *scanner) peek() byte {
-	if s.isAtEnd() {
+func (s *scanner) peek(current int) byte {
+	if s.isAtEnd(current) {
 		return 0
 	}
 
-	return s.source[s.current]
+	return s.source[current]
 }
 
-func (s *scanner) isAtEnd() bool {
-	return s.current >= len(s.source)
+func (s *scanner) isAtEnd(current int) bool {
+	return current >= len(s.source)
 }
 
 //type parser struct {
