@@ -93,60 +93,50 @@ func scan(source string) ([]token, []error) {
 	start, current := 0, 0
 	for current < len(source) {
 		start = current
-		token, err := scanToken(source, start, current)
+		token, newCurrent, err := scanToken(source, start, current)
 		if err != nil {
 			errors = append(errors, err)
 			continue
 		}
 		tokens = append(tokens, token)
+		current = newCurrent
 	}
 
 	tokens = append(tokens, eof)
 	return tokens, errors
 }
 
-func scanToken(source string, start, current int) (token, error) {
-	newCurrent, c := advance(source, current)
+func scanToken(source string, start, current int) (token, int, error) {
+	newCurrent, c := current+1, source[current]
 
 	if c == ':' {
-		return colon, nil
+		return colon, newCurrent, nil
 	}
 
 	if isLower(c) {
 		return identifier(source, start, newCurrent)
 	}
 
-	return invalid, fmt.Errorf("invalid token")
+	return invalid, newCurrent, fmt.Errorf("invalid token")
 }
 
-func identifier(source string, start, current int) (token, error) {
-	for isLower(peek(source, current)) {
-		advance(source, current)
+func identifier(source string, start, current int) (token, int, error) {
+	newCurrent := current
+	for isLower(source[newCurrent]) {
+		newCurrent += 1
 	}
 
-	lexeme := source[start:current]
+	lexeme := source[start:newCurrent]
 	tok, ok := m[lexeme]
 	if !ok {
-		return invalid, fmt.Errorf("unrecognized token")
+		return invalid, newCurrent, fmt.Errorf("unrecognized token")
 	}
 
-	return tok, nil
+	return tok, newCurrent, nil
 }
 
 func isLower(b byte) bool {
 	return b >= 'a' && b <= 'z'
-}
-
-func advance(source string, current int) (int, byte) {
-	return current + 1, source[current]
-}
-
-func peek(source string, current int) byte {
-	if current >= len(source) {
-		return 0
-	}
-
-	return source[current]
 }
 
 //type parser struct {
