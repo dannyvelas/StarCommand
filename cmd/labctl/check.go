@@ -61,6 +61,8 @@ type token int
 
 const (
 	invalid token = iota
+	identifier
+
 	terraform
 	ssh
 	check
@@ -126,7 +128,7 @@ func scanToken(source string, start, current int) (token, int, error) {
 	lexeme := source[start:newCurrent]
 	tok, ok := m[lexeme]
 	if !ok {
-		return invalid, newCurrent, fmt.Errorf("unrecognized token")
+		return identifier, newCurrent, nil
 	}
 
 	return tok, newCurrent, nil
