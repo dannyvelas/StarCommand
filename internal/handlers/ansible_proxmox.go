@@ -56,9 +56,9 @@ func (h AnsibleProxmoxHandler) getCommand(config *ansibleProxmoxConfig) (*exec.C
 	}
 
 	if errors.Is(err, errConnectingSSH) {
-		return exec.Command("ansible-playbook", "-i", "ansible/inventory.ini", "ansible/setup-proxmox.yml", "-u", "root", "--ask-vault-pass", "-e", string(asJSON)), nil
+		return exec.Command("ansible-playbook", "-i", "ansible/inventory.ini", "ansible/setup-proxmox.yml", "-u", "root", "-e", string(asJSON)), nil
 	} else {
-		return exec.Command("ansible-playbook", "-i", "ansible/inventory.ini", "ansible/setup-proxmox.yml", "--ask-vault-pass", "-e", string(asJSON)), nil
+		return exec.Command("ansible-playbook", "-i", "ansible/inventory.ini", "ansible/setup-proxmox.yml", "-e", string(asJSON)), nil
 	}
 }
 
