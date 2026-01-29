@@ -7,7 +7,7 @@ import (
 	"github.com/dannyvelas/conflux"
 )
 
-func TestCheck(t *testing.T) {
+func TestCheckError(t *testing.T) {
 	configMux := conflux.NewConfigMux()
 
 	tests := []struct {
