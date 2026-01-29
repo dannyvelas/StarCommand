@@ -5,15 +5,15 @@ import "fmt"
 type action string
 
 const (
-	RunAction   action = "run"
-	AddAction   action = "add"
-	ApplyAction action = "apply"
+	runAction   action = "run"
+	addAction   action = "add"
+	applyAction action = "apply"
 )
 
-func StringToAction(s string) (action, error) {
+func stringToAction(s string) (action, error) {
 	a := action(s)
 	switch a {
-	case RunAction, AddAction, ApplyAction:
+	case runAction, addAction, applyAction:
 		return a, nil
 	default:
 		return "", fmt.Errorf("invalid action: %v", s)

@@ -18,14 +18,14 @@ var registry = []rule{
 	{
 		Name: "ansible run proxmox",
 		Match: func(resource resource, action action, hostAlias string) bool {
-			return resource == AnsiblePlaybookResource && action == RunAction && hostAlias == "proxmox"
+			return resource == ansiblePlaybookResource && action == runAction && hostAlias == "proxmox"
 		},
 		Handler: NewAnsibleProxmoxHandler(),
 	},
 	{
 		Name: "ssh add <any-host-alias>",
 		Match: func(resource resource, action action, hostAlias string) bool {
-			return resource == SSHResource && action == AddAction
+			return resource == sshResource && action == addAction
 		},
 		Handler: NewSSHHandler(),
 	},

@@ -48,9 +48,9 @@ func parseResource(arg string, split []string) (resource, []string, error) {
 	case "ansible":
 		return parseAnsibleResource(rest)
 	case "ssh":
-		return SSHResource, rest, nil
+		return sshResource, rest, nil
 	case "terraform":
-		return TerraformResource, rest, nil
+		return terraformResource, rest, nil
 	default:
 		return "", rest, fmt.Errorf("error: unrecognized resource: %s", first)
 	}
@@ -64,9 +64,9 @@ func parseAnsibleResource(split []string) (resource, []string, error) {
 
 	switch first {
 	case "playbook":
-		return AnsiblePlaybookResource, rest, nil
+		return ansiblePlaybookResource, rest, nil
 	case "inventory":
-		return AnsibleInventoryResource, rest, nil
+		return ansibleInventoryResource, rest, nil
 	default:
 		return "", rest, fmt.Errorf("error: unrecognized ansible sub-command: %s", first)
 	}
@@ -78,7 +78,7 @@ func parseAction(resource resource, split []string) (action, error) {
 		return "", fmt.Errorf("error: expecting action after %s resource", resource)
 	}
 
-	action, err := StringToAction(first)
+	action, err := stringToAction(first)
 	if err != nil {
 		return "", fmt.Errorf("error: unrecognized action (%s) for %s resource", first, resource)
 	}
