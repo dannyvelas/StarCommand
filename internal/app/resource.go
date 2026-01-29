@@ -1,10 +1,10 @@
 package app
 
-type Resource string
+type resource string
 
 const (
-	AnsiblePlaybookResource  Resource = "ansiblePlaybook"
-	AnsibleInventoryResource Resource = "ansibleInventory"
-	TerraformResource        Resource = "terraformResource"
-	SSHResource              Resource = "ssh"
+	AnsiblePlaybookResource  resource = "ansiblePlaybook"
+	AnsibleInventoryResource resource = "ansibleInventory"
+	TerraformResource        resource = "terraformResource"
+	SSHResource              resource = "ssh"
 )

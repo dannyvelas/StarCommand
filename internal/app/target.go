@@ -6,8 +6,8 @@ import (
 )
 
 type Target struct {
-	Resource Resource
-	Action   Action
+	resource resource
+	action   action
 }
 
 func ToTargets(args []string) ([]Target, error) {
@@ -35,10 +35,10 @@ func toTarget(arg string) (Target, error) {
 		return Target{}, err
 	}
 
-	return Target{Resource: resource, Action: action}, nil
+	return Target{resource: resource, action: action}, nil
 }
 
-func parseResource(arg string, split []string) (Resource, []string, error) {
+func parseResource(arg string, split []string) (resource, []string, error) {
 	first, rest, err := shift(split)
 	if err != nil {
 		return "", rest, fmt.Errorf("error: invalid target argument: %s", arg)
@@ -56,7 +56,7 @@ func parseResource(arg string, split []string) (Resource, []string, error) {
 	}
 }
 
-func parseAnsibleResource(split []string) (Resource, []string, error) {
+func parseAnsibleResource(split []string) (resource, []string, error) {
 	first, rest, err := shift(split)
 	if err != nil {
 		return "", rest, fmt.Errorf("error: expecting ansible sub-command")
@@ -72,7 +72,7 @@ func parseAnsibleResource(split []string) (Resource, []string, error) {
 	}
 }
 
-func parseAction(resource Resource, split []string) (Action, error) {
+func parseAction(resource resource, split []string) (action, error) {
 	first, _, err := shift(split)
 	if err != nil {
 		return "", fmt.Errorf("error: expecting action after %s resource", resource)

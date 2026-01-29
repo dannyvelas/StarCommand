@@ -17,7 +17,7 @@ func SSHAdd(configMux *conflux.ConfigMux, hostAlias string) (map[string]string, 
 func Check(configMux *conflux.ConfigMux, hostAlias string, targets []Target) (map[string]string, error) {
 	allDiagnostics := make(map[string]string)
 	for _, target := range targets {
-		diagnostics, err := execute(configMux, target.Resource, target.Action, hostAlias, true)
+		diagnostics, err := execute(configMux, target.resource, target.action, hostAlias, true)
 		if err != nil {
 			return nil, err
 		}

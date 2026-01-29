@@ -10,28 +10,28 @@ import (
 
 type rule struct {
 	Name    string
-	Match   func(resource Resource, action Action, hostAlias string) bool
+	Match   func(resource resource, action action, hostAlias string) bool
 	Handler Handler
 }
 
 var registry = []rule{
 	{
 		Name: "ansible run proxmox",
-		Match: func(resource Resource, action Action, hostAlias string) bool {
+		Match: func(resource resource, action action, hostAlias string) bool {
 			return resource == AnsiblePlaybookResource && action == RunAction && hostAlias == "proxmox"
 		},
 		Handler: NewAnsibleProxmoxHandler(),
 	},
 	{
 		Name: "ssh add <any-host-alias>",
-		Match: func(resource Resource, action Action, hostAlias string) bool {
+		Match: func(resource resource, action action, hostAlias string) bool {
 			return resource == SSHResource && action == AddAction
 		},
 		Handler: NewSSHHandler(),
 	},
 }
 
-func execute(configMux *conflux.ConfigMux, resource Resource, action Action, hostAlias string, dryRun bool) (map[string]string, error) {
+func execute(configMux *conflux.ConfigMux, resource resource, action action, hostAlias string, dryRun bool) (map[string]string, error) {
 	rule, err := findRule(resource, action, hostAlias)
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func execute(configMux *conflux.ConfigMux, resource Resource, action Action, hos
 	return handlerDiagnostics, nil
 }
 
-func findRule(resource Resource, action Action, hostAlias string) (rule, error) {
+func findRule(resource resource, action action, hostAlias string) (rule, error) {
 	for _, rule := range registry {
 		if rule.Match(resource, action, hostAlias) {
 			return rule, nil

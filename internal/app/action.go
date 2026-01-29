@@ -2,16 +2,16 @@ package app
 
 import "fmt"
 
-type Action string
+type action string
 
 const (
-	RunAction   Action = "run"
-	AddAction   Action = "add"
-	ApplyAction Action = "apply"
+	RunAction   action = "run"
+	AddAction   action = "add"
+	ApplyAction action = "apply"
 )
 
-func StringToAction(s string) (Action, error) {
-	a := Action(s)
+func StringToAction(s string) (action, error) {
+	a := action(s)
 	switch a {
 	case RunAction, AddAction, ApplyAction:
 		return a, nil
