@@ -41,14 +41,12 @@ func execute(configMux *conflux.ConfigMux, resource resource, action action, hos
 
 	configStruct := rule.handler.GetConfig(hostAlias)
 	diagnostics, err := conflux.Unmarshal(configMux, configStruct)
-	if errors.Is(err, conflux.ErrInvalidFields) {
+	if dryRun {
+		return diagnostics, nil
+	} else if errors.Is(err, conflux.ErrInvalidFields) {
 		return diagnostics, fmt.Errorf("error getting config for running %s on %s host:\n%s", resource, hostAlias, conflux.DiagnosticsToTable(diagnostics))
 	} else if err != nil {
 		return nil, fmt.Errorf("internal error unmarshalling config to struct for %s on %s: %v", resource, hostAlias, err)
-	}
-
-	if dryRun {
-		return diagnostics, nil
 	}
 
 	handlerDiagnostics, err := rule.handler.Execute(configStruct, hostAlias)

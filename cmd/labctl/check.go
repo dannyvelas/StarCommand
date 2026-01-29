@@ -29,7 +29,7 @@ func checkCmd() *cobra.Command {
 				os.Exit(1)
 			}
 
-			fmt.Printf("Configs needed for host(%s):\n%s\n", hostAlias, app.DiagnosticsToTable(diagnostics))
+			fmt.Printf("Configs needed:\n%s\n", app.DiagnosticsToTable(diagnostics))
 		},
 	}
 

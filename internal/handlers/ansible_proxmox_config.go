@@ -11,7 +11,7 @@ import (
 
 type ansibleProxmoxConfig struct {
 	// Required
-	SSHPrivateKeyPath    string `json:"ssh_priavate_key_path" required:"true"`
+	SSHPrivateKeyPath    string `json:"ssh_private_key_path" required:"true"`
 	SSHPublicKeyPath     string `json:"ssh_public_key_path" required:"true"`
 	NodeCIDRAddress      string `json:"node_cidr_address" required:"true"`
 	GatewayAddress       string `json:"gateway_address" required:"true"`
