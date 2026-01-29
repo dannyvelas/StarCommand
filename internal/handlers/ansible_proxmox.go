@@ -16,7 +16,7 @@ func (h AnsibleProxmoxHandler) GetConfig(_ string) any {
 	return newAnsibleProxmoxConfig()
 }
 
-func (h AnsibleProxmoxHandler) Execute(config map[string]string, hostAlias string) (map[string]string, error) {
+func (h AnsibleProxmoxHandler) Execute(config any, hostAlias string) (map[string]string, error) {
 	fmt.Printf("running ansible on proxmox...\n")
 	fmt.Printf("finished running ansible on proxmox...\n")
 	return nil, nil

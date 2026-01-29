@@ -6,7 +6,6 @@ import (
 
 	"github.com/dannyvelas/conflux"
 	"github.com/dannyvelas/homelab/internal/handlers"
-	"github.com/go-viper/mapstructure/v2"
 )
 
 var errUnsupportedCombination = errors.New("error: unsupported combination")
@@ -52,12 +51,7 @@ func execute(configMux *conflux.ConfigMux, resource resource, action action, hos
 		return diagnostics, nil
 	}
 
-	configMap, err := configAsMap(configStruct)
-	if err != nil {
-		return nil, fmt.Errorf("internal error converting config to map: %v", err)
-	}
-
-	handlerDiagnostics, err := rule.handler.Execute(configMap, hostAlias)
+	handlerDiagnostics, err := rule.handler.Execute(configStruct, hostAlias)
 	if err != nil {
 		return nil, fmt.Errorf("error executing command: %v", err)
 	}
@@ -73,19 +67,4 @@ func findRule(resource resource, action action, hostAlias string) (rule, error) 
 	}
 
 	return rule{}, fmt.Errorf("%w of resource(%s), action(%s), and hostAlias(%s)", errUnsupportedCombination, resource, action, hostAlias)
-}
-
-func configAsMap(config any) (map[string]string, error) {
-	configMap := make(map[string]string)
-	decoderConfig := &mapstructure.DecoderConfig{TagName: "json", Result: &configMap}
-	decoder, err := mapstructure.NewDecoder(decoderConfig)
-	if err != nil {
-		return nil, fmt.Errorf("internal error creating new decoder: %v", err)
-	}
-
-	if err := decoder.Decode(config); err != nil {
-		return nil, fmt.Errorf("internal error merging config struct to map: %v", err)
-	}
-
-	return configMap, nil
 }

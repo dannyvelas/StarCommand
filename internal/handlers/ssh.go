@@ -31,7 +31,12 @@ func (h SSHHandler) GetConfig(hostAlias string) any {
 	return newSSHHost(hostAlias)
 }
 
-func (h SSHHandler) Execute(config map[string]string, hostAlias string) (map[string]string, error) {
+func (h SSHHandler) Execute(config any, hostAlias string) (map[string]string, error) {
+	sshConfig, ok := config.(*sshConfig)
+	if !ok {
+		return nil, fmt.Errorf("internal type error converting config to ssh config. found: %T", config)
+	}
+
 	diagnostics := make(map[string]string)
 
 	sshFilePath := filepath.Join(h.homeDir, ".ssh", "config")
@@ -46,7 +51,7 @@ func (h SSHHandler) Execute(config map[string]string, hostAlias string) (map[str
 		return diagnostics, nil
 	}
 
-	if err := h.writeFile(config, sshFilePath); err != nil {
+	if err := h.writeFile(sshConfig, sshFilePath); err != nil {
 		return nil, fmt.Errorf("error writing to %s file: %v", sshFilePath, err)
 	}
 
@@ -76,7 +81,7 @@ func (h SSHHandler) contentAlreadyExists(sshFilePath, hostAlias string) (bool, e
 	return false, nil
 }
 
-func (h SSHHandler) writeFile(config map[string]string, sshFilePath string) error {
+func (h SSHHandler) writeFile(config *sshConfig, sshFilePath string) error {
 	f, err := h.fs.OpenFile(sshFilePath, os.O_RDWR|os.O_CREATE, 0o600)
 	if err != nil {
 		return fmt.Errorf("error opening ssh config file: %v", err)
@@ -92,13 +97,13 @@ func (h SSHHandler) writeFile(config map[string]string, sshFilePath string) erro
 	return err
 }
 
-func (h SSHHandler) buildHostBlock(config map[string]string) []byte {
+func (h SSHHandler) buildHostBlock(config *sshConfig) []byte {
 	const hostTmpl = `
-Host {{ index . "alias" }}
-  HostName {{ index . "host_name" }}
-  User {{ index . "ssh_user" }}
-  IdentityFile {{ index . "ssh_public_key_path" }}
-  Port {{ index . "ssh_port" }}
+Host {{ .Alias }}
+  HostName {{ .HostName }}
+  User {{ .User }}
+  IdentityFile {{ .PublicKeyPath }}
+  Port {{ .Port }}
 `
 
 	tmpl, err := template.New("sshConfig").Parse(hostTmpl)
