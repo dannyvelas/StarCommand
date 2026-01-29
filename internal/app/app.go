@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"maps"
 
 	"github.com/dannyvelas/conflux"
@@ -25,7 +24,7 @@ func Check(configMux *conflux.ConfigMux, hostAlias string, targets []Target) (ma
 	for _, target := range targets {
 		diagnostics, err := execute(configMux, target.Resource, target.Action, hostAlias, true)
 		if err != nil {
-			return nil, fmt.Errorf("error checking resource(%s), action(%s), and alias(%s)", target.Resource, target.Action, hostAlias)
+			return nil, err
 		}
 		maps.Copy(allDiagnostics, diagnostics)
 	}

@@ -58,12 +58,12 @@ func toTargets(args []string) ([]app.Target, error) {
 func toTarget(arg string) (app.Target, error) {
 	split := strings.Split(arg, ":")
 
-	resource, err := parseResource(arg, split)
+	resource, rest, err := parseResource(arg, split)
 	if err != nil {
 		return app.Target{}, err
 	}
 
-	action, err := parseAction(split)
+	action, err := parseAction(resource, rest)
 	if err != nil {
 		return app.Target{}, err
 	}
@@ -71,49 +71,49 @@ func toTarget(arg string) (app.Target, error) {
 	return app.Target{Resource: resource, Action: action}, nil
 }
 
-func parseResource(arg string, split []string) (app.Resource, error) {
+func parseResource(arg string, split []string) (app.Resource, []string, error) {
 	first, rest, err := shift(split)
 	if err != nil {
-		return "", fmt.Errorf("error: invalid target argument: %s", arg)
+		return "", rest, fmt.Errorf("error: invalid target argument: %s", arg)
 	}
 
 	switch first {
 	case "ansible":
 		return parseAnsibleResource(rest)
 	case "ssh":
-		return app.SSHResource, nil
+		return app.SSHResource, rest, nil
 	case "terraform":
-		return app.TerraformResource, nil
+		return app.TerraformResource, rest, nil
 	default:
-		return "", fmt.Errorf("error: unrecognized resource: %s", first)
+		return "", rest, fmt.Errorf("error: unrecognized resource: %s", first)
 	}
 }
 
-func parseAnsibleResource(split []string) (app.Resource, error) {
-	first, _, err := shift(split)
+func parseAnsibleResource(split []string) (app.Resource, []string, error) {
+	first, rest, err := shift(split)
 	if err != nil {
-		return "", fmt.Errorf("error: expecting ansible sub-command")
+		return "", rest, fmt.Errorf("error: expecting ansible sub-command")
 	}
 
 	switch first {
 	case "playbook":
-		return app.AnsiblePlaybookResource, nil
+		return app.AnsiblePlaybookResource, rest, nil
 	case "inventory":
-		return app.AnsibleInventoryResource, nil
+		return app.AnsibleInventoryResource, rest, nil
 	default:
-		return "", fmt.Errorf("error: unrecognized ansible sub-command: %s", first)
+		return "", rest, fmt.Errorf("error: unrecognized ansible sub-command: %s", first)
 	}
 }
 
-func parseAction(split []string) (app.Action, error) {
+func parseAction(resource app.Resource, split []string) (app.Action, error) {
 	first, _, err := shift(split)
 	if err != nil {
-		return "", fmt.Errorf("error: expecting action after resource")
+		return "", fmt.Errorf("error: expecting action after %s resource", resource)
 	}
 
 	action, err := app.StringToAction(first)
 	if err != nil {
-		return "", fmt.Errorf("error: unrecognized action: %s", first)
+		return "", fmt.Errorf("error: unrecognized action (%s) for %s resource", first, resource)
 	}
 
 	return action, nil
