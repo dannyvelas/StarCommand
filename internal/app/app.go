@@ -6,11 +6,6 @@ import (
 	"github.com/dannyvelas/conflux"
 )
 
-type Target struct {
-	Resource Resource
-	Action   Action
-}
-
 func AnsibleRun(configMux *conflux.ConfigMux, hostAlias string) (map[string]string, error) {
 	return execute(configMux, AnsiblePlaybookResource, RunAction, hostAlias, false)
 }
