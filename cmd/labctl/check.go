@@ -85,12 +85,16 @@ type tokenctx struct {
 }
 
 func toTargets(args []string) ([]app.Target, error) {
+	targets := make([]app.Target, 0)
 	for _, arg := range args {
 		tokens := scan(arg)
 		target, err := parse(tokens)
-		fmt.Println(target, err)
+		if err != nil {
+			return nil, err
+		}
+		targets = append(targets, target)
 	}
-	return nil, errors.New("unimplemented")
+	return targets, nil
 }
 
 func scan(source string) chan tokenctx {
@@ -100,8 +104,7 @@ func scan(source string) chan tokenctx {
 }
 
 func scanTokens(source string, tokens chan tokenctx) {
-	var loop func(start int)
-	loop = func(start int) {
+	for start := 0; start < len(source); {
 		if start >= len(source) {
 			tokens <- tokenctx{token: eof}
 			return
@@ -112,9 +115,8 @@ func scanTokens(source string, tokens chan tokenctx) {
 		} else if err == nil {
 			tokens <- tokenctx{token: token}
 		}
-		loop(newStart)
+		start = newStart
 	}
-	loop(0)
 }
 
 func scanToken(source string, start, current int) (int, token, error) {
