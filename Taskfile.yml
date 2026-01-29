@@ -21,7 +21,7 @@ tasks:
     desc: "Print report of found/missing proxmox variables"
     deps: [build:labctl]
     cmds:
-      - ./bin/labctl check config proxmox --for ansible,ssh
+      - ./bin/labctl check proxmox ansible:playbook:run ssh:add
     run: once
 
   setup:proxmox:
@@ -29,14 +29,5 @@ tasks:
     deps: [build:labctl]
 
     cmds:
-      - |
-        CONF_JSON=$(./bin/labctl get config proxmox --for ansible)
-        NODE_IP=$(echo $CONF_JSON | jq -r '.node_ip')
-        SSH_PORT=$(echo $CONF_JSON | jq -r '.ssh_port')
-        if ssh -p "$SSH_PORT" -o ConnectTimeout=3 "admin@$NODE_IP" exit 2>/dev/null; then
-          ansible-playbook -i ansible/inventory.ini ansible/setup-proxmox.yml --ask-vault-pass -e "$CONF_JSON"
-        else
-          ansible-playbook -i ansible/inventory.ini ansible/setup-proxmox.yml -u root --ask-vault-pass -e "$CONF_JSON"
-        fi
-
-      - ./bin/labctl set ssh proxmox
+      - ./bin/labctl ansible playbook run proxmox
+      - ./bin/labctl ssh add proxmox
