@@ -1,9 +1,9 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/dannyvelas/conflux"
 	"github.com/dannyvelas/homelab/internal/app"
@@ -43,52 +43,10 @@ func checkCmd() *cobra.Command {
 	return checkCmd
 }
 
-var errSkip = fmt.Errorf("skip token")
-
-type token string
-
-const (
-	nilToken token = ""
-
-	terraform token = "terraform"
-	ssh       token = "ssh"
-	check     token = "check"
-
-	ansible   token = "ansible"
-	inventory token = "inventory"
-	playbook  token = "playbook"
-
-	add   token = "add"
-	run   token = "run"
-	apply token = "apply"
-
-	eof token = "eof"
-)
-
-var m = map[string]token{
-	"terraform": terraform,
-	"ssh":       ssh,
-	"check":     check,
-
-	"ansible":   ansible,
-	"inventory": inventory,
-	"playbook":  playbook,
-
-	"add":   add,
-	"run":   run,
-	"apply": apply,
-}
-
-type tokenctx struct {
-	token token
-	err   error
-}
-
 func toTargets(args []string) ([]app.Target, error) {
 	targets := make([]app.Target, 0)
 	for _, arg := range args {
-		tokens := scan(arg)
-		target, err := parse(tokens)
+		target, err := toTarget(arg)
 		if err != nil {
 			return nil, err
 		}
@@ -97,131 +55,74 @@ func toTargets(args []string) ([]app.Target, error) {
 	return targets, nil
 }
 
-func scan(source string) chan tokenctx {
-	tokens := make(chan tokenctx)
-	go scanTokens(source, tokens)
-	return tokens
-}
+func toTarget(arg string) (app.Target, error) {
+	split := strings.Split(arg, ":")
 
-func scanTokens(source string, tokens chan tokenctx) {
-	for start := 0; start < len(source); {
-		if start >= len(source) {
-			tokens <- tokenctx{token: eof}
-			return
-		}
-		newStart, token, err := scanToken(source, start, start)
-		if !errors.Is(err, errSkip) && err != nil {
-			tokens <- tokenctx{token: nilToken, err: err}
-		} else if err == nil {
-			tokens <- tokenctx{token: token}
-		}
-		start = newStart
-	}
-}
-
-func scanToken(source string, start, current int) (int, token, error) {
-	newCurrent, c := current+1, source[current]
-
-	if c == ':' {
-		return newCurrent, nilToken, errSkip
-	}
-
-	if !isLower(c) {
-		return newCurrent, nilToken, fmt.Errorf("unexpected character: %v", c)
-	}
-
-	for newCurrent < len(source) && isLower(source[newCurrent]) {
-		newCurrent += 1
-	}
-
-	lexeme := source[start:newCurrent]
-	tok, ok := m[lexeme]
-	if !ok {
-		return newCurrent, nilToken, fmt.Errorf("unexpected target: %v", lexeme)
-	}
-
-	return newCurrent, tok, nil
-}
-
-func isLower(b byte) bool {
-	return b >= 'a' && b <= 'z'
-}
-
-func parse(tokens chan tokenctx) (app.Target, error) {
-	resource, err := parseResource(tokens)
+	resource, err := parseResource(arg, split)
 	if err != nil {
 		return app.Target{}, err
 	}
 
-	action, err := parseAction(tokens, resource)
+	action, err := parseAction(arg, split)
 	if err != nil {
 		return app.Target{}, err
-	}
-
-	tokenctx, ok := <-tokens
-	if tokenctx.err != nil {
-		return app.Target{}, tokenctx.err
-	}
-
-	if ok && tokenctx.token != eof {
-		return app.Target{}, fmt.Errorf("unexpected value after \"%s\": %s", action, tokenctx.token)
 	}
 
 	return app.Target{Resource: resource, Action: action}, nil
 }
 
-func parseResource(tokens chan tokenctx) (app.Resource, error) {
-	tokenctx := <-tokens
-	if tokenctx.err != nil {
-		return "", tokenctx.err
+func parseResource(arg string, split []string) (app.Resource, error) {
+	first, rest, err := shift(split)
+	if err != nil {
+		return "", fmt.Errorf("error: invalid target argument: %s", arg)
 	}
 
-	switch tokenctx.token {
-	case ansible:
-		return parseAnsibleResource(tokens)
-	case ssh:
+	switch first {
+	case "ansible":
+		return parseAnsibleResource(rest)
+	case "ssh":
 		return app.SSHResource, nil
-	case terraform:
+	case "terraform":
 		return app.TerraformResource, nil
 	default:
-		return "", fmt.Errorf("invalid resource")
+		return "", fmt.Errorf("error: unrecognized resource: %s", first)
 	}
 }
 
-func parseAnsibleResource(tokens chan tokenctx) (app.Resource, error) {
-	tokenctx := <-tokens
-	if tokenctx.err != nil {
-		return "", tokenctx.err
+func parseAnsibleResource(split []string) (app.Resource, error) {
+	first, _, err := shift(split)
+	if err != nil {
+		return "", fmt.Errorf("error: expecting ansible sub-command")
 	}
 
-	switch tokenctx.token {
-	case playbook:
+	switch first {
+	case "playbook":
 		return app.AnsiblePlaybookResource, nil
-	case inventory:
+	case "inventory":
 		return app.AnsibleInventoryResource, nil
-	case eof:
-		return "", fmt.Errorf("unexpected end of input. expecting sub-command for \"ansible\"")
 	default:
-		return "", fmt.Errorf("invalid sub-command for \"ansible\": %v", tokenctx.token)
+		return "", fmt.Errorf("error: unrecognized ansible sub-command: %s", first)
 	}
 }
 
-func parseAction(tokens chan tokenctx, resource app.Resource) (app.Action, error) {
-	tokenctx := <-tokens
-	if tokenctx.err != nil {
-		return "", tokenctx.err
+func parseAction(split []string) (app.Action, error) {
+	first, _, err := shift(split)
+	if err != nil {
+		return "", fmt.Errorf("error: expecting action after resource")
 	}
 
-	switch tokenctx.token {
-	case run:
-		return app.RunAction, nil
-	case add:
-		return app.AddAction, nil
-	case apply:
-		return app.ApplyAction, nil
-	case eof:
-		return "", fmt.Errorf("unexpected end of input. expecting an action after \"%s\"", resource)
-	default:
-		return "", fmt.Errorf("invalid action: %s", tokenctx.token)
+	action, err := app.StringToAction(first)
+	if err != nil {
+		return "", fmt.Errorf("error: unrecognized action: %s", first)
 	}
+
+	return action, nil
+}
+
+func shift(s []string) (string, []string, error) {
+	if len(s) < 1 {
+		return "", s, fmt.Errorf("empty slice")
+	}
+
+	return s[0], s[1:], nil
 }
