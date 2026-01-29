@@ -9,6 +9,8 @@ import (
 	"github.com/go-viper/mapstructure/v2"
 )
 
+var errUnsupportedCombination = errors.New("error: unsupported combination")
+
 type rule struct {
 	Name    string
 	Match   func(resource resource, action action, hostAlias string) bool
@@ -70,7 +72,7 @@ func findRule(resource resource, action action, hostAlias string) (rule, error) 
 		}
 	}
 
-	return rule{}, fmt.Errorf("error: unsupported combination of resource(%s), action(%s), and hostAlias(%s)", resource, action, hostAlias)
+	return rule{}, fmt.Errorf("%w of resource(%s), action(%s), and hostAlias(%s)", errUnsupportedCombination, resource, action, hostAlias)
 }
 
 func configAsMap(config any) (map[string]string, error) {

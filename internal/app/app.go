@@ -14,7 +14,12 @@ func SSHAdd(configMux *conflux.ConfigMux, hostAlias string) (map[string]string, 
 	return execute(configMux, sshResource, addAction, hostAlias, false)
 }
 
-func Check(configMux *conflux.ConfigMux, hostAlias string, targets []target) (map[string]string, error) {
+func Check(configMux *conflux.ConfigMux, hostAlias string, targetArgs []string) (map[string]string, error) {
+	targets, err := toTargets(targetArgs)
+	if err != nil {
+		return nil, err
+	}
+
 	allDiagnostics := make(map[string]string)
 	for _, target := range targets {
 		diagnostics, err := execute(configMux, target.resource, target.action, hostAlias, true)

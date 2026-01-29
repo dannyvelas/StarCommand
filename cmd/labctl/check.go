@@ -23,13 +23,7 @@ func checkCmd() *cobra.Command {
 				conflux.WithBitwardenSecretReader(),
 			)
 
-			targets, err := app.ToTargets(args[1:])
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
-				os.Exit(1)
-			}
-
-			diagnostics, err := app.Check(configMux, hostAlias, targets)
+			diagnostics, err := app.Check(configMux, hostAlias, args[1:])
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
