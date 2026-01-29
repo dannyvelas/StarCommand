@@ -1,11 +1,11 @@
-package models
+package handlers
 
 import (
 	"fmt"
 	"net/netip"
 )
 
-type SSHHost struct {
+type sshConfig struct {
 	Alias           string `json:"alias"`
 	HostName        string `json:"host_name"`
 	User            string `json:"ssh_user" required:"true"`
@@ -14,19 +14,11 @@ type SSHHost struct {
 	NodeCIDRAddress string `json:"node_cidr_address" required:"true"`
 }
 
-func NewSSHHost(hostAlias string) *SSHHost {
-	return &SSHHost{Alias: hostAlias}
+func newSSHHost(hostAlias string) *sshConfig {
+	return &sshConfig{Alias: hostAlias}
 }
 
-func (s *SSHHost) Name() string {
-	return "ssh"
-}
-
-func (s *SSHHost) Resource() string {
-	return "host"
-}
-
-func (s *SSHHost) FillInKeys() error {
+func (s *sshConfig) FillInKeys() error {
 	// ParsePrefix returns the prefix and an error if it's invalid
 	prefix, err := netip.ParsePrefix(s.NodeCIDRAddress)
 	if err != nil {

@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"fmt"
-
-	"github.com/dannyvelas/homelab/internal/models"
 )
 
 var _ Handler = AnsibleProxmoxHandler{}
@@ -15,7 +13,7 @@ func NewAnsibleProxmoxHandler() AnsibleProxmoxHandler {
 }
 
 func (h AnsibleProxmoxHandler) GetConfig(_ string) any {
-	return models.NewAnsibleProxmoxConfig()
+	return newAnsibleProxmoxConfig()
 }
 
 func (h AnsibleProxmoxHandler) Execute(config map[string]string, hostAlias string) (map[string]string, error) {
