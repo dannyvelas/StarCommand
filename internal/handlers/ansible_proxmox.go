@@ -31,11 +31,12 @@ func (h AnsibleProxmoxHandler) Execute(config any, hostAlias string) (map[string
 		return nil, fmt.Errorf("internal type error converting config to ansible proxmox config. found: %T", config)
 	}
 
-	cmd, err := h.getCommand(ansibleProxmoxConfig)
+	args, err := h.getAnsibleArgs(ansibleProxmoxConfig)
 	if err != nil {
-		return nil, fmt.Errorf("error determining if to use root for ansible playbook: %v", err)
+		return nil, fmt.Errorf("error getting ansible args: %v", err)
 	}
 
+	cmd := exec.Command("ansible-playbook", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
@@ -45,8 +46,8 @@ func (h AnsibleProxmoxHandler) Execute(config any, hostAlias string) (map[string
 	return nil, nil
 }
 
-// getCommand returns the command to run ansible, inferring whether to use root permissions
-func (h AnsibleProxmoxHandler) getCommand(config *ansibleProxmoxConfig) (*exec.Cmd, error) {
+// getAnsibleArgs returns the arguments to run ansible, inferring whether to use root permissions
+func (h AnsibleProxmoxHandler) getAnsibleArgs(config *ansibleProxmoxConfig) ([]string, error) {
 	err := h.checkSSH(config)
 	if err != nil && !errors.Is(err, errConnectingSSH) {
 		return nil, fmt.Errorf("error checking if ssh is accessible to proxmox host: %v", err)
@@ -57,10 +58,11 @@ func (h AnsibleProxmoxHandler) getCommand(config *ansibleProxmoxConfig) (*exec.C
 		return nil, fmt.Errorf("error converting config to JSON: %v", err)
 	}
 
+	ansibleArgs := []string{"-i", "ansible/inventory.ini", "ansible/setup-proxmox.yml", "-e", string(asJSON)}
 	if errors.Is(err, errConnectingSSH) {
-		return exec.Command("ansible-playbook", "-i", "ansible/inventory.ini", "ansible/setup-proxmox.yml", "-u", "root", "-e", string(asJSON)), nil
+		return append(ansibleArgs, "-u", "root"), nil
 	} else {
-		return exec.Command("ansible-playbook", "-i", "ansible/inventory.ini", "ansible/setup-proxmox.yml", "-e", string(asJSON)), nil
+		return ansibleArgs, nil
 	}
 }
 

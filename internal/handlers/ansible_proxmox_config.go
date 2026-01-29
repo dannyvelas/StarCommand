@@ -26,6 +26,8 @@ type ansibleProxmoxConfig struct {
 	// Injected
 	NodeIP       string `json:"node_ip"`
 	SSHPublicKey string `json:"ssh_public_key"`
+	AnsibleUser  string `json:"ansible_user"`
+	AnsiblePort  string `json:"ansible_port"`
 }
 
 // NewAnsibleProxmoxConfig returns a pointer to a Proxmox struct with some defaults
@@ -73,6 +75,9 @@ func (c *ansibleProxmoxConfig) FillInKeys() error {
 		return fmt.Errorf("error reading ssh public key file: %v", err)
 	}
 	c.SSHPublicKey = string(bytes)
+
+	c.AnsibleUser = c.SSHUser
+	c.AnsiblePort = c.SSHPort
 
 	return nil
 }
