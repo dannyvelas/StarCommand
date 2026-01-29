@@ -63,7 +63,7 @@ func toTarget(arg string) (app.Target, error) {
 		return app.Target{}, err
 	}
 
-	action, err := parseAction(arg, split)
+	action, err := parseAction(split)
 	if err != nil {
 		return app.Target{}, err
 	}
