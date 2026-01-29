@@ -5,13 +5,13 @@ import (
 	"strings"
 )
 
-type Target struct {
+type target struct {
 	resource resource
 	action   action
 }
 
-func ToTargets(args []string) ([]Target, error) {
-	targets := make([]Target, 0)
+func ToTargets(args []string) ([]target, error) {
+	targets := make([]target, 0)
 	for _, arg := range args {
 		target, err := toTarget(arg)
 		if err != nil {
@@ -22,20 +22,20 @@ func ToTargets(args []string) ([]Target, error) {
 	return targets, nil
 }
 
-func toTarget(arg string) (Target, error) {
+func toTarget(arg string) (target, error) {
 	split := strings.Split(arg, ":")
 
 	resource, rest, err := parseResource(arg, split)
 	if err != nil {
-		return Target{}, err
+		return target{}, err
 	}
 
 	action, err := parseAction(resource, rest)
 	if err != nil {
-		return Target{}, err
+		return target{}, err
 	}
 
-	return Target{resource: resource, action: action}, nil
+	return target{resource: resource, action: action}, nil
 }
 
 func parseResource(arg string, split []string) (resource, []string, error) {
