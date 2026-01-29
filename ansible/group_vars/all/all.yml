@@ -1,3 +1,0 @@
-ssh_port: 17031
-ansible_user: admin
-ansible_port: "{{ ssh_port }}"
