@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"text/template"
 
-	"github.com/dannyvelas/homelab/internal/models"
 	"github.com/kevinburke/ssh_config"
 	"github.com/spf13/afero"
 )
@@ -29,7 +28,7 @@ func NewSSHHandler() SSHHandler {
 }
 
 func (h SSHHandler) GetConfig(hostAlias string) any {
-	return models.NewSSHHost(hostAlias)
+	return newSSHHost(hostAlias)
 }
 
 func (h SSHHandler) Execute(config map[string]string, hostAlias string) (map[string]string, error) {

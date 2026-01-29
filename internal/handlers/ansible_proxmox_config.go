@@ -1,4 +1,4 @@
-package models
+package handlers
 
 import (
 	"fmt"
@@ -27,7 +27,7 @@ type ansibleProxmoxConfig struct {
 }
 
 // NewAnsibleProxmoxConfig returns a pointer to a Proxmox struct with some defaults
-func NewAnsibleProxmoxConfig() *ansibleProxmoxConfig {
+func newAnsibleProxmoxConfig() *ansibleProxmoxConfig {
 	return &ansibleProxmoxConfig{
 		SSHPort:              "22",
 		AutoUpdateRebootTime: "05:00",
