@@ -95,24 +95,26 @@ func toTargets(args []string) ([]app.Target, error) {
 
 func scan(source string) chan tokenctx {
 	tokens := make(chan tokenctx)
-	go func() {
-		start, current := 0, 0
-		for current < len(source) {
-			start = current
-			newCurrent, token, err := scanToken(source, start, current)
-			current = newCurrent
-			if errors.Is(err, errSkip) {
-				continue
-			} else if err != nil {
-				tokens <- tokenctx{token: nilToken, err: err}
-				continue
-			}
+	go scanTokens(source, tokens)
+	return tokens
+}
+
+func scanTokens(source string, tokens chan tokenctx) {
+	var loop func(start int)
+	loop = func(start int) {
+		if start >= len(source) {
+			tokens <- tokenctx{token: eof}
+			return
+		}
+		newStart, token, err := scanToken(source, start, start)
+		if !errors.Is(err, errSkip) && err != nil {
+			tokens <- tokenctx{token: nilToken, err: err}
+		} else if err == nil {
 			tokens <- tokenctx{token: token}
 		}
-
-		tokens <- tokenctx{token: eof}
-	}()
-	return tokens
+		loop(newStart)
+	}
+	loop(0)
 }
 
 func scanToken(source string, start, current int) (int, token, error) {
