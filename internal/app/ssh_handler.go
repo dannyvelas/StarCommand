@@ -12,27 +12,27 @@ import (
 	"github.com/spf13/afero"
 )
 
-var _ Handler = SSHHandler{}
+var _ handler = sshHandler{}
 
-type SSHHandler struct {
+type sshHandler struct {
 	fs      afero.Fs
 	homeDir string
 }
 
-func NewSSHHandler() SSHHandler {
+func newSSHHandler() sshHandler {
 	homeDir, _ := os.UserHomeDir()
 
-	return SSHHandler{
+	return sshHandler{
 		fs:      afero.NewOsFs(),
 		homeDir: homeDir,
 	}
 }
 
-func (h SSHHandler) GetConfig(hostAlias string) any {
+func (h sshHandler) getConfig(hostAlias string) any {
 	return models.NewSSHHost(hostAlias)
 }
 
-func (h SSHHandler) Execute(config map[string]string, hostAlias string) (map[string]string, error) {
+func (h sshHandler) execute(config map[string]string, hostAlias string) (map[string]string, error) {
 	diagnostics := make(map[string]string)
 
 	sshFilePath := filepath.Join(h.homeDir, ".ssh", "config")
@@ -54,7 +54,7 @@ func (h SSHHandler) Execute(config map[string]string, hostAlias string) (map[str
 	return nil, nil
 }
 
-func (h SSHHandler) contentAlreadyExists(sshFilePath, hostAlias string) (bool, error) {
+func (h sshHandler) contentAlreadyExists(sshFilePath, hostAlias string) (bool, error) {
 	f, err := h.fs.OpenFile(sshFilePath, os.O_RDWR|os.O_CREATE, 0o600)
 	if err != nil {
 		return false, fmt.Errorf("error opening ssh config file: %v", err)
@@ -77,7 +77,7 @@ func (h SSHHandler) contentAlreadyExists(sshFilePath, hostAlias string) (bool, e
 	return false, nil
 }
 
-func (h SSHHandler) writeFile(config map[string]string, sshFilePath string) error {
+func (h sshHandler) writeFile(config map[string]string, sshFilePath string) error {
 	f, err := h.fs.OpenFile(sshFilePath, os.O_RDWR|os.O_CREATE, 0o600)
 	if err != nil {
 		return fmt.Errorf("error opening ssh config file: %v", err)
@@ -93,7 +93,7 @@ func (h SSHHandler) writeFile(config map[string]string, sshFilePath string) erro
 	return err
 }
 
-func (h SSHHandler) buildHostBlock(config map[string]string) []byte {
+func (h sshHandler) buildHostBlock(config map[string]string) []byte {
 	const hostTmpl = `
 Host {{ index . "alias" }}
   HostName {{ index . "host_name" }}

@@ -6,19 +6,19 @@ import (
 	"github.com/dannyvelas/homelab/internal/models"
 )
 
-var _ Handler = AnsibleProxmoxHandler{}
+var _ handler = ansibleProxmoxHandler{}
 
-type AnsibleProxmoxHandler struct{}
+type ansibleProxmoxHandler struct{}
 
-func NewAnsibleProxmoxHandler() AnsibleProxmoxHandler {
-	return AnsibleProxmoxHandler{}
+func newAnsibleProxmoxHandler() ansibleProxmoxHandler {
+	return ansibleProxmoxHandler{}
 }
 
-func (h AnsibleProxmoxHandler) GetConfig(_ string) any {
+func (h ansibleProxmoxHandler) getConfig(_ string) any {
 	return models.NewAnsibleProxmoxConfig()
 }
 
-func (h AnsibleProxmoxHandler) Execute(config map[string]string, hostAlias string) (map[string]string, error) {
+func (h ansibleProxmoxHandler) execute(config map[string]string, hostAlias string) (map[string]string, error) {
 	fmt.Printf("running ansible on proxmox...\n")
 	fmt.Printf("finished running ansible on proxmox...\n")
 	return nil, nil

@@ -11,7 +11,7 @@ import (
 type rule struct {
 	Name    string
 	Match   func(resource resource, action action, hostAlias string) bool
-	Handler Handler
+	handler handler
 }
 
 var registry = []rule{
@@ -20,14 +20,14 @@ var registry = []rule{
 		Match: func(resource resource, action action, hostAlias string) bool {
 			return resource == ansiblePlaybookResource && action == runAction && hostAlias == "proxmox"
 		},
-		Handler: NewAnsibleProxmoxHandler(),
+		handler: newAnsibleProxmoxHandler(),
 	},
 	{
 		Name: "ssh add <any-host-alias>",
 		Match: func(resource resource, action action, hostAlias string) bool {
 			return resource == sshResource && action == addAction
 		},
-		Handler: NewSSHHandler(),
+		handler: newSSHHandler(),
 	},
 }
 
@@ -37,7 +37,7 @@ func execute(configMux *conflux.ConfigMux, resource resource, action action, hos
 		return nil, err
 	}
 
-	configStruct := rule.Handler.GetConfig(hostAlias)
+	configStruct := rule.handler.getConfig(hostAlias)
 	diagnostics, err := conflux.Unmarshal(configMux, configStruct)
 	if errors.Is(err, conflux.ErrInvalidFields) {
 		return diagnostics, fmt.Errorf("error getting config for running %s on %s host:\n%s", resource, hostAlias, conflux.DiagnosticsToTable(diagnostics))
@@ -54,7 +54,7 @@ func execute(configMux *conflux.ConfigMux, resource resource, action action, hos
 		return nil, fmt.Errorf("internal error converting config to map: %v", err)
 	}
 
-	handlerDiagnostics, err := rule.Handler.Execute(configMap, hostAlias)
+	handlerDiagnostics, err := rule.handler.execute(configMap, hostAlias)
 	if err != nil {
 		return nil, fmt.Errorf("error executing command: %v", err)
 	}
