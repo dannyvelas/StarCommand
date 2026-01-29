@@ -117,18 +117,20 @@ Goals:
 command = resource action host
         | CHECK host target
 
-resource = ANSIBLE ansible-subcommand
-         | SSH
-         | TERRAFORM
-
-action = ADD
-       | RUN
-       | APPLY
 
 host = STRING
 
 target = resource action
 
+resource = ANSIBLE ansible-subcommand
+         | SSH
+         | TERRAFORM
+
 ansible-subcommand = INVENTORY
                    | PLAYBOOK
+
+action = ADD
+       | RUN
+       | APPLY
+
 ```
