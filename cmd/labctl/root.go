@@ -23,5 +23,6 @@ func execute() {
 func initialize() {
 	rootCmd.AddCommand(ansibleCmd())
 	rootCmd.AddCommand(sshCmd())
+	rootCmd.AddCommand(terraformCmd())
 	rootCmd.AddCommand(checkCmd())
 }

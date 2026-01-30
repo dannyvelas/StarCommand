@@ -14,6 +14,10 @@ func SSHAdd(configMux *conflux.ConfigMux, hostAlias string) (map[string]string, 
 	return execute(configMux, sshResource, addAction, hostAlias, false)
 }
 
+func TerraformApply(configMux *conflux.ConfigMux, hostAlias string) (map[string]string, error) {
+	return execute(configMux, terraformResource, applyAction, hostAlias, false)
+}
+
 func Check(configMux *conflux.ConfigMux, hostAlias string, targetArgs []string) (map[string]string, error) {
 	targets, err := toTargets(targetArgs)
 	if err != nil {
