@@ -60,9 +60,27 @@ func (h AnsibleProxmoxHandler) Execute(config any, hostAlias string) (map[string
 }
 
 func (h AnsibleProxmoxHandler) runAnsiblePlaybook(config *ansibleProxmoxConfig) error {
-	args, err := h.getAnsibleArgs(config)
+	proxmoxAddr := fmt.Sprintf("%s:%s", config.NodeIP, config.SSHPort)
+	client, sshErr := h.getSSHClient(config.SSHUser, proxmoxAddr, config.SSHPrivateKeyPath)
+	if sshErr != nil && !errors.Is(sshErr, errConnectingSSH) {
+		return fmt.Errorf("error checking if ssh is accessible to proxmox host: %v", sshErr)
+	} else if sshErr == nil {
+		client.Close()
+	}
+
+	tmpFile, err := os.CreateTemp("", "labctl-vars-*.json")
 	if err != nil {
-		return fmt.Errorf("error getting ansible args: %v", err)
+		return fmt.Errorf("error creating temp file: %v", err)
+	}
+	defer os.Remove(tmpFile.Name())
+
+	if err := json.NewEncoder(tmpFile).Encode(config); err != nil {
+		return fmt.Errorf("error writing config to tmp file: %v", err)
+	}
+
+	args := []string{"-i", "ansible/inventory.ini", "ansible/setup-proxmox.yml", "-e", "@" + tmpFile.Name()}
+	if errors.Is(sshErr, errConnectingSSH) {
+		args = append(args, "-u", "root")
 	}
 
 	cmd := exec.Command("ansible-playbook", args...)
@@ -137,29 +155,6 @@ func (h AnsibleProxmoxHandler) addTerraformTokenToBitwarden(config *ansibleProxm
 	}
 
 	return nil
-}
-
-// getAnsibleArgs returns the arguments to run ansible, inferring whether to use root permissions
-func (h AnsibleProxmoxHandler) getAnsibleArgs(config *ansibleProxmoxConfig) ([]string, error) {
-	proxmoxAddr := fmt.Sprintf("%s:%s", config.NodeIP, config.SSHPort)
-	client, sshErr := h.getSSHClient(config.SSHUser, proxmoxAddr, config.SSHPrivateKeyPath)
-	if sshErr != nil && !errors.Is(sshErr, errConnectingSSH) {
-		return nil, fmt.Errorf("error checking if ssh is accessible to proxmox host: %v", sshErr)
-	} else if sshErr == nil {
-		client.Close()
-	}
-
-	asJSON, err := json.Marshal(config)
-	if err != nil {
-		return nil, fmt.Errorf("error converting config to JSON: %v", err)
-	}
-
-	ansibleArgs := []string{"-i", "ansible/inventory.ini", "ansible/setup-proxmox.yml", "-e", string(asJSON)}
-	if errors.Is(sshErr, errConnectingSSH) {
-		return append(ansibleArgs, "-u", "root"), nil
-	} else {
-		return ansibleArgs, nil
-	}
 }
 
 func (h AnsibleProxmoxHandler) getSSHClient(user, addr, privateKeyPath string) (*ssh.Client, error) {
