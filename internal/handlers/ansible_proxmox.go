@@ -49,7 +49,10 @@ func (h AnsibleProxmoxHandler) Execute(config any, hostAlias string) (map[string
 		return nil, fmt.Errorf("error creating token for terraform user: %v", err)
 	}
 
-	if err := h.addTerraformTokenToBitwarden(ansibleProxmoxConfig, token); err != nil {
+	if err := h.addTerraformTokenToBitwarden(ansibleProxmoxConfig, token); errors.Is(err, errAlreadyExists) {
+		// this is okay
+		return nil, nil
+	} else if err != nil {
 		return nil, fmt.Errorf("error adding secret to bitwarden: %v", err)
 	}
 
@@ -110,6 +113,15 @@ func (h AnsibleProxmoxHandler) addTerraformTokenToBitwarden(config *ansibleProxm
 	)
 	if err != nil {
 		return fmt.Errorf("error initializing bitwarden client: %v", err)
+	}
+
+	secrets, err := bwClient.ReadSecrets()
+	if err != nil {
+		return fmt.Errorf("error reading bitwarden secrets: %v", err)
+	}
+
+	if _, ok := secrets[config.BitwardenTerraformTokenKey]; ok {
+		return errAlreadyExists
 	}
 
 	if err := bwClient.CreateSecret(config.BitwardenTerraformTokenKey, token); err != nil {
