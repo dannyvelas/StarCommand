@@ -115,12 +115,10 @@ Goals:
 
 ```
 command = resource action host
-        | CHECK host target
+        | CHECK host (resource action)*
 
 
 host = STRING
-
-target = resource action
 
 resource = ANSIBLE ansible-subcommand
          | SSH
