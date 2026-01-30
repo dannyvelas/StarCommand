@@ -32,31 +32,33 @@ func (h AnsibleProxmoxHandler) GetConfig(_ string) any {
 }
 
 func (h AnsibleProxmoxHandler) Execute(config any, hostAlias string) (map[string]string, error) {
+	diagnostics := make(map[string]string)
+
 	ansibleProxmoxConfig, ok := config.(*ansibleProxmoxConfig)
 	if !ok {
-		return nil, fmt.Errorf("internal type error converting config to ansible proxmox config. found: %T", config)
+		return diagnostics, fmt.Errorf("internal type error converting config to ansible proxmox config. found: %T", config)
 	}
 
 	if err := h.runAnsiblePlaybook(ansibleProxmoxConfig); err != nil {
-		return nil, fmt.Errorf("error running ansible playbook: %v", err)
+		return diagnostics, fmt.Errorf("error running ansible playbook: %v", err)
 	}
 
 	token, err := h.createTokenForTerraformUser(ansibleProxmoxConfig)
 	if errors.Is(err, errAlreadyExists) {
-		// if already exists, no need to proceed
-		return nil, nil
+		diagnostics["Create Terraform API token"] = fmt.Sprintf("skipping: %v", errAlreadyExists)
+		return diagnostics, nil
 	} else if err != nil {
-		return nil, fmt.Errorf("error creating token for terraform user: %v", err)
+		return diagnostics, fmt.Errorf("error creating token for terraform user: %v", err)
 	}
 
 	if err := h.addTerraformTokenToBitwarden(ansibleProxmoxConfig, token); errors.Is(err, errAlreadyExists) {
-		// this is okay
-		return nil, nil
+		diagnostics["Add Terraform API token to Bitwarden"] = fmt.Sprintf("skipping: %v", errAlreadyExists)
+		return diagnostics, nil
 	} else if err != nil {
-		return nil, fmt.Errorf("error adding secret to bitwarden: %v", err)
+		return diagnostics, fmt.Errorf("error adding secret to bitwarden: %v", err)
 	}
 
-	return nil, nil
+	return diagnostics, nil
 }
 
 func (h AnsibleProxmoxHandler) runAnsiblePlaybook(config *ansibleProxmoxConfig) error {

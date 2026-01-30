@@ -23,9 +23,14 @@ func ansiblePlaybookRunCmd() *cobra.Command {
 				conflux.WithBitwardenSecretReader(),
 			)
 
-			if _, err := app.AnsibleRun(configMux, hostAlias); err != nil {
+			diagnostics, err := app.AnsibleRun(configMux, hostAlias)
+			if err != nil {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
+			}
+
+			if len(diagnostics) > 0 {
+				fmt.Printf("%s\n", app.DiagnosticsToTable(diagnostics))
 			}
 		},
 	}
