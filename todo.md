@@ -88,8 +88,8 @@
 ## coding todos
 - [x] make `handler.SetFile` more testable
 - [x] make it so that my home directory doesn't have to be hardcoded in the tests for `SetFile`
-- [ ] make it so that ansible configs are read from a file
-- [ ] (CONFLUX) make conflux read configs once instead of every single time that `conflux.Unmarshal` is called. file reads and bitwarden api calls are expensive.
+- [x] make it so that ansible configs are read from a file
+- [~] (CONFLUX) make conflux read configs once instead of every single time that `conflux.Unmarshal` is called. file reads and bitwarden api calls are expensive.
 - [ ] (CONFLUX) maybe make bitwarden secrets read things piecemeal, instead of just dumping everything into a map
 
 ## terraform-provider-proxmox repo
