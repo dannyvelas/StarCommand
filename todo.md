@@ -64,6 +64,11 @@
 - [x] add support for other host-aliases other than proxmox. right now `labctl get config` and `labctl check reqs` pretty much will only work for proxmox because it's hardcoded
 - [x] see if there's a way to reduce duplication: in `models.AliasToStruct` you are listing all the aliases you support. you are again listing those same aliasas in the cobra configs of `getConfig` and `checkConfig`, in the `ValidArgs` field.
 - [x] add test for app.go
+- [x] figure out how to share variables
+  - vm_id = 100 is both in `terraform/plex_lxc/main.tf` and `ansible/inventory.ini`
+  - `proxmox_node_name` is both in terraform variables and `./ansible/group_vars/all/all.yml`
+  - port 17031 is both in `./ansible/group_vars/all/all.yml` and `terraform/global/firewall.tf` and `terraform/plex_lxc/main.tf`.
+  - this is solved with labctl
 
 ## infra todos
 - [ ] migrate all variables to "./configs" dir, effectively deleting all ansible and terraform config files
@@ -72,10 +77,6 @@
 - [ ] add jump-host LXC (re-adding tailscale stuff to README for it)
 - [ ] add jump-host LXC to readme
 - [ ] see if there are any changes that need to be made to jumpLXC for firewall
-- [ ] figure out how to share variables
-  - vm_id = 100 is both in `terraform/plex_lxc/main.tf` and `ansible/inventory.ini`
-  - `proxmox_node_name` is both in terraform variables and `./ansible/group_vars/all/all.yml`
-  - port 17031 is both in `./ansible/group_vars/all/all.yml` and `terraform/global/firewall.tf` and `terraform/plex_lxc/main.tf`.
 - [ ] fix ssh-restart logic in ssh-harden. it seems to always restart ssh.service even if an LXC uses ssh.socket instead
 - [ ] move configure apt stuff from ansible to terraform
 - [ ] it seems like sometimes "terraform destroy" on the "global" terraform project doesn't actually clean the `/etc/pve/firewall/cluster.fw` settings. check if this is consistent and why this is happening. also, fix it
@@ -87,6 +88,7 @@
 ## coding todos
 - [x] make `handler.SetFile` more testable
 - [x] make it so that my home directory doesn't have to be hardcoded in the tests for `SetFile`
+- [ ] make it so that ansible configs are read from a file
 - [ ] (CONFLUX) make conflux read configs once instead of every single time that `conflux.Unmarshal` is called. file reads and bitwarden api calls are expensive.
 - [ ] (CONFLUX) maybe make bitwarden secrets read things piecemeal, instead of just dumping everything into a map
 
