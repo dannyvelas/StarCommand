@@ -31,6 +31,13 @@ var registry = []rule{
 		},
 		handler: handlers.NewSSHHandler(),
 	},
+	{
+		Name: "terraform apply proxmox",
+		Match: func(resource resource, action action, hostAlias string) bool {
+			return resource == terraformResource && action == applyAction && hostAlias == "proxmox"
+		},
+		handler: handlers.NewTerraformProxmoxHandler(),
+	},
 }
 
 func execute(configMux *conflux.ConfigMux, resource resource, action action, hostAlias string, dryRun bool) (map[string]string, error) {
