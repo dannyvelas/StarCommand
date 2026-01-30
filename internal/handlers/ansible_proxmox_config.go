@@ -23,6 +23,15 @@ type ansibleProxmoxConfig struct {
 	AdminPassword        string `json:"admin_password" required:"true" conflux:"proxmox_admin_password"`
 	SMTPUser             string `json:"smtp_user" required:"true"`
 	SMTPPassword         string `json:"smtp_password" required:"true"`
+
+	// fields needed to upload secrets to bitwarden
+	BitwardenAPIURL         string `json:"bitwarden_api_url" required:"true"`
+	BitwardenIdentityURL    string `json:"bitwarden_identity_url" required:"true"`
+	BitwardenAccessToken    string `json:"bitwarden_access_token" required:"true"`
+	BitwardenProjectID      string `json:"bitwarden_project_id" required:"true"`
+	BitwardenOrganizationID string `json:"bitwarden_organization_id" required:"true"`
+	BitwardenStateFilePath  string `json:"bitwarden_state_file_path" required:"true"`
+
 	// Injected
 	NodeIP       string `json:"node_ip"`
 	SSHPublicKey string `json:"ssh_public_key"`
@@ -33,8 +42,11 @@ type ansibleProxmoxConfig struct {
 // NewAnsibleProxmoxConfig returns a pointer to a Proxmox struct with some defaults
 func newAnsibleProxmoxConfig() *ansibleProxmoxConfig {
 	return &ansibleProxmoxConfig{
-		SSHPort:              "22",
-		AutoUpdateRebootTime: "05:00",
+		SSHPort:                "22",
+		AutoUpdateRebootTime:   "05:00",
+		BitwardenAPIURL:        "https://api.bitwarden.com",
+		BitwardenIdentityURL:   "https://identity.bitwarden.com",
+		BitwardenStateFilePath: ".bw_state",
 	}
 }
 

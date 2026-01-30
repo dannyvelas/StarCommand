@@ -1,0 +1,56 @@
+package client
+
+import (
+	"fmt"
+
+	"github.com/bitwarden/sdk-go"
+)
+
+type BitwardenClient struct {
+	organizationID string
+	projectID      string
+	client         sdk.BitwardenClientInterface
+}
+
+func NewBitwardenClient(apiURL, identityURL, accessToken, organizationID, projectID, stateFile string) (BitwardenClient, error) {
+	bitwardenClient, err := sdk.NewBitwardenClient(&apiURL, &identityURL)
+	if err != nil {
+		return BitwardenClient{}, fmt.Errorf("error initializing bitwarden client: %v", err)
+	}
+
+	if err := bitwardenClient.AccessTokenLogin(accessToken, &stateFile); err != nil {
+		return BitwardenClient{}, fmt.Errorf("error logging in to bitwarden client: %v", err)
+	}
+
+	return BitwardenClient{
+		organizationID: organizationID,
+		projectID:      projectID,
+		client:         bitwardenClient,
+	}, nil
+}
+
+func (c BitwardenClient) ReadSecrets() (map[string]string, error) {
+	m := make(map[string]string)
+
+	secrets := c.client.Secrets()
+	listResponse, err := secrets.List(c.organizationID)
+	if err != nil {
+		return nil, fmt.Errorf("error listing secrets: %v", err)
+	}
+
+	for _, secret := range listResponse.Data {
+		secretData, err := secrets.Get(secret.ID)
+		if err != nil {
+			return nil, fmt.Errorf("error getting secret: %v", err)
+		}
+
+		m[secret.Key] = secretData.Value
+	}
+
+	return m, nil
+}
+
+func (c BitwardenClient) CreateSecret(key, value string) error {
+	_, err := c.client.Secrets().Create(key, value, "", c.organizationID, []string{c.projectID})
+	return err
+}
