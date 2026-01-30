@@ -32,12 +32,12 @@ func (h SSHHandler) GetConfig(hostAlias string) any {
 }
 
 func (h SSHHandler) Execute(config any, hostAlias string) (map[string]string, error) {
+	diagnostics := make(map[string]string)
+
 	sshConfig, ok := config.(*sshConfig)
 	if !ok {
 		return nil, fmt.Errorf("internal type error converting config to ssh config. found: %T", config)
 	}
-
-	diagnostics := make(map[string]string)
 
 	sshFilePath := filepath.Join(h.homeDir, ".ssh", "config")
 
@@ -47,7 +47,7 @@ func (h SSHHandler) Execute(config any, hostAlias string) (map[string]string, er
 	}
 
 	if alreadyExists {
-		diagnostics[sshFilePath] = fmt.Sprintf("skipping write: %s host already present", hostAlias)
+		diagnostics["Write to "+sshFilePath] = fmt.Sprintf("skipping: %s host already present", hostAlias)
 		return diagnostics, nil
 	}
 
@@ -55,7 +55,7 @@ func (h SSHHandler) Execute(config any, hostAlias string) (map[string]string, er
 		return nil, fmt.Errorf("error writing to %s file: %v", sshFilePath, err)
 	}
 
-	return nil, nil
+	return diagnostics, nil
 }
 
 func (h SSHHandler) contentAlreadyExists(sshFilePath, hostAlias string) (bool, error) {
