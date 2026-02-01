@@ -19,7 +19,7 @@ provider "proxmox" {
   ssh {
     agent       = false
     username    = "terraform"
-    private_key = file(var.ssh_private_key)
+    private_key = file(var.ssh_private_key_path)
     node {
       name    = var.node
       address = var.ssh_address
