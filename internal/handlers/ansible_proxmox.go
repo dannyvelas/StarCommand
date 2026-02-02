@@ -112,7 +112,8 @@ func (h AnsibleProxmoxHandler) createTokenForTerraformUser(config *ansibleProxmo
 	session.Stdout = &stdout
 	session.Stderr = &stderr
 
-	err = session.Run("sudo pveum user token add terraform@pve provider --privsep=0")
+	cmd := fmt.Sprintf("sudo pveum user token add %s@pve provider --privsep=0", config.TerraformUsername)
+	err = session.Run(cmd)
 	if stderrString := stderr.String(); err != nil && strings.Contains(stderrString, "Token already exists") {
 		return "", errAlreadyExists
 	} else if err != nil {
@@ -140,7 +141,7 @@ func (h AnsibleProxmoxHandler) addTerraformTokenToBitwarden(config *ansibleProxm
 		return fmt.Errorf("error reading bitwarden secrets: %v", err)
 	}
 
-	existingSecret, ok := secrets[config.BitwardenTerraformTokenKey]
+	existingSecret, ok := secrets["proxmox_terraform_user_api_token"]
 	if ok && token == existingSecret.Value {
 		return errAlreadyExists
 	}
@@ -152,7 +153,7 @@ func (h AnsibleProxmoxHandler) addTerraformTokenToBitwarden(config *ansibleProxm
 		}
 	}
 
-	if err := bwClient.CreateSecret(config.BitwardenTerraformTokenKey, token); err != nil {
+	if err := bwClient.CreateSecret("proxmox_terraform_user_api_token", token); err != nil {
 		return fmt.Errorf("error creating bitwarden secret: %v", err)
 	}
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/hashicorp/go-version"
@@ -60,7 +59,7 @@ func (h TerraformProxmoxHandler) applyTerraform(config *terraformProxmoxConfig) 
 
 	tf, err := tfexec.NewTerraform("./terraform/global", execPath)
 	if err != nil {
-		log.Fatalf("error running NewTerraform: %s", err)
+		return fmt.Errorf("error running NewTerraform: %s", err)
 	}
 
 	tmpFile, err := os.CreateTemp("", "labctl-vars-*.tfvars.json")

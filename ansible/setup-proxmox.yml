@@ -80,12 +80,12 @@
     ### Terraform
     - name: Create local terraform user
       user:
-        name: terraform
+        name: "{{ terraform_username }}"
         state: present
 
     - name: Set up SSH for terraform user
       authorized_key:
-        user: terraform
+        user: "{{ terraform_username }}"
         state: present
         key: "{{ ssh_public_key }}"
 
@@ -93,14 +93,14 @@
       copy:
         dest: /etc/sudoers.d/terraform
         content: |
-          terraform ALL=(root) NOPASSWD: /sbin/pvesm
-          terraform ALL=(root) NOPASSWD: /sbin/qm
-          terraform ALL=(root) NOPASSWD: /usr/bin/tee /var/lib/vz/*
+          {{ terraform_username }} ALL=(root) NOPASSWD: /sbin/pvesm
+          {{ terraform_username }} ALL=(root) NOPASSWD: /sbin/qm
+          {{ terraform_username }} ALL=(root) NOPASSWD: /usr/bin/tee /var/lib/vz/*
         mode: "0440"
         validate: /usr/sbin/visudo -cf %s
 
     - name: Create terraform user in Proxmox
-      shell: pveum user add terraform@pve
+      shell: pveum user add {{ terraform_username }}@pve
       register: terraform_user_result
       failed_when: terraform_user_result.rc != 0 and 'already exists' not in terraform_user_result.stderr
       changed_when: terraform_user_result.rc == 0
@@ -121,7 +121,7 @@
       changed_when: terraform_role_result.rc == 0
 
     - name: Assign role to terraform user
-      command: pveum aclmod / -user terraform@pve -role Terraform
+      command: pveum aclmod / -user {{ terraform_username }}@pve -role Terraform
       register: role_assign_result
       failed_when: role_assign_result.rc != 0
       changed_when: false

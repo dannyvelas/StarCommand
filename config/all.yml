@@ -1,7 +1,11 @@
-ssh_user: "admin"
+auto_update_reboot_time: "05:00"
+endpoint: "https://10.0.0.50:8006/"
+gateway_address: 10.0.0.1
+node: "pve"
+physical_nic: "enx6c1ff7135975"
+ssh_address: "10.0.0.50"
 ssh_port: 17031
 ssh_private_key_path: "~/.ssh/id_ed25519"
 ssh_public_key_path: "~/.ssh/id_ed25519.pub"
-gateway_address: 10.0.0.1
-physical_nic: "enx6c1ff7135975"
-auto_update_reboot_time: "05:00"
+ssh_user: "admin"
+terraform_username: "terraform"
