@@ -34,42 +34,12 @@
 
 </details>
 
-<details>
-
-<summary><h2>Set up Proxmox with Ansible</h2></summary>
+## Set up Proxmox
 
 - Run `task setup:proxmox:check` to see the configs that you need.
   - Run `cp .env.example .env` and fill out those values to authenticate to Bitwarden.
   - Add your configs in any combination of: `./config/all.yml`, `./config/proxmox.yml`, the environment (or `.env`), and a Bitwarden secrets vault.
 - Run `task setup:proxmox`.
-
-</details>
-
-<details>
-
-<summary><h2>Create Proxmox Firewall</h2></summary>
-
-- cd `terraform/global`
-- Create a file called `terraform.tfvars`. It should look like this:
-```
-node            = "<node-name>"
-endpoint        = "https://1.2.3.4:8006/"
-api_token       = "terraform@pve!provider=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-ssh_address     = "1.2.3.4"
-ssh_port        = 17031
-ssh_private_key = "/path/to/your/private/.ssh/key"
-```
-- Run `terraform init`.
-- Run `terraform apply`.
-- Change directory back to the root of this repo: `cd ../../`.
-- Make sure that `./ansible/group_vars/all/all.yml` has the following variable:
-  ```
-  proxmox_node_name: "<node-name>"
-  ```
-- Run ansible playbook to enable firewall: `ansible-playbook -i ansible/inventory.ini ansible/activate-firewall.yml --ask-vault-pass`.
-- At this point, only ports `17031` and `8006` will be allowed incoming traffic.
-
-</details>
 
 <details>
 
