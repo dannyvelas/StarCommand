@@ -32,9 +32,9 @@ type TerraformProxmoxHandler struct {
 	terraformFilePath string
 }
 
-func NewTerraformProxmoxHandler() TerraformProxmoxHandler {
+func NewTerraformProxmoxHandler(terraformFilePath string) TerraformProxmoxHandler {
 	return TerraformProxmoxHandler{
-		terraformFilePath: "./terraform/global/firewall.tf",
+		terraformFilePath: terraformFilePath,
 	}
 }
 
