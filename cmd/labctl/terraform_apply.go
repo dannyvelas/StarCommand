@@ -16,6 +16,8 @@ func terraformApplyCmd() *cobra.Command {
 		Short: "Apply the terraform project that corresponds to the given host",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
+			ctx := cmd.Context()
+
 			hostAlias := args[0]
 			configMux := conflux.NewConfigMux(
 				conflux.WithYAMLFileReader(helpers.FallbackFile, conflux.WithPath(helpers.GetConfigPath(hostAlias))),
@@ -23,7 +25,7 @@ func terraformApplyCmd() *cobra.Command {
 				conflux.WithBitwardenSecretReader(),
 			)
 
-			diagnostics, err := app.TerraformApply(configMux, hostAlias)
+			diagnostics, err := app.TerraformApply(ctx, configMux, hostAlias)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)

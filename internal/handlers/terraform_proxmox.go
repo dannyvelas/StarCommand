@@ -42,8 +42,7 @@ func (h TerraformProxmoxHandler) GetConfig(_ string) any {
 	return newTerraformProxmoxConfig()
 }
 
-func (h TerraformProxmoxHandler) Execute(config any, hostAlias string) (map[string]string, error) {
-	ctx := context.Background()
+func (h TerraformProxmoxHandler) Execute(ctx context.Context, config any, hostAlias string) (map[string]string, error) {
 	diagnostics := make(map[string]string)
 
 	terraformProxmoxConfig, ok := config.(*terraformProxmoxConfig)
@@ -58,7 +57,7 @@ func (h TerraformProxmoxHandler) Execute(config any, hostAlias string) (map[stri
 		return diagnostics, fmt.Errorf("error creating token for terraform user: %v", err)
 	}
 
-	execPath, err := h.locateTerraform(terraformProxmoxConfig.TerraformVersion)
+	execPath, err := h.locateTerraform(ctx, terraformProxmoxConfig.TerraformVersion)
 	if err != nil {
 		return diagnostics, fmt.Errorf("error locating terraform executable: %v", err)
 	}
@@ -152,8 +151,7 @@ func (h TerraformProxmoxHandler) setTerraformVersion(desiredVersion string) erro
 	return nil
 }
 
-func (h TerraformProxmoxHandler) locateTerraform(desiredVersion string) (string, error) {
-	ctx := context.Background()
+func (h TerraformProxmoxHandler) locateTerraform(ctx context.Context, desiredVersion string) (string, error) {
 	installer := install.NewInstaller()
 	defer installer.Remove(ctx)
 

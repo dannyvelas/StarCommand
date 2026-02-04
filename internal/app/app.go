@@ -1,24 +1,25 @@
 package app
 
 import (
+	"context"
 	"maps"
 
 	"github.com/dannyvelas/conflux"
 )
 
-func AnsibleRun(configMux *conflux.ConfigMux, hostAlias string) (map[string]string, error) {
-	return execute(configMux, ansiblePlaybookResource, runAction, hostAlias, false)
+func AnsibleRun(ctx context.Context, configMux *conflux.ConfigMux, hostAlias string) (map[string]string, error) {
+	return execute(ctx, configMux, ansiblePlaybookResource, runAction, hostAlias, false)
 }
 
-func SSHAdd(configMux *conflux.ConfigMux, hostAlias string) (map[string]string, error) {
-	return execute(configMux, sshResource, addAction, hostAlias, false)
+func SSHAdd(ctx context.Context, configMux *conflux.ConfigMux, hostAlias string) (map[string]string, error) {
+	return execute(ctx, configMux, sshResource, addAction, hostAlias, false)
 }
 
-func TerraformApply(configMux *conflux.ConfigMux, hostAlias string) (map[string]string, error) {
-	return execute(configMux, terraformResource, applyAction, hostAlias, false)
+func TerraformApply(ctx context.Context, configMux *conflux.ConfigMux, hostAlias string) (map[string]string, error) {
+	return execute(ctx, configMux, terraformResource, applyAction, hostAlias, false)
 }
 
-func Check(configMux *conflux.ConfigMux, hostAlias string, targetArgs []string) (map[string]string, error) {
+func Check(ctx context.Context, configMux *conflux.ConfigMux, hostAlias string, targetArgs []string) (map[string]string, error) {
 	targets, err := toTargets(targetArgs)
 	if err != nil {
 		return nil, err
@@ -26,7 +27,7 @@ func Check(configMux *conflux.ConfigMux, hostAlias string, targetArgs []string) 
 
 	allDiagnostics := make(map[string]string)
 	for _, target := range targets {
-		diagnostics, err := execute(configMux, target.resource, target.action, hostAlias, true)
+		diagnostics, err := execute(ctx, configMux, target.resource, target.action, hostAlias, true)
 		if err != nil {
 			return nil, err
 		}

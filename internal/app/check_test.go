@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"testing/fstest"
@@ -79,7 +80,7 @@ func TestCheckError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := Check(configMux, "proxmox", tt.targetArgs)
+			_, err := Check(context.Background(), configMux, "proxmox", tt.targetArgs)
 			if !errors.Is(err, tt.expectedErr) {
 				t.Fatalf("ToTargets() error was %v. wanted: %v", err, tt.expectedErr)
 				return
@@ -149,7 +150,7 @@ func TestCheckConfig(t *testing.T) {
 
 			configMux := conflux.NewConfigMux(conflux.WithYAMLFileReader("config/all.yml", conflux.WithFileSystem(mockFS)))
 
-			gotDiagnostics, err := Check(configMux, tc.hostAlias, tc.targets)
+			gotDiagnostics, err := Check(context.Background(), configMux, tc.hostAlias, tc.targets)
 			if err != nil {
 				t.Fatalf("unexpected error getting config: %v", err)
 			}

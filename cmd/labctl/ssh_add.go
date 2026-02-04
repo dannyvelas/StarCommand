@@ -16,6 +16,8 @@ func sshAddCmd() *cobra.Command {
 		Short: "Update the `~/.ssh/config` file to connect to a given host",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
+			ctx := cmd.Context()
+
 			hostAlias := args[0]
 			configMux := conflux.NewConfigMux(
 				conflux.WithYAMLFileReader(helpers.FallbackFile, conflux.WithPath(helpers.GetConfigPath(hostAlias))),
@@ -23,7 +25,7 @@ func sshAddCmd() *cobra.Command {
 				conflux.WithBitwardenSecretReader(),
 			)
 
-			diagnostics, err := app.SSHAdd(configMux, hostAlias)
+			diagnostics, err := app.SSHAdd(ctx, configMux, hostAlias)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)

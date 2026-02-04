@@ -16,6 +16,8 @@ func ansiblePlaybookRunCmd() *cobra.Command {
 		Short: "Run the ansible playbook corresponding to the given host",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
+			ctx := cmd.Context()
+
 			hostAlias := args[0]
 			configMux := conflux.NewConfigMux(
 				conflux.WithYAMLFileReader(helpers.FallbackFile, conflux.WithPath(helpers.GetConfigPath(hostAlias))),
@@ -23,7 +25,7 @@ func ansiblePlaybookRunCmd() *cobra.Command {
 				conflux.WithBitwardenSecretReader(),
 			)
 
-			diagnostics, err := app.AnsibleRun(configMux, hostAlias)
+			diagnostics, err := app.AnsibleRun(ctx, configMux, hostAlias)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)

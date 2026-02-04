@@ -1,6 +1,8 @@
 package handlers
 
+import "context"
+
 type Handler interface {
 	GetConfig(hostAlias string) any
-	Execute(config any, hostAlias string) (map[string]string, error)
+	Execute(ctx context.Context, config any, hostAlias string) (map[string]string, error)
 }

@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -40,7 +41,7 @@ var registry = []rule{
 	},
 }
 
-func execute(configMux *conflux.ConfigMux, resource resource, action action, hostAlias string, dryRun bool) (map[string]string, error) {
+func execute(ctx context.Context, configMux *conflux.ConfigMux, resource resource, action action, hostAlias string, dryRun bool) (map[string]string, error) {
 	rule, err := findRule(resource, action, hostAlias)
 	if err != nil {
 		return nil, err
@@ -56,7 +57,7 @@ func execute(configMux *conflux.ConfigMux, resource resource, action action, hos
 		return nil, fmt.Errorf("internal error unmarshalling config to struct for %s on %s: %v", resource, hostAlias, err)
 	}
 
-	handlerDiagnostics, err := rule.handler.Execute(configStruct, hostAlias)
+	handlerDiagnostics, err := rule.handler.Execute(ctx, configStruct, hostAlias)
 	if err != nil {
 		return nil, fmt.Errorf("error executing command: %v", err)
 	}

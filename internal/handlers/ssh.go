@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -31,7 +32,7 @@ func (h SSHHandler) GetConfig(hostAlias string) any {
 	return newSSHHost(hostAlias)
 }
 
-func (h SSHHandler) Execute(config any, hostAlias string) (map[string]string, error) {
+func (h SSHHandler) Execute(_ context.Context, config any, hostAlias string) (map[string]string, error) {
 	diagnostics := make(map[string]string)
 
 	sshConfig, ok := config.(*sshConfig)

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -26,7 +27,7 @@ func (h AnsibleProxmoxHandler) GetConfig(_ string) any {
 	return newAnsibleProxmoxConfig()
 }
 
-func (h AnsibleProxmoxHandler) Execute(config any, hostAlias string) (map[string]string, error) {
+func (h AnsibleProxmoxHandler) Execute(_ context.Context, config any, hostAlias string) (map[string]string, error) {
 	diagnostics := make(map[string]string)
 
 	ansibleProxmoxConfig, ok := config.(*ansibleProxmoxConfig)
