@@ -44,8 +44,9 @@ func (h TerraformProxmoxHandler) Execute(ctx context.Context, config any, hostAl
 		return diagnostics, fmt.Errorf("internal type error converting config to terraform proxmox config. found: %T", config)
 	}
 
-	diagnosticKey := fmt.Sprintf("Setting terraform version in %s", h.terraformFilePath)
-	if err := h.upsertTerraformVersion(terraformProxmoxConfig.TerraformVersion); errors.Is(err, errAlreadyExists) {
+	desiredConstraint := fmt.Sprintf("~> %s", terraformProxmoxConfig.TerraformVersion)
+	if err := h.upsertTerraformConstraint(desiredConstraint); errors.Is(err, errAlreadyExists) {
+		diagnosticKey := fmt.Sprintf("Setting terraform version in %s", h.terraformFilePath)
 		diagnostics[diagnosticKey] = fmt.Sprintf("skipping: %v", errAlreadyExists)
 	} else if err != nil {
 		return diagnostics, fmt.Errorf("error creating token for terraform user: %v", err)
@@ -63,13 +64,13 @@ func (h TerraformProxmoxHandler) Execute(ctx context.Context, config any, hostAl
 	return diagnostics, nil
 }
 
-func (h TerraformProxmoxHandler) upsertTerraformVersion(desiredVersion string) error {
+func (h TerraformProxmoxHandler) upsertTerraformConstraint(desiredConstraint string) error {
 	src, err := os.ReadFile(h.terraformFilePath)
 	if err != nil {
 		return fmt.Errorf("error reading terraform file at %s: %v", h.terraformFilePath, err)
 	}
 
-	newFileByes, err := transformTerraformVersion(src, h.terraformFilePath, desiredVersion)
+	newFileByes, err := transformTerraformVersion(src, h.terraformFilePath, desiredConstraint)
 	if err != nil && !errors.Is(err, errAlreadyExists) {
 		return fmt.Errorf("error transforming terraform file to have new version: %v", err)
 	}
@@ -85,7 +86,7 @@ func (h TerraformProxmoxHandler) upsertTerraformVersion(desiredVersion string) e
 	return nil
 }
 
-func transformTerraformVersion(src []byte, filePath string, version string) ([]byte, error) {
+func transformTerraformVersion(src []byte, filePath string, constraint string) ([]byte, error) {
 	f, diags := hclwrite.ParseConfig(src, filePath, hcl.Pos{Line: 1, Column: 1})
 	if diags.HasErrors() {
 		return nil, fmt.Errorf("failed to parse HCL: %s", diags)
@@ -103,13 +104,13 @@ func transformTerraformVersion(src []byte, filePath string, version string) ([]b
 	if attr != nil {
 		tokens := attr.Expr().BuildTokens(nil)
 		for _, t := range tokens {
-			if t.Type == hclsyntax.TokenQuotedLit && string(t.Bytes) == version {
+			if t.Type == hclsyntax.TokenQuotedLit && string(t.Bytes) == constraint {
 				return nil, errAlreadyExists
 			}
 		}
 	}
 
-	tfBody.SetAttributeValue("required_version", cty.StringVal(version))
+	tfBody.SetAttributeValue("required_version", cty.StringVal(constraint))
 
 	return f.Bytes(), nil
 }
