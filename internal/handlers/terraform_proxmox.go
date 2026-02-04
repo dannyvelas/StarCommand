@@ -144,6 +144,9 @@ func (h TerraformProxmoxHandler) applyTerraform(ctx context.Context, config *ter
 		return fmt.Errorf("error running NewTerraform: %s", err)
 	}
 
+	tf.SetStdout(os.Stdout)
+	tf.SetStderr(os.Stderr)
+
 	tmpFile, err := os.CreateTemp("", "labctl-vars-*.tfvars.json")
 	if err != nil {
 		return fmt.Errorf("error creating temp file: %v", err)
