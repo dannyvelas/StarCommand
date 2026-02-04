@@ -14,11 +14,6 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-var (
-	errConnectingSSH = errors.New("error connecting via ssh")
-	errAlreadyExists = errors.New("resource already exists")
-)
-
 var _ Handler = AnsibleProxmoxHandler{}
 
 type AnsibleProxmoxHandler struct{}
