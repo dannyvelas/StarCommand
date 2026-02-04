@@ -52,7 +52,8 @@ func (h TerraformProxmoxHandler) Execute(ctx context.Context, config any, hostAl
 		return diagnostics, fmt.Errorf("error creating token for terraform user: %v", err)
 	}
 
-	execPath, err := h.locateTerraform(ctx, terraformProxmoxConfig.TerraformVersionConstraint)
+	execPath, doneFn, err := h.locateTerraform(ctx, terraformProxmoxConfig.TerraformVersionConstraint)
+	defer doneFn()
 	if err != nil {
 		return diagnostics, fmt.Errorf("error locating terraform executable: %v", err)
 	}
@@ -115,9 +116,9 @@ func transformTerraformVersion(src []byte, filePath string, constraint string) (
 	return f.Bytes(), nil
 }
 
-func (h TerraformProxmoxHandler) locateTerraform(ctx context.Context, desiredConstraint string) (string, error) {
+func (h TerraformProxmoxHandler) locateTerraform(ctx context.Context, desiredConstraint string) (string, func(), error) {
 	installer := install.NewInstaller()
-	defer installer.Remove(ctx)
+	doneFn := func() { _ = installer.Remove(ctx) }
 
 	constraints := version.MustConstraints(version.NewConstraint(desiredConstraint))
 	execPath, err := installer.Ensure(ctx, []src.Source{
@@ -131,10 +132,10 @@ func (h TerraformProxmoxHandler) locateTerraform(ctx context.Context, desiredCon
 		},
 	})
 	if err != nil {
-		return "", fmt.Errorf("error locating/installing version %s: %v", desiredConstraint, err)
+		return "", doneFn, fmt.Errorf("error locating/installing version %s: %v", desiredConstraint, err)
 	}
 
-	return execPath, nil
+	return execPath, doneFn, nil
 }
 
 func (h TerraformProxmoxHandler) applyTerraform(ctx context.Context, config *terraformProxmoxConfig, execPath string) error {
@@ -147,7 +148,7 @@ func (h TerraformProxmoxHandler) applyTerraform(ctx context.Context, config *ter
 	if err != nil {
 		return fmt.Errorf("error creating temp file: %v", err)
 	}
-	defer os.Remove(tmpFile.Name())
+	defer func() { _ = os.Remove(tmpFile.Name()) }()
 
 	if err := json.NewEncoder(tmpFile).Encode(config); err != nil {
 		return fmt.Errorf("error writing config to tmp file: %v", err)
