@@ -36,7 +36,7 @@ var registry = []rule{
 		Match: func(resource resource, action action, hostAlias string) bool {
 			return resource == terraformResource && action == applyAction && hostAlias == "proxmox"
 		},
-		handler: handlers.NewTerraformProxmoxHandler(),
+		handler: handlers.NewTerraformProxmoxHandler("./terraform/global/firewall.tf"),
 	},
 }
 
