@@ -58,7 +58,7 @@ func (h TerraformProxmoxHandler) Execute(ctx context.Context, config any, hostAl
 	}
 
 	if err := h.applyTerraform(ctx, terraformProxmoxConfig, execPath); err != nil {
-		return diagnostics, fmt.Errorf("error running terraform playbook: %v", err)
+		return diagnostics, fmt.Errorf("error applying terraform project: %v", err)
 	}
 
 	return diagnostics, nil
