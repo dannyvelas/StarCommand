@@ -20,11 +20,6 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-type terraformBlock struct {
-	RequiredVersion string   `hcl:"required_version,optional"`
-	Remainder       hcl.Body `hcl:",remain"`
-}
-
 var _ Handler = TerraformProxmoxHandler{}
 
 type TerraformProxmoxHandler struct {
