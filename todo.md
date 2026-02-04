@@ -71,6 +71,8 @@
   - this is solved with labctl
 
 ## infra todos
+- [ ] remove all ansible firewall logic. make it all terraform (need to use latest version of `bpg/terraform-provider-proxmox` after new release happens)
+- [ ] probably will need to make a PR to set up cluster firewall logic in `bpg/terraform-provider-proxmox`.
 - [ ] migrate all variables to "./configs" dir, effectively deleting all ansible and terraform config files
 - [ ] create a "base" terraform LXC module
 - [ ] create a "base" terraform VM module
