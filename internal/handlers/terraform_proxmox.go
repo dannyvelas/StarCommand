@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/go-version"
 	install "github.com/hashicorp/hc-install"
+	"github.com/hashicorp/hc-install/fs"
 	"github.com/hashicorp/hc-install/product"
 	"github.com/hashicorp/hc-install/releases"
 	"github.com/hashicorp/hc-install/src"
@@ -44,15 +45,14 @@ func (h TerraformProxmoxHandler) Execute(ctx context.Context, config any, hostAl
 		return diagnostics, fmt.Errorf("internal type error converting config to terraform proxmox config. found: %T", config)
 	}
 
-	desiredConstraint := fmt.Sprintf("~> %s", terraformProxmoxConfig.TerraformVersion)
-	if err := h.upsertTerraformConstraint(desiredConstraint); errors.Is(err, errAlreadyExists) {
+	if err := h.upsertTerraformConstraint(terraformProxmoxConfig.TerraformVersionConstraint); errors.Is(err, errAlreadyExists) {
 		diagnosticKey := fmt.Sprintf("Setting terraform version in %s", h.terraformFilePath)
 		diagnostics[diagnosticKey] = fmt.Sprintf("skipping: %v", errAlreadyExists)
 	} else if err != nil {
 		return diagnostics, fmt.Errorf("error creating token for terraform user: %v", err)
 	}
 
-	execPath, err := h.locateTerraform(ctx, terraformProxmoxConfig.TerraformVersion)
+	execPath, err := h.locateTerraform(ctx, terraformProxmoxConfig.TerraformVersionConstraint)
 	if err != nil {
 		return diagnostics, fmt.Errorf("error locating terraform executable: %v", err)
 	}
@@ -115,19 +115,23 @@ func transformTerraformVersion(src []byte, filePath string, constraint string) (
 	return f.Bytes(), nil
 }
 
-func (h TerraformProxmoxHandler) locateTerraform(ctx context.Context, desiredVersion string) (string, error) {
+func (h TerraformProxmoxHandler) locateTerraform(ctx context.Context, desiredConstraint string) (string, error) {
 	installer := install.NewInstaller()
 	defer installer.Remove(ctx)
 
-	v := version.Must(version.NewVersion(desiredVersion))
-	execPath, err := installer.Install(ctx, []src.Installable{
-		&releases.ExactVersion{
-			Product: product.Terraform,
-			Version: v,
+	constraints := version.MustConstraints(version.NewConstraint(desiredConstraint))
+	execPath, err := installer.Ensure(ctx, []src.Source{
+		&fs.Version{
+			Product:     product.Terraform,
+			Constraints: constraints,
+		},
+		&releases.LatestVersion{
+			Product:     product.Terraform,
+			Constraints: constraints,
 		},
 	})
 	if err != nil {
-		return "", fmt.Errorf("error locating version %s: %v", desiredVersion, err)
+		return "", fmt.Errorf("error locating/installing version %s: %v", desiredConstraint, err)
 	}
 
 	return execPath, nil
