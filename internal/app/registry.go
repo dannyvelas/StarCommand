@@ -39,6 +39,13 @@ var registry = []rule{
 		},
 		handler: handlers.NewTerraformProxmoxHandler("./terraform/global/firewall.tf"),
 	},
+	{
+		Name: "terraform apply plex",
+		Match: func(resource resource, action action, hostAlias string) bool {
+			return resource == terraformResource && action == applyAction && hostAlias == "plex"
+		},
+		handler: handlers.NewTerraformPlexHandler("./terraform/plex_lxc/main.tf"),
+	},
 }
 
 func execute(ctx context.Context, configMux *conflux.ConfigMux, resource resource, action action, hostAlias string, dryRun bool) (map[string]string, error) {
