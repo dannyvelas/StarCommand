@@ -14,13 +14,13 @@ terraform {
 
 provider "proxmox" {
   endpoint = var.endpoint
-  username = var.username
+  username = var.user_realm
   password = var.password
   insecure = true
 }
 
 data "local_file" "ssh_public_key" {
-  filename = var.ssh_public_key
+  filename = var.ssh_public_key_path
 }
 
 resource "proxmox_virtual_environment_download_file" "ubuntu_lxc_template" {
