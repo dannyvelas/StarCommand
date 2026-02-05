@@ -134,7 +134,7 @@ resource "proxmox_virtual_environment_vm" "wireguard_vm" {
     ip_config {
       ipv4 {
         address = "${var.ip}/24"
-        gateway = var.router_ip
+        gateway = var.gateway_address
       }
     }
 

@@ -1,4 +1,4 @@
-variable "router_ip" { type = string }
+variable "gateway_address" { type = string }
 variable "node" { type = string }
 variable "endpoint" { type = string }
 variable "api_token" { type = string }

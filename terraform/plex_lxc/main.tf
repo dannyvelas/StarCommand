@@ -69,7 +69,7 @@ resource "proxmox_virtual_environment_container" "plex_lxc" {
     ip_config {
       ipv4 {
         address = "${var.ip}/24"
-        gateway = var.router_ip
+        gateway = var.gateway_address
       }
     }
 
