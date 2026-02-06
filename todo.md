@@ -71,6 +71,11 @@
   - this is solved with labctl
 
 ## infra todos
+- [ ] make sure incus server host has firewall rules like it did before with terraform
+- [ ] make sure plex has firewall rules like it did with terraform
+- [ ] is there a way to mid-playbook switch from "root" to "admin" after ssh_harden runs? if so, do it
+  - ehhh it's kind of a pain. better to just split it into two playbooks.
+  - so this new to-do item is to switch ssh-hardening to be its own playbook instead of its own role. and, you'll just have to execute both playbooks for the first time
 - [ ] remove all ansible firewall logic. make it all terraform (need to use latest version of `bpg/terraform-provider-proxmox` after new release happens)
 - [ ] probably will need to make a PR to set up cluster firewall logic in `bpg/terraform-provider-proxmox`.
 - [ ] migrate all variables to "./configs" dir, effectively deleting all ansible and terraform config files
