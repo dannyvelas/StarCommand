@@ -27,5 +27,5 @@ func (h TerraformProxmoxHandler) Execute(ctx context.Context, config any, hostAl
 		return nil, fmt.Errorf("internal type error converting config to terraform proxmox config. found: %T", config)
 	}
 
-	return executeTerraformFlow(ctx, terraformProxmoxConfig, h.terraformFilePath, terraformProxmoxConfig.TerraformVersionConstraint)
+	return nil, executeTerraformFlow(ctx, terraformProxmoxConfig, h.terraformFilePath, terraformProxmoxConfig.TerraformVersionConstraint)
 }

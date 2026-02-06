@@ -21,27 +21,22 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-func executeTerraformFlow(ctx context.Context, config any, terraformFilePath, desiredConstraint string) (map[string]string, error) {
-	diagnostics := make(map[string]string)
-
-	if err := upsertTerraformConstraint(terraformFilePath, desiredConstraint); errors.Is(err, errAlreadyExists) {
-		diagnosticKey := fmt.Sprintf("Setting terraform version in %s", terraformFilePath)
-		diagnostics[diagnosticKey] = fmt.Sprintf("skipping: %v", errAlreadyExists)
-	} else if err != nil {
-		return diagnostics, fmt.Errorf("error creating token for terraform user: %v", err)
+func executeTerraformFlow(ctx context.Context, config any, terraformFilePath, desiredConstraint string) error {
+	if err := upsertTerraformConstraint(terraformFilePath, desiredConstraint); err != nil && !errors.Is(err, errAlreadyExists) {
+		return fmt.Errorf("error creating token for terraform user: %v", err)
 	}
 
 	execPath, doneFn, err := locateTerraform(ctx, desiredConstraint)
 	defer doneFn()
 	if err != nil {
-		return diagnostics, fmt.Errorf("error locating terraform executable: %v", err)
+		return fmt.Errorf("error locating terraform executable: %v", err)
 	}
 
 	if err := applyTerraform(ctx, config, terraformFilePath, execPath); err != nil {
-		return diagnostics, fmt.Errorf("error applying terraform project: %v", err)
+		return fmt.Errorf("error applying terraform project: %v", err)
 	}
 
-	return diagnostics, nil
+	return nil
 }
 
 func upsertTerraformConstraint(terraformFilePath, desiredConstraint string) error {

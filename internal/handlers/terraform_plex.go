@@ -22,12 +22,10 @@ func (h TerraformPlexHandler) GetConfig(_ string) any {
 }
 
 func (h TerraformPlexHandler) Execute(ctx context.Context, config any, hostAlias string) (map[string]string, error) {
-	diagnostics := make(map[string]string)
-
 	terraformPlexConfig, ok := config.(*terraformPlexConfig)
 	if !ok {
-		return diagnostics, fmt.Errorf("internal type error converting config to terraform plex config. found: %T", config)
+		return nil, fmt.Errorf("internal type error converting config to terraform plex config. found: %T", config)
 	}
 
-	return executeTerraformFlow(ctx, terraformPlexConfig, h.terraformFilePath, terraformPlexConfig.TerraformVersionConstraint)
+	return nil, executeTerraformFlow(ctx, terraformPlexConfig, h.terraformFilePath, terraformPlexConfig.TerraformVersionConstraint)
 }
