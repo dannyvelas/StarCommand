@@ -17,28 +17,32 @@ tasks:
     cmds:
       - go build -o ./bin/labctl ./cmd/labctl
 
-  setup:proxmox:check:
-    desc: "Print report of found/missing proxmox variables"
+  setup:incus:check:
+    desc: "Print report of found/missing incus variables"
     deps: [build:labctl]
     cmds:
-      - ./bin/labctl check proxmox ansible:playbook:run ssh:add
+      - ./bin/labctl check incus ansible:inventory:add ansible:playbook:run ssh:add
     run: once
 
-  setup:proxmox:
+  setup:incus:
     desc: >
       This task configures proxmox after booting it for the first time.
       It also creates some firewall rules and security groups.
     deps: [build:labctl]
     cmds:
-      - ./bin/labctl ansible playbook run proxmox
-      - ./bin/labctl ssh add proxmox
-      - ./bin/labctl terraform apply proxmox
+      - ./bin/labctl ansible galaxy install requirements
+      - ./bin/labctl ansible inventory add incus
+      - ./bin/labctl ansible playbook run incus
+      - ./bin/labctl ssh add incus
+      - incus remote add my-homelab
+      - incus remote switch my-homelab
+      - incus list # verify
 
   setup:plex:check:
     desc: "Print report of found/missing plex variables"
     deps: [build:labctl]
     cmds:
-      - ./bin/labctl check plex terraform:apply
+      - ./bin/labctl check plex terraform:apply ssh:add ansible:playbook:run
     run: once
 
   setup:plex:
@@ -47,5 +51,5 @@ tasks:
 
     cmds:
       - ./bin/labctl terraform apply plex
-      #- ./bin/labctl ssh add plex
-      #- ./bin/labctl ansible playbook run plex
+      - ./bin/labctl ssh add plex
+      - ./bin/labctl ansible playbook run plex
