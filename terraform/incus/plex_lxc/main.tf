@@ -28,13 +28,13 @@ resource "incus_profile" "plex" {
     }
   }
 
-  # Expose port 17031 via proxy device (Host Port -> Container Port 22)
+  # Expose port 17031 via proxy device (Host Port -> Container Port 17031)
   device {
-    name = "plex_ssh"
+    name = "ssh_custom"
     type = "proxy"
     properties = {
       listen  = "tcp:0.0.0.0:17031"
-      connect = "tcp:127.0.0.1:22"
+      connect = "tcp:127.0.0.1:17031"
     }
   }
 }

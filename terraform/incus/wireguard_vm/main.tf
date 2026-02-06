@@ -28,14 +28,13 @@ resource "incus_profile" "wireguard" {
     }
   }
 
-  # Map Host 17031 to Guest 22 (SSH)
-  # This replicates the behavior of 'custom SSH port' without changing guest config
+  # Expose port 17031 via proxy device (Host Port -> Container Port 17031)
   device {
     name = "ssh_custom"
     type = "proxy"
     properties = {
-      listen  = "tcp:0.0.0.0:17031"
-      connect = "tcp:127.0.0.1:22"
+      listen  = "tcp:0.0.0.0:17032"
+      connect = "tcp:127.0.0.1:17031"
     }
   }
 }
