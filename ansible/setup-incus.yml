@@ -11,6 +11,7 @@
     - ssh_harden
     - automated_updates
     - postfix_relay
+    - ufw
 
   tasks:
     - name: Install Incus (and dependencies)
@@ -56,3 +57,17 @@
           "ipv4.nat": "true"
           "ipv6.address": "none"
         state: present
+
+    - name: Allow Incus API (8443)
+      community.general.ufw:
+        rule: allow
+        port: "8443"
+        proto: tcp
+        comment: "Remote Terraform Access"
+
+    - name: Allow Traffic on Incus Bridge (DNS/DHCP)
+      community.general.ufw:
+        rule: allow
+        direction: in
+        interface: incusbr0
+        comment: "Allow container traffic to host (DNS/DHCP)"
