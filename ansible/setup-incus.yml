@@ -16,7 +16,7 @@
     - ssh_harden
     - automated_updates
     - postfix_relay
-    - role: artis3n.tailscale.tailscale
+    - artis3n.tailscale.tailscale
     - ufw
 
   tasks:
