@@ -11,14 +11,12 @@
 * A Bitwarden account with an organization that uses [Secrets Manager](https://bitwarden.com/help/secrets-manager-quick-start/).
 * Bitwarden credentials (specified iin `.env.example`) defined in the environment (or `.env`).
 
+## Deployment Reference
 | Component    | Command                 | Action performed                                                    |
 |--------------|-------------------------|---------------------------------------------------------------------|
 | Incus Server | task setup:incus        | Bootstraps host (Ansible) & creates global profiles (Terraform).    |
 | Plex         | task setup:plex         | Deploys container (Terraform) & configures mounts/service (Ansible) |
 | WireGuard    | task setup:wireguard_vm | Deploys VM (Terraform) & exposes UDP+SSH ports.                     |
-
-<details>
-
 
 ## Configs
 * Each playbook requires a unique set of configs.
