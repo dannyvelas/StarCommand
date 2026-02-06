@@ -6,7 +6,7 @@
     incus_storage_driver: dir # or zfs/btrfs based on user pref. safe default is dir.
     incus_storage_pool_name: default
     ssh_public_key: "{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
-    
+
     # Tailscale Configuration
     tailscale_auth_key: "{{ tailscale_key }}"
     tailscale_args: "--advertise-routes=10.0.100.0/24"
@@ -52,7 +52,6 @@
         config:
           source: /var/lib/incus/storage-pools/default
         state: present
-      # If this fails because the collection isn't installed yet, the user needs to run `ansible-galaxy install -r requirements.yml`
 
     - name: Initialize Incus Network (incusbr0)
       lxc.incus.incus_network:
