@@ -32,3 +32,19 @@ tasks:
       - ./bin/labctl ansible playbook run proxmox
       - ./bin/labctl ssh add proxmox
       - ./bin/labctl terraform apply proxmox
+
+  setup:plex:check:
+    desc: "Print report of found/missing plex variables"
+    deps: [build:labctl]
+    cmds:
+      - ./bin/labctl check plex terraform:apply
+    run: once
+
+  setup:plex:
+    desc: This task sets up plex after booting it for the first time.
+    deps: [build:labctl]
+
+    cmds:
+      - ./bin/labctl terraform apply plex
+      #- ./bin/labctl ssh add plex
+      #- ./bin/labctl ansible playbook run plex
