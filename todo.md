@@ -69,6 +69,8 @@
   - `proxmox_node_name` is both in terraform variables and `./ansible/group_vars/all/all.yml`
   - port 17031 is both in `./ansible/group_vars/all/all.yml` and `terraform/global/firewall.tf` and `terraform/plex_lxc/main.tf`.
   - this is solved with labctl
+- [x] make Ansible playbook send terraform API token directly to Bitwarden Secrets Manager (BWS)
+  - this is solved with labctl
 
 ## infra todos
 - [x] make sure incus server host has firewall rules like it did before with terraform
@@ -76,20 +78,25 @@
 - [ ] is there a way to mid-playbook switch from "root" to "admin" after ssh_harden runs? if so, do it
   - ehhh it's kind of a pain. better to just split it into two playbooks.
   - so this new to-do item is to switch ssh-hardening to be its own playbook instead of its own role. and, you'll just have to execute both playbooks for the first time
-- [ ] remove all ansible firewall logic. make it all terraform (need to use latest version of `bpg/terraform-provider-proxmox` after new release happens)
-- [ ] probably will need to make a PR to set up cluster firewall logic in `bpg/terraform-provider-proxmox`.
-- [ ] migrate all variables to "./configs" dir, effectively deleting all ansible and terraform config files
+- [ ] migrate labctl to use terraform for incus plex LXC instead of proxmox
+- [ ] migrate labctl to use ansible for incus instead of proxmox
+- [ ] fix ssh-restart logic in ssh-harden. it seems to always restart ssh.service even if an LXC uses ssh.socket instead
+
+## infra next
+- [ ] use Netboot.xyz + https://pikvm.org/ + proxmox answers file to remotely shutdown/reboot and re-install proxmox
+- [ ] migrate to OVN instead of ufw
+
+## infra maybe
 - [ ] create a "base" terraform LXC module
 - [ ] create a "base" terraform VM module
+
+## infra not doing
+- [ ] remove all ansible firewall logic. make it all terraform (need to use latest version of `bpg/terraform-provider-proxmox` after new release happens)
 - [ ] add jump-host LXC (re-adding tailscale stuff to README for it)
 - [ ] add jump-host LXC to readme
 - [ ] see if there are any changes that need to be made to jumpLXC for firewall
-- [ ] fix ssh-restart logic in ssh-harden. it seems to always restart ssh.service even if an LXC uses ssh.socket instead
 - [ ] move configure apt stuff from ansible to terraform
 - [ ] it seems like sometimes "terraform destroy" on the "global" terraform project doesn't actually clean the `/etc/pve/firewall/cluster.fw` settings. check if this is consistent and why this is happening. also, fix it
-- [ ] see how we can convert the README to a program
-- [ ] use Netboot.xyz + https://pikvm.org/ + proxmox answers file to remotely shutdown/reboot and re-install proxmox
-- [ ] make Ansible playbook send terraform API token directly to Bitwarden Secrets Manager (BWS)
 - [ ] figure out a way to make it so that plex data (about watch history, users with access to my plex) is stored somewhere externally so that if I nuke Proxmox, it doesn't get lost.
 
 ## coding todos
@@ -99,7 +106,7 @@
 - [x] add context.Background() which is initialized at main and passed into Execute
 - [ ] maybe switch "ansibleProxmox" to be called "proxmoxAnsible", and also for terraformProxmox so that its consistent with bitwarden secret "proxmox_terraform_user_api_token"
 - [ ] use `runE` in cobra
-- [~] (CONFLUX) make conflux read configs once instead of every single time that `conflux.Unmarshal` is called. file reads and bitwarden api calls are expensive.
+- [ ] (CONFLUX) make conflux read configs once instead of every single time that `conflux.Unmarshal` is called. file reads and bitwarden api calls are expensive.
 - [ ] (CONFLUX) maybe make bitwarden secrets read things piecemeal, instead of just dumping everything into a map
 
 ## terraform-provider-proxmox repo
@@ -107,3 +114,4 @@
   - create directory `mkdir -p /mnt/bindmounts/shared`
   - use username and password without ssh section at all
 - [x] make PR to fix broken link in README for instructions to setup local proxmox 
+- [ ] probably will need to make a PR to set up cluster firewall logic in `bpg/terraform-provider-proxmox`.
