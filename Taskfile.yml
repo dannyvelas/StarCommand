@@ -62,3 +62,24 @@ tasks:
       # run ansible-playbook bootstrap-server.yml --limit plex_lxc -u root
       # run ansible-playbook setup-plex-lxc.yml
       - ./bin/labctl ansible playbook run plex
+
+  setup:remote_server:check:
+    desc: "Print report of found/missing variables for setup:remote_server command"
+    deps: [build:labctl]
+    cmds:
+      - ./bin/labctl check $host ansible:inventory:add ansible:playbook:run ssh:add
+    run: once
+
+  setup:remote_server:
+    desc: This task configures a remote server $host with ansible
+    deps: [build:labctl]
+
+    cmds:
+      # adds to [remote_vps] gropu
+      - ./bin/labctl ansible inventory add $host
+
+      # run ansible-playbook bootstrap-server.yml --limit $host -u root
+      # run ansible-playbook setup-server.yml
+      - ./bin/labctl ansible playbook run $host
+
+      - ./bin/labctl ssh add $host
