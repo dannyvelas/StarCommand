@@ -3,25 +3,19 @@
     name: ufw
     state: present
 
-- name: Allow custom SSH port in ufw
+- name: Allow custom SSH port
   community.general.ufw:
     rule: allow
     port: "{{ ssh_port }}"
     proto: tcp
 
-- name: Set default policy to deny all incoming traffic
+- name: Enable UFW with default deny incoming
   community.general.ufw:
     state: enabled
     policy: deny
     direction: incoming
 
-- name: Set default policy to allow all outgoing traffic
+- name: Allow all outgoing traffic
   community.general.ufw:
     policy: allow
     direction: outgoing
-
-- name: Disable port 22
-  community.general.ufw:
-    rule: deny
-    port: "22"
-    proto: tcp
