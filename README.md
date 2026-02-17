@@ -9,8 +9,7 @@
 * [Task](https://taskfile.dev/) installed.
 * A C toolchain on that computer. You can install this on macOS with `xcode-select --install`.
 * A [Tailscale](https://login.tailscale.com/start) account.
-* A Bitwarden account with an organization that uses [Secrets Manager](https://bitwarden.com/help/secrets-manager-quick-start/).
-* Bitwarden credentials (specified in `.env.example`) defined in the environment (or `.env`).
+* [Bitwarden Secrets Manager](https://bitwarden.com/help/secrets-manager-quick-start/).
 
 ## Deployment Reference
 | Component     | Command                  | Action performed                                                    |
