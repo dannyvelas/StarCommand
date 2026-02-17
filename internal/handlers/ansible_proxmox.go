@@ -63,14 +63,14 @@ func (h AnsibleProxmoxHandler) runAnsiblePlaybook(config *ansibleProxmoxConfig) 
 	if sshErr != nil && !errors.Is(sshErr, errConnectingSSH) {
 		return fmt.Errorf("error checking if ssh is accessible to proxmox host: %v", sshErr)
 	} else if sshErr == nil {
-		client.Close()
+		_ = client.Close()
 	}
 
 	tmpFile, err := os.CreateTemp("", "labctl-vars-*.json")
 	if err != nil {
 		return fmt.Errorf("error creating temp file: %v", err)
 	}
-	defer os.Remove(tmpFile.Name())
+	defer func() { _ = os.Remove(tmpFile.Name()) }()
 
 	if err := json.NewEncoder(tmpFile).Encode(config); err != nil {
 		return fmt.Errorf("error writing config to tmp file: %v", err)
@@ -97,7 +97,7 @@ func (h AnsibleProxmoxHandler) createTokenForTerraformUser(config *ansibleProxmo
 	if err != nil {
 		return "", fmt.Errorf("error getting ssh client after running ansible: %v", err)
 	}
-	defer sshClient.Close()
+	defer func() { _ = sshClient.Close() }()
 
 	session, err := sshClient.NewSession()
 	if err != nil {
