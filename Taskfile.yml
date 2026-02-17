@@ -79,7 +79,7 @@ tasks:
       - ./bin/labctl ansible inventory add $host
 
       # run ansible-playbook bootstrap-server.yml --limit $host -u root
-      # run ansible-playbook setup-server.yml
+      # run ansible-playbook setup-remote.yml
       - ./bin/labctl ansible playbook run $host
 
       - ./bin/labctl ssh add $host
