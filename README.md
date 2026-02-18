@@ -1,6 +1,6 @@
 # Bare-Metal Infrastructure Automation
 
-Infrastructure as Code for self-hosted environments. A single Go CLI (`labctl`) reads your configuration and orchestrates Terraform and Ansible to provision one or more servers with a hypervisor, a WireGuard VPN, a Traefik reverse proxy, OVN networking, and a k3s cluster. Engineers deploy any containerized service with `kubectl` — no application-specific code in the platform itself.
+Infrastructure as Code for self-hosted environments. A single Go CLI (`iac`) reads your configuration and orchestrates Terraform and Ansible to provision one or more servers with a hypervisor, a WireGuard VPN, a Traefik reverse proxy, OVN networking, and a k3s cluster. Engineers deploy any containerized service with `kubectl` — no application-specific code in the platform itself.
 
 ## Architecture
 
@@ -112,7 +112,7 @@ vim ./config/all.yml                         # Global config file        : prior
 cp .env.example .env                         # Environment variables     : priority #4
 ```
 
-The `labctl` CLI reads these configuration values and generates all tool-specific configs (Ansible inventory, Terraform tfvars) into `.generated/`. You never edit those files directly.
+The `iac` CLI reads these configuration values and generates all tool-specific configs (Ansible inventory, Terraform tfvars) into `.generated/`. You never edit those files directly.
 
 ## Usage
 
@@ -121,15 +121,15 @@ The `labctl` CLI reads these configuration values and generates all tool-specifi
 Provision each server — this hardens the OS, installs WireGuard (on the designated VPN host), installs a hypervisor (Incus), creates a workload VM with Traefik, configures OVN overlay networking, and joins k3s:
 
 ```bash
-labctl setup                     # setup all hosts specified in your config
-labctl setup --host <your-host>  # setup only one host. If a cluster already exists, join this host to that cluster. Otherwise, initialize a new cluster
+iac setup                     # setup all hosts specified in your config
+iac setup --host <your-host>  # setup only one host. If a cluster already exists, join this host to that cluster. Otherwise, initialize a new cluster
 ```
 
 ### Generate VPN client configs
 
 ```bash
-labctl generate vpn-client --name "alice-laptop"
-labctl generate vpn-client --name "alice-phone"
+iac generate vpn-client --name "alice-laptop"
+iac generate vpn-client --name "alice-phone"
 ```
 
 Client configs are saved to `.generated/vpn-clients/`. Import them into the WireGuard app on each device, then delete the `.conf` files from your workstation — they contain the client's private key and preshared key. The `.generated/` directory is gitignored and the files are created with `0600` permissions, but they should be treated as sensitive and not kept around longer than needed.
@@ -158,19 +158,19 @@ kubectl apply -f services/golinks.yml
 ### Verify
 
 ```bash
-labctl status # cluster overview: hosts, services, VPN, k3s
+iac status # cluster overview: hosts, services, VPN, k3s
 ```
 
 ### Tear down
 
 ```bash
-labctl teardown # destroy all VMs via Terraform
+iac teardown # destroy all VMs via Terraform
 ```
 
 ## CLI reference
 
 ```
-labctl <command> [options]
+iac <command> [options]
 
 Commands:
   setup                Setup a physical host (hardening, hypervisor, VPN, Reverse Proxy, VM, OVN, k3s)
@@ -188,7 +188,7 @@ config/                      # config directory
   host-01.yml                # host-specific config
 services/                    # service manifests (one per app)
 cmd/                         # Go CLI source
-  labctl/                    # entrypoint and command routing
+  iac/                    # entrypoint and command routing
 ansible/
   playbooks/                 # ansible playbooks
   roles/                     # ansible roles
@@ -201,7 +201,7 @@ terraform/                   # incus VM lifecycle
 When you add or migrate servers:
 
 1. Update `config/` with the new host IPs and storage paths
-2. Run `labctl setup --host <new-host>` for each new host
+2. Run `iac setup --host <new-host>` for each new host
 3. k3s automatically joins the new node to the cluster
 4. OVN extends the overlay network to the new host
 5. Deploy services with `kubectl` — no changes to manifests needed, k3s schedules across the cluster
