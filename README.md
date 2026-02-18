@@ -188,7 +188,7 @@ config/                      # config directory
   host-01.yml                # host-specific config
 services/                    # service manifests (one per app)
 cmd/                         # Go CLI source
-  iac/                    # entrypoint and command routing
+  iac/                       # entrypoint and command routing
 ansible/
   playbooks/                 # ansible playbooks
   roles/                     # ansible roles
