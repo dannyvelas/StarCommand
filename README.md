@@ -73,6 +73,7 @@ Internal short URLs for quick access to services and dashboards:
 - [Go](https://go.dev/) 1.21+ (to build the CLI)
 - [Terraform](https://www.terraform.io/) (latest stable)
 - [Ansible](https://docs.ansible.com/) (latest stable)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/) (for deploying and managing services)
 - [WireGuard client](https://www.wireguard.com/install/) (for VPN access)
 - A C toolchain (e.g., `xcode-select --install` on macOS)
 - SSH client with key-based auth configured to all servers
@@ -178,7 +179,17 @@ Commands:
   status               Show cluster status (hosts, services, VPN, k3s)
   teardown             Tear down all VMs
   version              Print version
+
+Low-level commands:
+  ansible inventory --host <host>         Generate the Ansible inventory file for a host and its VMs
+  ansible bootstrap-server --host <host>  Run the bootstrap-server playbook against a single host
+  ansible setup-host --host <host>        Run the setup-host playbook against a single host
+  ansible setup-vm --host <host>          Run the setup-vm playbook against a host's VMs
+  ssh add --host <host>                   Add a host and its VMs to ~/.ssh/config
+  terraform apply                         Apply the Terraform project
 ```
+
+`iac` wraps these low-level commands because they require config resolution — secret fetching, inventory generation, and var merging — that would otherwise need to be done manually.
 
 ## Project structure
 
