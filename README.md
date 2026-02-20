@@ -192,7 +192,7 @@ Commands:
   version                                Print version
 
 Low-level commands:
-  inventory [--host <host>]              Generate the Ansible inventory file for all hosts, or a single host
+  inventory add [--host <host>]          Generate the Ansible inventory file for all hosts, or a single host
   ansible bootstrap-server               Run the bootstrap-server playbook against all hosts in the inventory
   ansible bootstrap-server --vms         Run the bootstrap-server playbook against all VMs in the inventory
   ansible setup-host                     Run the setup-host playbook against all hosts in the inventory
