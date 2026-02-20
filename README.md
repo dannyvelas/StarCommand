@@ -1,6 +1,6 @@
 # Debian Server Infrastructure Automation
 
-Infrastructure as Code for self-hosted environments. A single Go CLI (`iac`) reads your configuration and orchestrates Terraform and Ansible to provision one or more servers with a hypervisor, a WireGuard VPN, a Traefik reverse proxy, OVN networking, and a k3s cluster. Engineers deploy any containerized service with `kubectl` — no application-specific code in the platform itself.
+A CLI to provision one or more servers with a hypervisor, a WireGuard VPN, a Traefik reverse proxy, OVN networking, and a k3s cluster.
 
 ## Architecture
 
