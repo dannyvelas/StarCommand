@@ -192,11 +192,11 @@ Commands:
   version                                Print version
 
 Low-level commands:
-  inventory <host>                       Generate the Ansible inventory file for a host and its VMs
-  ansible bootstrap-server <host>        Run the bootstrap-server playbook against a single host
-  ansible bootstrap-server <host> --vms  Run the bootstrap-server playbook against a host's VMs
-  ansible setup-host <host>              Run the setup-host playbook against a single host
-  ansible setup-vm <host>                Run the setup-vm playbook against a host's VMs
+  inventory [--host <host>]              Generate the Ansible inventory file for all hosts, or a single host
+  ansible bootstrap-server               Run the bootstrap-server playbook against all hosts in the inventory
+  ansible bootstrap-server --vms         Run the bootstrap-server playbook against all VMs in the inventory
+  ansible setup-host                     Run the setup-host playbook against all hosts in the inventory
+  ansible setup-vm                       Run the setup-vm playbook against all VMs in the inventory
   ssh add <host>                         Add a host and its VMs to ~/.ssh/config
   terraform apply                        Apply the Terraform project
 ```
