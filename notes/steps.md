@@ -20,13 +20,14 @@
 
 7.   cd terraform && terraform init && terraform apply
 8.   ansible-playbook bootstrap-server.yml --limit vms -u root
+9.   ansible-playbook setup-vm.yml
      for vm in host.vms {
-9.     add vm to ~/.ssh/config (if not already there)
+10.     add vm to ~/.ssh/config (if not already there)
        # k3s agent: VM joins the cluster as a worker
-10.    k3s agent join vm
+11.    k3s agent join vm
      }
 
-11.  # incus: first host creates cluster, subsequent hosts join
+12.  # incus: first host creates cluster, subsequent hosts join
      if existing incus cluster {
        incus cluster join {{.HOST}}
      } else {
@@ -34,4 +35,4 @@
        incus remote switch my-homelab
      }
    }
-13. incus list
+14. incus list
