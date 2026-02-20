@@ -17,8 +17,16 @@ func newAnsibleHandler() ansibleHandler {
 	return ansibleHandler{}
 }
 
-func (h ansibleHandler) getConfig(playbook string) ansibleConfig {
-	return nil
+func (h ansibleHandler) getConfig(playbook string) (ansibleConfig, error) {
+	switch playbook {
+	case "bootstrap-server":
+		return newAnsibleBootstrapConfig(), nil
+	case "setup-host":
+		return newAnsibleSetupHostConfig(), nil
+	case "setup-vm":
+	}
+
+	return nil, fmt.Errorf("error: config for playbook %s %w", playbook, errNotFound)
 }
 
 func (h ansibleHandler) execute(config ansibleConfig) (map[string]string, error) {
@@ -32,8 +40,8 @@ func (h ansibleHandler) execute(config ansibleConfig) (map[string]string, error)
 }
 
 func (h ansibleHandler) runAnsiblePlaybook(config ansibleConfig) error {
-	proxmoxAddr := fmt.Sprintf("%s:%s", config.NodeIP(), config.SSHPort())
-	client, sshErr := h.getSSHClient(config.SSHUser(), proxmoxAddr, config.SSHPrivateKeyPath())
+	proxmoxAddr := fmt.Sprintf("%s:%s", config.GetNodeIP(), config.GetSSHPort())
+	client, sshErr := h.getSSHClient(config.GetSSHUser(), proxmoxAddr, config.GetSSHPrivateKeyPath())
 	if sshErr != nil && !errors.Is(sshErr, errConnectingSSH) {
 		return fmt.Errorf("error checking if ssh is accessible to proxmox host: %v", sshErr)
 	} else if sshErr == nil {

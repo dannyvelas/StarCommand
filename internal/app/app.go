@@ -12,7 +12,11 @@ import (
 func AnsibleRun(ctx context.Context, configMux *conflux.ConfigMux, playbook string, preflight bool) (map[string]string, error) {
 	ansibleHandler := newAnsibleHandler()
 
-	playbookConfig := ansibleHandler.getConfig(playbook)
+	playbookConfig, err := ansibleHandler.getConfig(playbook)
+	if err != nil {
+		return nil, err
+	}
+
 	diagnostics, err := conflux.Unmarshal(configMux, playbookConfig)
 	if preflight {
 		return diagnostics, nil
