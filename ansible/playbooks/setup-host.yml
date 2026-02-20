@@ -1,11 +1,10 @@
 ---
 - name: Setup Host with additional hardening, email notifications, incus, VPN, and reverse proxy
   hosts: incus
-  become: true
 
   roles:
-    - host_harden
+    #- host_harden
     - postfix_relay
     - incus
-    - wireguard
-    - proxy
+    #- wireguard
+    #- proxy
