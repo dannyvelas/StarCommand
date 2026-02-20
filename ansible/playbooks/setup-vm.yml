@@ -4,7 +4,4 @@
   become: true
 
   roles:
-    - ufw
-    - ssh_harden
-    - automated_updates
     - vm_guest
