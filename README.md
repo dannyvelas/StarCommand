@@ -191,16 +191,6 @@ Commands:
   teardown                               Tear down all VMs
   version                                Print version
 
-Check commands (read-only, display config diagnostic table):
-  check setup [--host <host>]            Check config required by: setup
-  check inventory [--host <host>]        Check config required by: inventory
-  check ansible bootstrap-server         Check config required by: ansible bootstrap-server
-  check ansible bootstrap-server --vms   Check config required by: ansible bootstrap-server --vms
-  check ansible setup-host               Check config required by: ansible setup-host
-  check ansible setup-vm                 Check config required by: ansible setup-vm
-  check ssh add <host>                   Check config required by: ssh add
-  check terraform apply                  Check config required by: terraform apply
-
 Low-level commands:
   inventory [--host <host>]              Generate the Ansible inventory file for all hosts, or a single host
   ansible bootstrap-server               Run the bootstrap-server playbook against all hosts in the inventory
@@ -209,6 +199,8 @@ Low-level commands:
   ansible setup-vm                       Run the setup-vm playbook against all VMs in the inventory
   ssh add <host>                         Add a host to ~/.ssh/config
   terraform apply                        Apply the Terraform project
+
+All commands above accept --preflight to display a config diagnostic table instead of executing.
 ```
 
 `iac` wraps these low-level commands because they require config resolution — secret fetching, inventory generation, and var merging — that would otherwise need to be done manually.
