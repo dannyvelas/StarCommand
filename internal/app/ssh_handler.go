@@ -23,7 +23,7 @@ func newSSHHandler(homeDir string) sshHandler {
 	}
 }
 
-func (h sshHandler) Execute(sshConfig *sshConfig, hostAlias string) (map[string]string, error) {
+func (h sshHandler) execute(sshConfig *sshConfig, hostAlias string) (map[string]string, error) {
 	diagnostics := make(map[string]string)
 
 	sshFilePath := filepath.Join(h.homeDir, ".ssh", "config")

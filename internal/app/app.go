@@ -51,7 +51,7 @@ func SSHAdd(ctx context.Context, configMux *conflux.ConfigMux, hostAlias string,
 	}
 
 	sshHandler := newSSHHandler(homeDir)
-	handlerDiagnostics, err := sshHandler.Execute(sshConfig, hostAlias)
+	handlerDiagnostics, err := sshHandler.execute(sshConfig, hostAlias)
 	if err != nil {
 		return nil, fmt.Errorf("error executing command: %v", err)
 	}
@@ -71,7 +71,7 @@ func TerraformApply(ctx context.Context, configMux *conflux.ConfigMux, preflight
 	}
 
 	terraformHandler := newTerraformHandler("./terraform/main.tf")
-	handlerDiagnostics, err := terraformHandler.Execute(ctx, terraformConfig)
+	handlerDiagnostics, err := terraformHandler.execute(ctx, terraformConfig)
 	if err != nil {
 		return nil, fmt.Errorf("error executing command: %v", err)
 	}
