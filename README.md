@@ -88,7 +88,7 @@ If you want to access services from outside the network perimeter without VPN, s
 
 1. Create an account with a DDNS provider (e.g., DuckDNS, No-IP)
 2. Register a hostname (e.g., `infra.example.com`)
-3. Note your login credentials — you'll add them to `config/`
+3. Note your login credentials — you'll add them to `iac.yml`
 
 During provisioning, the system automatically installs ddclient to keep the hostname pointed at your public IP. If you skip this step, everything still works on your local network and over VPN.
 
@@ -104,16 +104,27 @@ make
 
 ### 2. Configure
 
-Fill in your values:
+Copy the environment file and fill in your Bitwarden credentials:
 
 ```bash
-bws secret create <KEY> <VALUE> <PROJECT_ID> # Bitwarden Secrets Manager : priority #1
-vim ./config/<HOST_NAME>.yml                 # Host-specific config file : priority #2
-vim ./config/all.yml                         # Global config file        : priority #3
-cp .env.example .env                         # Environment variables     : priority #4
+cp .env.example .env
 ```
 
-The `iac` CLI reads these configuration values and generates all tool-specific configs (Ansible inventory, Terraform tfvars) into `.generated/`. You never edit those files directly.
+The `.env` file (see `.env.example` for required values) is used by `iac` to authenticate to Bitwarden Secrets Manager. At runtime, `iac` merges configuration from two sources, with BWS taking priority:
+
+| Priority | Source | Notes |
+|----------|--------|-------|
+| 1 (highest) | Bitwarden Secrets Manager | Secrets and sensitive values |
+| 2 | `iac.yml` | Infrastructure configuration |
+
+Populate both:
+
+```bash
+bws secret create <KEY> <VALUE> <PROJECT_ID>  # store sensitive values in BWS
+vim ./iac.yml                                  # fill in infrastructure config
+```
+
+`iac` generates all tool-specific configs (Ansible inventory, Terraform tfvars) into `.generated/`. You never edit those files directly.
 
 ## Usage
 
@@ -181,7 +192,7 @@ Commands:
   version                                Print version
 
 Low-level commands:
-  ansible inventory <host>               Generate the Ansible inventory file for a host and its VMs
+  inventory <host>                       Generate the Ansible inventory file for a host and its VMs
   ansible bootstrap-server <host>        Run the bootstrap-server playbook against a single host
   ansible bootstrap-server <host> --vms  Run the bootstrap-server playbook against a host's VMs
   ansible setup-host <host>              Run the setup-host playbook against a single host
@@ -195,9 +206,7 @@ Low-level commands:
 ## Project structure
 
 ```
-config/                      # config directory
-  all.yml                    # global config
-  host-01.yml                # host-specific config
+iac.yml                      # infrastructure configuration
 services/                    # service manifests (one per app)
 cmd/                         # Go CLI source
   iac/                       # entrypoint and command routing
@@ -212,7 +221,7 @@ terraform/                   # incus VM lifecycle
 
 When you add or migrate servers:
 
-1. Update `config/` with the new host IPs and storage paths
+1. Update `iac.yml` with the new host IPs and storage paths
 2. Run `iac setup --host <new-host>` for each new host
 3. k3s automatically joins the new node to the cluster
 4. OVN extends the overlay network to the new host
