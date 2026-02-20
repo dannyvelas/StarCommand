@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,33 +11,20 @@ import (
 	"github.com/spf13/afero"
 )
 
-var _ Handler = SSHHandler{}
-
 type SSHHandler struct {
 	fs      afero.Fs
 	homeDir string
 }
 
-func NewSSHHandler() SSHHandler {
-	homeDir, _ := os.UserHomeDir()
-
+func NewSSHHandler(homeDir string) SSHHandler {
 	return SSHHandler{
 		fs:      afero.NewOsFs(),
 		homeDir: homeDir,
 	}
 }
 
-func (h SSHHandler) GetConfig(hostAlias string) any {
-	return newSSHHost(hostAlias)
-}
-
-func (h SSHHandler) Execute(_ context.Context, config any, hostAlias string) (map[string]string, error) {
+func (h SSHHandler) Execute(sshConfig *sshConfig, hostAlias string) (map[string]string, error) {
 	diagnostics := make(map[string]string)
-
-	sshConfig, ok := config.(*sshConfig)
-	if !ok {
-		return diagnostics, fmt.Errorf("internal type error converting config to ssh config. found: %T", config)
-	}
 
 	sshFilePath := filepath.Join(h.homeDir, ".ssh", "config")
 

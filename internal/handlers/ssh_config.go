@@ -14,7 +14,7 @@ type sshConfig struct {
 	NodeCIDRAddress string `json:"node_cidr_address" required:"true"`
 }
 
-func newSSHHost(hostAlias string) *sshConfig {
+func NewSSHHost(hostAlias string) *sshConfig {
 	return &sshConfig{Alias: hostAlias}
 }
 
