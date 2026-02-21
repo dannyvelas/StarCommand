@@ -16,6 +16,7 @@ func rootCmd(configMux *conflux.ConfigMux) *cobra.Command {
 	var preflight bool
 	rootCmd.PersistentFlags().BoolVar(&preflight, "preflight", false, "Display config diagnostic table instead of executing")
 
+	rootCmd.AddCommand(inventoryCmd(configMux, preflight))
 	rootCmd.AddCommand(ansibleCmd(configMux, preflight))
 	rootCmd.AddCommand(sshCmd(configMux, preflight))
 	rootCmd.AddCommand(terraformCmd(configMux, preflight))

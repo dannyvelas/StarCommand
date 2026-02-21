@@ -9,6 +9,14 @@ import (
 	"github.com/dannyvelas/conflux"
 )
 
+func Setup(ctx context.Context, configMux *conflux.ConfigMux, hostAliases []string, preflight bool) (map[string]string, error) {
+	return nil, nil
+}
+
+func InventoryGenerate(ctx context.Context, configMux *conflux.ConfigMux, preflight bool) (map[string]string, error) {
+	return nil, nil
+}
+
 func AnsibleRun(ctx context.Context, configMux *conflux.ConfigMux, playbook string, preflight bool) (map[string]string, error) {
 	ansibleHandler := newAnsibleHandler()
 
@@ -77,8 +85,4 @@ func TerraformApply(ctx context.Context, configMux *conflux.ConfigMux, preflight
 	}
 
 	return handlerDiagnostics, nil
-}
-
-func Setup(ctx context.Context, configMux *conflux.ConfigMux, hostAliases []string, preflight bool) (map[string]string, error) {
-	return nil, nil
 }
