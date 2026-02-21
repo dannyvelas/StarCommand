@@ -16,7 +16,6 @@ func ansiblePlaybookCmd(configMux *conflux.ConfigMux, preflight bool) []*cobra.C
 		command := &cobra.Command{
 			Use:   playbook,
 			Short: fmt.Sprintf("Run the %s ansible playbook", playbook),
-			Args:  cobra.ExactArgs(1),
 			RunE:  ansiblePlaybookCLI(configMux, playbook, preflight),
 		}
 

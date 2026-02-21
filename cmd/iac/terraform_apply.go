@@ -12,7 +12,6 @@ func terraformApplyCmd(configMux *conflux.ConfigMux, preflight bool) *cobra.Comm
 	terraformApplyCmd := &cobra.Command{
 		Use:   "apply",
 		Short: "Apply the terraform project",
-		Args:  cobra.ExactArgs(1),
 		RunE:  terraformApplyCLI(configMux, preflight),
 	}
 
