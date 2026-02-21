@@ -112,7 +112,7 @@ The `.env` file (see `.env.example` for required values) is used by `iac` to aut
 Populate both:
 
 ```bash
-bws secret create <KEY> <VALUE> <PROJECT_ID>  # store sensitive values in BWS
+bws secret create <KEY> <VALUE> <PROJECT_ID>   # store sensitive values in BWS
 vim ./iac.yml                                  # fill in infrastructure config
 ```
 
@@ -184,7 +184,7 @@ Commands:
   version                                Print version
 
 Low-level commands:
-  inventory add [--host <host>]          Generate the Ansible inventory file for all hosts, or a single host
+  inventory generate [--host <host>]     Generate the Ansible inventory file for all hosts, or a single host
   ansible bootstrap-server               Run the bootstrap-server playbook against all hosts in the inventory
   ansible bootstrap-server --vms         Run the bootstrap-server playbook against all VMs in the inventory
   ansible setup-host                     Run the setup-host playbook against all hosts in the inventory
