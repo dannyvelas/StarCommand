@@ -39,61 +39,78 @@ func promptSensitiveFields(v any, r io.Reader, w io.Writer) error {
 	rt := rv.Type()
 	for i := 0; i < rt.NumField(); i++ {
 		field := rt.Field(i)
-		fieldVal := rv.Field(i)
-
 		if field.Tag.Get("sensitive") != "true" {
 			continue
 		}
 
-		// Determine the env var key: IAC_ + json tag name, or IAC_ + field name
-		envPrefix := "IAC_"
-		envSuffix := field.Name
-		if jsonTag := field.Tag.Get("json"); jsonTag != "" {
-			envSuffix = strings.Split(jsonTag, ",")[0]
-		}
-		envKey := envPrefix + envSuffix
-
-		// Case-insensitive search in environment
-		value := ""
-		found := false
-		for _, entry := range os.Environ() {
-			parts := strings.SplitN(entry, "=", 2)
-			if len(parts) == 2 && strings.EqualFold(parts[0], envKey) {
-				value = parts[1]
-				found = true
-				break
-			}
+		value, err := resolveFieldValue(field, r, w)
+		if err != nil {
+			return err
 		}
 
-		if found {
-			if value == "" {
-				return fmt.Errorf("environment variable %q: %w", envKey, errEmptyEnvVar)
-			}
-		} else {
-			// Fall back to interactive prompt
-			promptMsg := field.Tag.Get("prompt")
-			if promptMsg == "" {
-				promptMsg = field.Name
-			}
-
-			_, _ = fmt.Fprintf(w, "Enter a value for %q: ", promptMsg)
-			reader := bufio.NewReader(r)
-			input, err := reader.ReadString('\n')
-			if err != nil {
-				return fmt.Errorf("error reading input for %q: %v", promptMsg, err)
-			}
-			value = strings.TrimSpace(input)
-			if value == "" {
-				return fmt.Errorf("field %q: %w", promptMsg, errEmptyInput)
-			}
-		}
-
-		if err := setSensitiveField(fieldVal, field, value); err != nil {
+		if err := setSensitiveField(rv.Field(i), field, value); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+// resolveFieldValue returns the value for a sensitive field, sourced from an
+// environment variable if present, or from an interactive prompt otherwise.
+func resolveFieldValue(field reflect.StructField, r io.Reader, w io.Writer) (string, error) {
+	key := fieldEnvKey(field)
+	if value, found := lookupEnvInsensitive(key); found {
+		if value == "" {
+			return "", fmt.Errorf("environment variable %q: %w", key, errEmptyEnvVar)
+		}
+		return value, nil
+	}
+	return readPromptValue(r, w, promptLabel(field))
+}
+
+// fieldEnvKey returns "IAC_" + the json tag name, or "IAC_" + the field name
+// if no json tag is set.
+func fieldEnvKey(field reflect.StructField) string {
+	suffix := field.Name
+	if jsonTag := field.Tag.Get("json"); jsonTag != "" {
+		suffix = strings.Split(jsonTag, ",")[0]
+	}
+	return "IAC_" + suffix
+}
+
+// promptLabel returns the prompt tag value, or the field name if no prompt tag is set.
+func promptLabel(field reflect.StructField) string {
+	if label := field.Tag.Get("prompt"); label != "" {
+		return label
+	}
+	return field.Name
+}
+
+// lookupEnvInsensitive does a case-insensitive search for key in os.Environ.
+// Returns the value and true if found, or ("", false) if not present.
+func lookupEnvInsensitive(key string) (string, bool) {
+	for _, entry := range os.Environ() {
+		parts := strings.SplitN(entry, "=", 2)
+		if len(parts) == 2 && strings.EqualFold(parts[0], key) {
+			return parts[1], true
+		}
+	}
+	return "", false
+}
+
+// readPromptValue writes a prompt to w, reads one line from r, and returns the
+// trimmed value. Returns errEmptyInput if the user enters nothing.
+func readPromptValue(r io.Reader, w io.Writer, label string) (string, error) {
+	_, _ = fmt.Fprintf(w, "Enter a value for %q: ", label)
+	input, err := bufio.NewReader(r).ReadString('\n')
+	if err != nil {
+		return "", fmt.Errorf("error reading input for %q: %v", label, err)
+	}
+	if value := strings.TrimSpace(input); value != "" {
+		return value, nil
+	}
+	return "", fmt.Errorf("field %q: %w", label, errEmptyInput)
 }
 
 func setSensitiveField(fieldVal reflect.Value, field reflect.StructField, value string) error {
