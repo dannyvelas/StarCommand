@@ -17,7 +17,7 @@ Runs against all hosts. Hardens the OS: configures UFW, enforces SSH key-only au
 ### 3. Set up hosts
 > `iac ansible setup-host`
 
-Runs against all hosts. Installs and configures host-level services: Incus (hypervisor), WireGuard (on the designated VPN host), and Traefik (reverse proxy).
+Runs against all hosts. Installs and configures host-level services: Incus (hypervisor) and WireGuard (on the designated VPN host).
 
 ---
 
@@ -57,40 +57,12 @@ k3s runs on each host as a server node.
 - **Subsequent hosts:** join the existing cluster as additional server nodes
   ```
   curl -sfL https://get.k3s.io | K3S_URL=https://<first-host-ip>:6443 \
-                                   K3S_TOKEN=<cluster-token> sh -
+                                   K3S_TOKEN=<cluster-token> sh -s - server
   ```
 
-### 7. Create VMs with Terraform
-> `iac terraform apply`
+### 7. Join Incus cluster
 
-Terraform provisions the VMs for this host via Incus. Each VM is on a private NAT subnet and is not directly reachable from the physical network.
-
-### 8. Bootstrap VMs
-> `iac ansible bootstrap-server --vms`
-
-Same OS hardening as step 2, now applied to the newly created VMs.
-
-### 9. Set up VMs
-> `iac ansible setup-vm`
-
-Runs against all VMs for this host. Installs VM-level services (Docker, storage mount points).
-
-### 10. Register VMs in `~/.ssh/config`
-> `iac ssh add <vm>`
-
-Each VM is added to `~/.ssh/config` with a `ProxyJump` directive pointing to its parent host, making it reachable by name from your workstation.
-
-### 11. Join k3s cluster (agent)
-
-Each VM joins the k3s cluster as a worker node, making it available for workload scheduling.
-
-```
-curl -sfL https://get.k3s.io | K3S_URL=https://<first-host-ip>:6443 \
-                                 K3S_TOKEN=<cluster-token> \
-                                 K3S_NODE_LABEL=node-role.kubernetes.io/worker=true sh -s - agent
-```
-
-### 12. Join Incus cluster
+Incus clustering is set up before VMs are created so that Terraform provisions VMs into an already-clustered environment.
 
 - **First host:** initializes the Incus cluster and sets it as the active remote
   ```
@@ -103,6 +75,35 @@ curl -sfL https://get.k3s.io | K3S_URL=https://<first-host-ip>:6443 \
   incus cluster add <host-name>   # run on an existing cluster member to get a join token
   incus admin init                # run on the new host, providing the join token when prompted
   ```
+
+### 8. Create VMs with Terraform
+> `iac terraform apply`
+
+Terraform provisions the VMs for this host via Incus. Each VM is on a private NAT subnet and is not directly reachable from the physical network.
+
+### 9. Bootstrap VMs
+> `iac ansible bootstrap-server --vms`
+
+Same OS hardening as step 2, now applied to the newly created VMs.
+
+### 10. Set up VMs
+> `iac ansible setup-vm`
+
+Runs against all VMs for this host. Installs VM-level services: Docker, Traefik (reverse proxy), and storage mount points.
+
+### 11. Register VMs in `~/.ssh/config`
+> `iac ssh add <vm>`
+
+Each VM is added to `~/.ssh/config` with a `ProxyJump` directive pointing to its parent host, making it reachable by name from your workstation.
+
+### 12. Join k3s cluster (agent)
+
+Each VM joins the k3s cluster as a worker node, making it available for workload scheduling.
+
+```
+curl -sfL https://get.k3s.io | K3S_URL=https://<first-host-ip>:6443 \
+                                 K3S_TOKEN=<cluster-token> sh -s - agent
+```
 
 ---
 
