@@ -10,8 +10,6 @@ hosts:
     ssh: *ssh_defaults
     auto_update_reboot_time: "05:00"
     wireguard_endpoint: true
-    # admin_email: in bitwarden
-    # admin_password: in bitwarden
     incus:
       storage_pool_name: "incus-storage-pool"
       storage_pool_driver: "FIX-ME"
@@ -30,8 +28,9 @@ hosts:
     ssh: *ssh_defaults
     auto_update_reboot_time: "05:00"
     wireguard_endpoint: false
-    # admin_email: in bitwarden
-    # admin_password: in bitwarden
+    incus:
+      storage_pool_name: "incus-storage-pool"
+      storage_pool_driver: "FIX-ME"
     vms:
       - name: host-02-vm-01
         ip: 10.0.100.01
