@@ -17,7 +17,12 @@ Runs against all hosts. Hardens the OS: configures UFW, enforces SSH key-only au
 ### 3. Set up hosts
 > `iac ansible setup-host`
 
-Runs against all hosts. Installs and configures host-level services: Incus (hypervisor) and WireGuard (on the designated VPN host).
+Runs against all hosts. Installs and configures host-level services:
+
+- **Incus** — installs the hypervisor, creates a default storage pool and NAT bridge network (`incusbr0`), and opens the Incus API port in UFW
+- **WireGuard** — installs and configures a WireGuard VPN server (on the designated VPN host only)
+- **Postfix** — configures Postfix as a Gmail SMTP relay so the host can send email alerts
+- **Host hardening** — enables IPv4 forwarding, configures NAT port forwarding rules to route inbound traffic to VMs, blocks VM traffic from reaching the home LAN (egress isolation), and optionally installs ddclient for dynamic DNS
 
 ---
 
@@ -89,7 +94,7 @@ Same OS hardening as step 2, now applied to the newly created VMs.
 ### 10. Set up VMs
 > `iac ansible setup-vm`
 
-Runs against all VMs for this host. Installs VM-level services: Docker, Traefik (reverse proxy), and storage mount points.
+Runs against all VMs for this host. Installs VM-level services: Docker and storage mount points.
 
 ### 11. Register VMs in `~/.ssh/config`
 > `iac ssh add <vm>`
@@ -107,4 +112,26 @@ curl -sfL https://get.k3s.io | K3S_URL=https://<first-host-ip>:6443 \
 
 ---
 
-Once all hosts are processed, `iac setup` prints a summary of the Incus cluster with `incus list`.
+Once all hosts are processed:
+
+### 13. Deploy Traefik
+
+```
+kubectl apply -f services/traefik.yml
+```
+
+Deploys Traefik as the cluster ingress. Traefik watches for Kubernetes `Ingress` resources and automatically routes traffic to services by subdomain.
+
+### 14. Deploy CoreDNS
+
+```
+kubectl apply -f services/coredns.yml
+```
+
+Deploys CoreDNS so that `*.infra.example.com` resolves to the cluster's ingress IP. Once your network's DHCP is updated to distribute the cluster as the DNS server, every host on your network resolves service subdomains automatically.
+
+### 15. Print cluster summary
+
+```
+incus list
+```
