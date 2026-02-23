@@ -84,18 +84,16 @@
 - [x] is there a way to mid-playbook switch from "root" to "admin" after ssh_harden runs? if so, do it
   - ehhh it's kind of a pain. better to just split it into two playbooks.
   - so this new to-do item is to switch ssh-hardening to be its own playbook instead of its own role. and, you'll just have to execute both playbooks for the first time
-- [ ] make it so that the UX allows for two commands: bootstrap everything on a fresh fleet of debian servers that i just got up and running. add a server to my fleet.
-- [ ] maybe stop making hosts "special". e.g. maybe get rid of the fact that "ansible inventory add incus" and "ansible inventory run incus" have a special behavior that doesn't exist for "ansible inventory add random-name-here".
+- [x] make it so that the UX allows for two commands: bootstrap everything on a fresh fleet of debian servers that i just got up and running. add a server to my fleet.
+- [x] maybe stop making hosts "special". e.g. maybe get rid of the fact that "ansible inventory add incus" and "ansible inventory run incus" have a special behavior that doesn't exist for "ansible inventory add random-name-here".
 - [ ] should we make the :check tasks be prerequisits to the regular tasks?
-- [ ] change plex to be a docker image inside of a container
+- [ ] test plex works as a k8s application
 - [ ] make sure plex VM is mounted as read only
-- [ ] put plex on its own VLAN - would you even be able to?
 - [ ] fix ssh-restart logic in ssh-harden. it seems to always restart ssh.service even if an LXC uses ssh.socket instead
-- [ ] figure out how the remote_server task is going to receive a command-line argument
+- [ ] migrate to OVN
 
 ## infra next
-- [ ] use Netboot.xyz + https://pikvm.org/ + proxmox answers file to remotely shutdown/reboot and re-install proxmox
-- [ ] migrate to OVN instead of ufw
+- [ ] use Netboot.xyz + https://pikvm.org/ + with something like Fedora KickStart
 
 ## coding todos
 - [x] make `handler.SetFile` more testable
@@ -115,7 +113,7 @@
   - `iac ansible setup-vm`
   - `iac ssh add <host>`
   - `iac terraform apply`
-- [ ] see if i can just embed a struct inside of all ansible configs that has {nodeIP, sshPrivateKey, sshUser, sshPort} so i don't have to do as much copy-paste
+- [x] see if i can just embed a struct inside of all ansible configs that has {nodeIP, sshPrivateKey, sshUser, sshPort} so i don't have to do as much copy-paste
 - [ ] see if i really need `PersistentFlags` in `cmd/labctl/root.go` or if i should use something else
 - [ ] make sure no playbook except for "bootstrap" has become: true.
 - [ ] iac runs terraform to create VM. still need to test.
