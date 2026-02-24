@@ -10,12 +10,12 @@
 An Ansible inventory file is generated from `stc.yml`. It includes all configured hosts and their VMs. VMs are configured with `ProxyJump` pointing to their parent host, so that later Ansible steps can reach them through the host without requiring the VMs to be directly accessible on the network.
 
 ### 2. Bootstrap hosts
-> `stc ansible bootstrap-server`
+> `stc ansible bootstrap-server` · [bootstrap-server.yml](../ansible/playbooks/bootstrap-server.yml)
 
 Runs against all hosts. Hardens the OS: configures UFW, enforces SSH key-only authentication, and enables unattended security updates.
 
 ### 3. Set up hosts
-> `stc ansible setup-host`
+> `stc ansible setup-host` · [setup-host.yml](../ansible/playbooks/setup-host.yml)
 
 Runs against all hosts. Installs and configures host-level services:
 
@@ -82,17 +82,17 @@ Incus clustering is set up before VMs are created so that Terraform provisions V
   ```
 
 ### 8. Create VMs with Terraform
-> `stc terraform apply`
+> `stc terraform apply` · [terraform/main.tf](../terraform/main.tf)
 
 Terraform provisions the VMs for this host via Incus. Each VM is on a private NAT subnet and is not directly reachable from the physical network.
 
 ### 9. Bootstrap VMs
-> `stc ansible bootstrap-server --vms`
+> `stc ansible bootstrap-server --vms` · [bootstrap-server.yml](../ansible/playbooks/bootstrap-server.yml)
 
 Same OS hardening as step 2, now applied to the newly created VMs.
 
 ### 10. Set up VMs
-> `stc ansible setup-vm`
+> `stc ansible setup-vm` · [setup-vm.yml](../ansible/playbooks/setup-vm.yml)
 
 Runs against all VMs for this host. Installs VM-level services: Docker and storage mount points.
 
