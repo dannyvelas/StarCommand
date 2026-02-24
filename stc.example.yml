@@ -1,7 +1,7 @@
-# iac.example.yml — copy this to iac.yml and fill in your values.
+# stc.example.yml — copy this to stc.yml and fill in your values.
 
 hosts:
-  - name: host-01                       # label for the host; used as a CLI argument (e.g. iac setup --host host-01)
+  - name: host-01                       # label for the host; used as a CLI argument (e.g. stc setup --host host-01)
     ip: 192.168.1.10                    # LAN IP address of the physical host
     ssh:
       user: admin                       # SSH username
@@ -49,7 +49,7 @@ hosts:
           public_key_path: ~/.ssh/id_ed25519.pub
         auto_update_reboot_time: "05:00"
 
-# Sensitive values are NOT stored here. iac prompts for them interactively at runtime,
+# Sensitive values are NOT stored here. stc prompts for them interactively at runtime,
 # or reads them from environment variables if you prefer automation:
 #
 #   STC_ADMIN_EMAIL=...       email address for the server admin account

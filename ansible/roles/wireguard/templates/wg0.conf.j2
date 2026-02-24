@@ -10,5 +10,5 @@ PrivateKey = {{ wg_server_private_key.content | b64decode | trim }}
 PostUp = iptables -A FORWARD -i {{ wireguard_interface }} -j ACCEPT; iptables -t nat -A POSTROUTING -o {{ wg_nat_interface }} -j MASQUERADE
 PostDown = iptables -D FORWARD -i {{ wireguard_interface }} -j ACCEPT; iptables -t nat -D POSTROUTING -o {{ wg_nat_interface }} -j MASQUERADE
 
-# Peers are added dynamically via 'iac generate vpn-client'
-# Each peer section below is managed by the iac CLI
+# Peers are added dynamically via 'stc generate vpn-client'
+# Each peer section below is managed by the stc CLI
