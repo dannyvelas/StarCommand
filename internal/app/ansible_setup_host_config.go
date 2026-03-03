@@ -1,5 +1,7 @@
 package app
 
+import "github.com/dannyvelas/starcommand/config"
+
 var _ ansibleConfig = (*ansibleSetupHostConfig)(nil)
 
 type ansibleSetupHostConfig struct {
@@ -21,6 +23,8 @@ func newAnsibleSetupHostConfig() *ansibleSetupHostConfig {
 		},
 	}
 }
+
+func (c *ansibleSetupHostConfig) FillFromConfig(_ *config.Config) error { return nil }
 
 func (c *ansibleSetupHostConfig) FillInKeys() error {
 	return c.fillInBaseKeys()

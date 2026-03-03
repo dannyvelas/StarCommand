@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 
+	"github.com/dannyvelas/starcommand/config"
 	"github.com/dannyvelas/starcommand/internal/helpers"
 )
 
@@ -27,6 +28,8 @@ func newTerraformConfig() *terraformConfig {
 		SSHRealm: "pam",
 	}
 }
+
+func (c *terraformConfig) FillFromConfig(_ *config.Config) error { return nil }
 
 func (c *terraformConfig) FillInKeys() error {
 	expandedPath, err := helpers.ExpandPath(c.SSHPublicKeyPath)

@@ -1,5 +1,7 @@
 package app
 
+import "github.com/dannyvelas/starcommand/config"
+
 type sshConfig struct {
 	Alias         string `json:"alias" required:"true"`
 	HostName      string `json:"host_name" required:"true"`
@@ -11,3 +13,6 @@ type sshConfig struct {
 func newSSHHost(hostAlias string) *sshConfig {
 	return &sshConfig{Alias: hostAlias}
 }
+
+func (c *sshConfig) FillFromConfig(_ *config.Config) error { return nil }
+func (c *sshConfig) FillInKeys() error                     { return nil }

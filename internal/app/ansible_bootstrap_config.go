@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/dannyvelas/starcommand/config"
 	"github.com/dannyvelas/starcommand/internal/helpers"
 )
 
@@ -32,6 +33,8 @@ func newAnsibleBootstrapConfig() *ansibleBootstrapConfig {
 		AutoUpdateRebootTime: "05:00",
 	}
 }
+
+func (c *ansibleBootstrapConfig) FillFromConfig(_ *config.Config) error { return nil }
 
 func (c *ansibleBootstrapConfig) FillInKeys() error {
 	if err := c.fillInBaseKeys(); err != nil {
