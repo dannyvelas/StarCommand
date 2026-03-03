@@ -3,26 +3,26 @@ package main
 import (
 	"fmt"
 
-	"github.com/dannyvelas/conflux"
+	"github.com/dannyvelas/starcommand/config"
 	"github.com/dannyvelas/starcommand/internal/app"
 	"github.com/spf13/cobra"
 )
 
-func terraformApplyCmd(configMux *conflux.ConfigMux, preflight bool) *cobra.Command {
+func terraformApplyCmd(c *config.Config, preflight bool) *cobra.Command {
 	terraformApplyCmd := &cobra.Command{
 		Use:   "apply",
 		Short: "Apply the terraform project",
-		RunE:  terraformApplyCLI(configMux, preflight),
+		RunE:  terraformApplyCLI(c, preflight),
 	}
 
 	return terraformApplyCmd
 }
 
-func terraformApplyCLI(configMux *conflux.ConfigMux, preflight bool) func(cmd *cobra.Command, args []string) error {
+func terraformApplyCLI(c *config.Config, preflight bool) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		ctx := cmd.Context()
 
-		diagnostics, err := app.TerraformApply(ctx, configMux, preflight)
+		diagnostics, err := app.TerraformApply(ctx, c, preflight)
 		if err != nil {
 			return err
 		}
