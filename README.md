@@ -228,16 +228,16 @@ Debian names its releases after characters from Toy Story — Woody, Buzz, Jessi
 
 ## Tech stack
 
-| Component    | Tool                  | Why                                          |
-|--------------|-----------------------|----------------------------------------------|
-| CLI          | Go                    | Single binary, orchestrates Ansible and Terraform |
-| Provisioning | Ansible               | Agentless, SSH-based, idempotent             |
-| VM lifecycle | Terraform + Incus     | Declarative, reproducible                    |
-| Scheduling   | k3s                   | Kubernetes-native, rolling updates, auto-restart |
-| Networking   | OVN                   | Overlay networking, encrypted east-west traffic |
-| Firewall     | UFW                   | Simple, readable firewall rules              |
-| VPN          | WireGuard             | Kernel-level, no third-party trust           |
-| Proxy        | Traefik               | Auto-discovery, TLS, subdomain routing       |
-| Monitoring   | Grafana + Prometheus  | Dashboards, alerting, service health         |
-| Go links     | golinks               | Internal short URLs for quick service access |
-| OS           | Debian 12             | Stable, security updates, KVM support        |
+| Component    | Tool                 | Why                                               |
+|--------------|----------------------|---------------------------------------------------|
+| CLI          | Go                   | Single binary, orchestrates Ansible and Terraform |
+| Provisioning | Ansible              | Agentless, SSH-based, idempotent                  |
+| VM lifecycle | Terraform + Incus    | Declarative, reproducible                         |
+| Scheduling   | k3s                  | Kubernetes-native, rolling updates, auto-restart  |
+| Networking   | OVN                  | Overlay networking, encrypted east-west traffic   |
+| Firewall     | UFW                  | Simple, readable firewall rules                   |
+| VPN          | WireGuard            | Kernel-level, no third-party trust                |
+| Proxy        | Traefik              | Auto-discovery, TLS, subdomain routing            |
+| Monitoring   | Grafana + Prometheus | Dashboards, alerting, service health              |
+| Go links     | golinks              | Internal short URLs for quick service access      |
+| OS           | Debian 12            | Stable, security updates, KVM support             |
