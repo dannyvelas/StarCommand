@@ -34,7 +34,9 @@ func newAnsibleBootstrapConfig() *ansibleBootstrapConfig {
 	}
 }
 
-func (c *ansibleBootstrapConfig) FillFromConfig(_ *config.Config) error { return nil }
+func (c *ansibleBootstrapConfig) FillFromConfig(cfg *config.Config) error {
+	return nil
+}
 
 func (c *ansibleBootstrapConfig) FillInKeys() error {
 	if err := c.fillInBaseKeys(); err != nil {

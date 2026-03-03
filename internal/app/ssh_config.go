@@ -1,6 +1,11 @@
 package app
 
-import "github.com/dannyvelas/starcommand/config"
+import (
+	"fmt"
+	"strconv"
+
+	"github.com/dannyvelas/starcommand/config"
+)
 
 type sshConfig struct {
 	Alias         string `json:"alias" required:"true"`
@@ -14,5 +19,33 @@ func newSSHHost(hostAlias string) *sshConfig {
 	return &sshConfig{Alias: hostAlias}
 }
 
-func (c *sshConfig) FillFromConfig(_ *config.Config) error { return nil }
-func (c *sshConfig) FillInKeys() error                     { return nil }
+func (c *sshConfig) FillFromConfig(cfg *config.Config) error {
+	for _, h := range cfg.Hosts {
+		if h.Name == c.Alias {
+			c.HostName = h.IP
+			c.User = h.SSH.User
+			c.Port = portToString(h.SSH.Port)
+			c.PublicKeyPath = h.SSH.PublicKeyPath
+			return nil
+		}
+		for _, vm := range h.VMs {
+			if vm.Name == c.Alias {
+				c.HostName = vm.IP
+				c.User = vm.SSH.User
+				c.Port = portToString(vm.SSH.Port)
+				c.PublicKeyPath = vm.SSH.PublicKeyPath
+				return nil
+			}
+		}
+	}
+	return fmt.Errorf("host %q %w", c.Alias, errNotFound)
+}
+
+func (c *sshConfig) FillInKeys() error { return nil }
+
+func portToString(port int) string {
+	if port != 0 {
+		return strconv.Itoa(port)
+	}
+	return "22"
+}

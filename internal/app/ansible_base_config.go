@@ -6,7 +6,7 @@ import (
 	"github.com/dannyvelas/starcommand/internal/helpers"
 )
 
-// ansiblePlaybookConfig is the full interface required to load and run a playbook.
+// ansibleConfig is the full interface required to load and run a playbook.
 type ansibleConfig interface {
 	GetNodeIP() string
 	GetSSHUser() string
