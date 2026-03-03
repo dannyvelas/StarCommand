@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 
-	"github.com/dannyvelas/conflux"
+	"github.com/dannyvelas/starcommand/config"
 	"github.com/dannyvelas/starcommand/internal/app"
 	"github.com/spf13/cobra"
 )
 
-func ansiblePlaybookCmd(configMux *conflux.ConfigMux, preflight bool) []*cobra.Command {
+func ansiblePlaybookCmd(c *config.Config, preflight bool) []*cobra.Command {
 	playbooks := []string{"bootstrap-server", "setup-host", "setup-vm"}
 	commands := make([]*cobra.Command, 0, len(playbooks))
 
@@ -16,7 +16,7 @@ func ansiblePlaybookCmd(configMux *conflux.ConfigMux, preflight bool) []*cobra.C
 		command := &cobra.Command{
 			Use:   playbook,
 			Short: fmt.Sprintf("Run the %s ansible playbook", playbook),
-			RunE:  ansiblePlaybookCLI(configMux, playbook, preflight),
+			RunE:  ansiblePlaybookCLI(c, playbook, preflight),
 		}
 
 		commands = append(commands, command)
@@ -24,11 +24,11 @@ func ansiblePlaybookCmd(configMux *conflux.ConfigMux, preflight bool) []*cobra.C
 	return commands
 }
 
-func ansiblePlaybookCLI(configMux *conflux.ConfigMux, playbook string, preflight bool) func(cmd *cobra.Command, args []string) error {
+func ansiblePlaybookCLI(c *config.Config, playbook string, preflight bool) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		ctx := cmd.Context()
 
-		diagnostics, err := app.AnsibleRun(ctx, configMux, playbook, preflight)
+		diagnostics, err := app.AnsibleRun(ctx, c, playbook, preflight)
 		if err != nil {
 			return err
 		}

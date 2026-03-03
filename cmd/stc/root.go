@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/dannyvelas/conflux"
+	"github.com/dannyvelas/starcommand/config"
 	"github.com/spf13/cobra"
 )
 
-func rootCmd(configMux *conflux.ConfigMux) *cobra.Command {
+func rootCmd(c *config.Config) *cobra.Command {
 	// rootCmd represents the base command when called without any subcommands
 	rootCmd := &cobra.Command{
 		Use:   "stc",
@@ -16,10 +16,10 @@ func rootCmd(configMux *conflux.ConfigMux) *cobra.Command {
 	var preflight bool
 	rootCmd.PersistentFlags().BoolVar(&preflight, "preflight", false, "Display config diagnostic table instead of executing")
 
-	rootCmd.AddCommand(inventoryCmd(configMux, preflight))
-	rootCmd.AddCommand(ansibleCmd(configMux, preflight))
-	rootCmd.AddCommand(sshCmd(configMux, preflight))
-	rootCmd.AddCommand(terraformCmd(configMux, preflight))
+	rootCmd.AddCommand(inventoryCmd(c, preflight))
+	rootCmd.AddCommand(ansibleCmd(c, preflight))
+	rootCmd.AddCommand(sshCmd(c, preflight))
+	rootCmd.AddCommand(terraformCmd(c, preflight))
 
 	return rootCmd
 }
