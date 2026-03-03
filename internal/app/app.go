@@ -2,22 +2,21 @@ package app
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 
-	"github.com/dannyvelas/conflux"
+	"github.com/dannyvelas/starcommand/config"
 )
 
-func Setup(ctx context.Context, configMux *conflux.ConfigMux, hostAliases []string, preflight bool) (map[string]string, error) {
+func Setup(ctx context.Context, c *config.Config, hostAliases []string, preflight bool) (map[string]string, error) {
 	return nil, nil
 }
 
-func InventoryGenerate(ctx context.Context, configMux *conflux.ConfigMux, host *string, preflight bool) (map[string]string, error) {
+func InventoryGenerate(ctx context.Context, c *config.Config, host *string, preflight bool) (map[string]string, error) {
 	return nil, nil
 }
 
-func AnsibleRun(ctx context.Context, configMux *conflux.ConfigMux, playbook string, preflight bool) (map[string]string, error) {
+func AnsibleRun(ctx context.Context, c *config.Config, playbook string, preflight bool) (map[string]string, error) {
 	ansibleHandler := newAnsibleHandler()
 
 	playbookConfig, err := ansibleHandler.getConfig(playbook)
@@ -25,13 +24,9 @@ func AnsibleRun(ctx context.Context, configMux *conflux.ConfigMux, playbook stri
 		return nil, err
 	}
 
-	diagnostics, err := conflux.Unmarshal(configMux, playbookConfig)
-	if preflight {
-		return diagnostics, nil
-	} else if errors.Is(err, conflux.ErrInvalidFields) {
-		return diagnostics, fmt.Errorf("error getting config for running %s playbook:\n%s", playbook, conflux.DiagnosticsToTable(diagnostics))
-	} else if err != nil {
-		return nil, fmt.Errorf("internal error unmarshalling config to struct for %s playbook: %v", playbook, err)
+	m, err := loadConfig(playbookConfig, c, playbook)
+	if preflight || err != nil {
+		return m, err
 	}
 
 	if err := promptSensitiveFields(playbookConfig, os.Stdin, os.Stdout); err != nil {
@@ -46,15 +41,11 @@ func AnsibleRun(ctx context.Context, configMux *conflux.ConfigMux, playbook stri
 	return handlerDiagnostics, nil
 }
 
-func SSHAdd(ctx context.Context, configMux *conflux.ConfigMux, hostAlias string, preflight bool) (map[string]string, error) {
+func SSHAdd(ctx context.Context, c *config.Config, hostAlias string, preflight bool) (map[string]string, error) {
 	sshConfig := newSSHHost(hostAlias)
-	diagnostics, err := conflux.Unmarshal(configMux, sshConfig)
-	if preflight {
-		return diagnostics, nil
-	} else if errors.Is(err, conflux.ErrInvalidFields) {
-		return diagnostics, fmt.Errorf("error getting config for adding ssh config for host %s:\n%s", hostAlias, conflux.DiagnosticsToTable(diagnostics))
-	} else if err != nil {
-		return nil, fmt.Errorf("internal error unmarshalling ssh config to struct: %v", err)
+	m, err := loadConfig(sshConfig, c, "ssh add "+hostAlias)
+	if preflight || err != nil {
+		return m, err
 	}
 
 	homeDir, err := os.UserHomeDir()
@@ -71,15 +62,11 @@ func SSHAdd(ctx context.Context, configMux *conflux.ConfigMux, hostAlias string,
 	return handlerDiagnostics, nil
 }
 
-func TerraformApply(ctx context.Context, configMux *conflux.ConfigMux, preflight bool) (map[string]string, error) {
+func TerraformApply(ctx context.Context, c *config.Config, preflight bool) (map[string]string, error) {
 	terraformConfig := newTerraformConfig()
-	diagnostics, err := conflux.Unmarshal(configMux, terraformConfig)
-	if preflight {
-		return diagnostics, nil
-	} else if errors.Is(err, conflux.ErrInvalidFields) {
-		return diagnostics, fmt.Errorf("error getting config for adding terraform config:\n%s", conflux.DiagnosticsToTable(diagnostics))
-	} else if err != nil {
-		return nil, fmt.Errorf("internal error unmarshalling terraform config to struct: %v", err)
+	m, err := loadConfig(terraformConfig, c, "terraform apply")
+	if preflight || err != nil {
+		return m, err
 	}
 
 	terraformHandler := newTerraformHandler("./terraform/main.tf")
