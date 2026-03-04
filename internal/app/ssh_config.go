@@ -41,8 +41,6 @@ func (c *sshConfig) FillFromConfig(cfg *config.Config) error {
 	return fmt.Errorf("host %q %w", c.Alias, errNotFound)
 }
 
-func (c *sshConfig) FillInKeys() error { return nil }
-
 func portToString(port int) string {
 	if port != 0 {
 		return strconv.Itoa(port)

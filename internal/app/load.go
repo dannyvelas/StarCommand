@@ -20,16 +20,12 @@ const (
 	statusLoaded  = "loaded"
 )
 
-// configLoader is implemented by all config structs that can be loaded from a
-// *config.Config, validated for required fields, and finalized with FillInKeys.
+// configLoader is implemented by all config structs that can be loaded from a *config.Config
 type configLoader interface {
 	FillFromConfig(c *config.Config) error
-	FillInKeys() error
 }
 
 // loadConfig fills cfg from c, builds a diagnostics map for all required fields,
-// and runs FillInKeys. If preflight is true, it returns the diagnostics without
-// running FillInKeys. Returns an error if any required fields are missing.
 func loadConfig(configLoader configLoader, c *config.Config) (map[string]string, error) {
 	if err := configLoader.FillFromConfig(c); err != nil {
 		return nil, err

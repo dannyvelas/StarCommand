@@ -8,6 +8,11 @@ import (
 	"github.com/dannyvelas/starcommand/config"
 )
 
+type fillable interface {
+	// FillInKeys takes the keys that are required and uses them to fill out remaining config fields
+	FillInKeys() error
+}
+
 func Setup(ctx context.Context, c *config.Config, hostAliases []string, preflight bool) (map[string]string, error) {
 	return nil, nil
 }
@@ -37,15 +42,17 @@ func AnsibleRun(ctx context.Context, c *config.Config, playbook string, prefligh
 		return m, fmt.Errorf("error getting config for %s:\n%s", playbook, diagnosticsToTable(m))
 	}
 
-	if err := playbookConfig.FillInKeys(); err != nil {
-		return nil, err
+	if fillableTarget, ok := playbookConfig.(fillable); ok {
+		if err := fillableTarget.FillInKeys(); err != nil {
+			return nil, fmt.Errorf("error filling in fields: %v", err)
+		}
 	}
 
 	if err := promptSensitiveFields(playbookConfig, os.Stdin, os.Stdout); err != nil {
 		return nil, fmt.Errorf("error prompting for sensitive fields: %v", err)
 	}
 
-	handlerDiagnostics, err := ansibleHandler.execute(playbookConfig)
+	handlerDiagnostics, err := ansibleHandler.execute(playbookConfig, playbook)
 	if err != nil {
 		return nil, fmt.Errorf("error executing command: %v", err)
 	}

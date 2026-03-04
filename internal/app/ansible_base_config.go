@@ -2,43 +2,58 @@ package app
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
-	"github.com/dannyvelas/starcommand/internal/helpers"
+	"github.com/goccy/go-yaml"
 )
 
-// ansibleConfig is the full interface required to load and run a playbook.
-type ansibleConfig interface {
-	GetNodeIP() string
-	GetSSHUser() string
-	GetSSHPort() string
-	GetSSHPrivateKeyPath() string
+// ansiblePlaybookConfig is implemented by all ansible config types.
+// It extends configLoader with a method for generating per-host host_vars files.
+type ansiblePlaybookConfig interface {
 	configLoader
+	generateHostVars() error
 }
 
-type ansibleBaseConfig struct {
-	// Required
-	NodeIP            string `json:"node_ip" required:"true"`
-	SSHUser           string `json:"ssh_user" required:"true"`
-	SSHPort           string `json:"ssh_port" required:"true"`
-	SSHPrivateKeyPath string `json:"ssh_private_key_path" required:"true"`
-
-	// Injected
-	AnsibleUser string `json:"ansible_user"`
-	AnsiblePort string `json:"ansible_port"`
+type bootstrapHostVars struct {
+	AnsibleHost          string `yaml:"ansible_host"`
+	AnsiblePort          string `yaml:"ansible_port"`
+	AnsibleSSHPrivateKey string `yaml:"ansible_ssh_private_key_file"`
+	AnsibleUser          string `yaml:"ansible_user"`
+	SSHPublicKey         string `yaml:"ssh_public_key"`
+	AutoUpdateRebootTime string `yaml:"auto_update_reboot_time"`
 }
 
-func (c *ansibleBaseConfig) GetNodeIP() string            { return c.NodeIP }
-func (c *ansibleBaseConfig) GetSSHUser() string           { return c.SSHUser }
-func (c *ansibleBaseConfig) GetSSHPort() string           { return c.SSHPort }
-func (c *ansibleBaseConfig) GetSSHPrivateKeyPath() string { return c.SSHPrivateKeyPath }
+type setupHostHostVars struct {
+	AnsibleHost          string `yaml:"ansible_host"`
+	AnsiblePort          string `yaml:"ansible_port"`
+	AnsibleSSHPrivateKey string `yaml:"ansible_ssh_private_key_file"`
+	AnsibleUser          string `yaml:"ansible_user"`
+	IncusStoragePoolName string `yaml:"incus_storage_pool_name"`
+	IncusStorageDriver   string `yaml:"incus_storage_driver"`
+}
 
-func (c *ansibleBaseConfig) fillInBaseKeys() error {
-	expanded, err := helpers.ExpandPath(c.SSHPrivateKeyPath)
-	if err != nil {
-		return fmt.Errorf("error expanding path(%s): %v", c.SSHPrivateKeyPath, err)
+type setupVMHostVars struct {
+	AnsibleHost          string `yaml:"ansible_host"`
+	AnsiblePort          string `yaml:"ansible_port"`
+	AnsibleSSHPrivateKey string `yaml:"ansible_ssh_private_key_file"`
+	AnsibleUser          string `yaml:"ansible_user"`
+}
+
+func writeHostVarsFile(hostname string, vars any) error {
+	dir := filepath.Join(".generated", "host_vars", hostname)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return fmt.Errorf("error creating host_vars dir for %s: %v", hostname, err)
 	}
-	c.SSHPrivateKeyPath = expanded
-	c.AnsibleUser = c.SSHUser
-	c.AnsiblePort = c.SSHPort
+
+	data, err := yaml.Marshal(vars)
+	if err != nil {
+		return fmt.Errorf("error marshaling host vars for %s: %v", hostname, err)
+	}
+
+	if err := os.WriteFile(filepath.Join(dir, "vars.yml"), data, 0644); err != nil {
+		return fmt.Errorf("error writing host vars file for %s: %v", hostname, err)
+	}
+
 	return nil
 }

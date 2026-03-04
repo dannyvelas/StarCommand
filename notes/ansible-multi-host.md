@@ -114,3 +114,28 @@ I think we should change the code so that when `stc ansible setup-host` runs, we
 that way, when someone runs `stc ansible setup-host`, they can see the vars that were used by peering into the `.generated` directory.
 
 We should probably refactor the ansible config structs so that they can hold the information for more than just one host. they should be able to hold the information for multiple hosts. that way, when that config struct is passed to `ansibleHandler.execute` (e.g. `ansibleHandler.execute(playbookConfig)` on line 48 of `../internal/app/app.go`), `ansibleHandler.execute` can read the config struct and generate the `host_vars` files in the `.generated` directory for each host.
+
+### Requirements
+
+
+- i want "playbookConfig" to be used to generate inventory. "playbookConfig" should in-essence be used exclusively from this point forward because there is already a lot of validation that is done on that variable, we know for a fact that the "playbookConfig" variable won't have any missing required fields because "hasMissingFields" already ran on it. if there were missing fields, we would've errored out already. "c" has no such guarantee. "playbookConfig" should essentially be like the replacement of "c" because it has all the necessary information that "execute" needs. one cool thing about "playbookConfig" that isn't true for "c" is that "playbookConfig" ONLY has the necessary information that "execute" needs (for a given playbook like setup-host), nothing more. in other words, if a playbook "p" is passed in, "playbookConfig" will be limited to ONLY the necessary information that execute needs for playbook "p" which can be different to how "playbookConfig" will look like if another playbook "q" is passed in.
+- i don't want type switches in ../internal/app/ansible_handler.go. all ansible config structs should implement a common interface that ansible_handler can use
+- i don't want files to look like like this:
+  ```
+	var sb strings.Builder
+	sb.WriteString("all:\n  children:\n")
+	if len(metalNames) > 0 {
+		sb.WriteString("    metal:\n      hosts:\n")
+		for _, name := range metalNames {
+			fmt.Fprintf(&sb, "        %s:\n", name)
+		}
+	}
+	if len(vmNames) > 0 {
+		sb.WriteString("    vms:\n      hosts:\n")
+		for _, name := range vmNames {
+			fmt.Fprintf(&sb, "        %s:\n", name)
+		}
+	}
+  ```
+  I want to use templates instead, kinda like how ../internal/app/ssh_handler.go does it
+- 

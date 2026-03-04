@@ -4,3 +4,4 @@ terraform.tfstate*
 .task
 .env
 .bw_state
+.generated/
