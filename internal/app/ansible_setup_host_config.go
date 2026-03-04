@@ -81,8 +81,6 @@ func (c *ansibleSetupHostConfig) generateHostVars() error {
 		if err := os.WriteFile(filepath.Join(dir, "vars.yml"), data, 0o644); err != nil {
 			return fmt.Errorf("error writing host vars file for %s: %v", host.Name, err)
 		}
-
-		return nil
 	}
 	return nil
 }
