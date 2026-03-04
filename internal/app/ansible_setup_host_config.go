@@ -1,7 +1,10 @@
 package app
 
 import (
+	"fmt"
+
 	"github.com/dannyvelas/starcommand/config"
+	"github.com/dannyvelas/starcommand/internal/helpers"
 )
 
 var _ playbookConfig = (*ansibleSetupHostConfig)(nil)
@@ -34,13 +37,18 @@ type setupHostEntry struct {
 	Incus             config.IncusConfig
 }
 
-func (e setupHostEntry) ansibleBaseConfig() ansibleBaseConfig {
-	return e.AnsibleBaseConfig
+func (e setupHostEntry) name() string {
+	return e.AnsibleBaseConfig.Name
 }
 
 func (e setupHostEntry) asMap() (map[string]any, error) {
-	return map[string]any{
+	ansibleBaseMap, err := e.AnsibleBaseConfig.asMap()
+	if err != nil {
+		return nil, fmt.Errorf("error converting ansible base config to map for %s: %v", e.AnsibleBaseConfig.Name, err)
+	}
+
+	return helpers.MergeMaps(ansibleBaseMap, map[string]any{
 		"incus_storage_pool_name": e.Incus.StoragePoolName,
 		"incus_storage_driver":    e.Incus.StoragePoolDriver,
-	}, nil
+	}), nil
 }

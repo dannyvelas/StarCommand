@@ -38,11 +38,16 @@ type bootstrapHostEntry struct {
 	AutoUpdateRebootTime string
 }
 
-func (e bootstrapHostEntry) ansibleBaseConfig() ansibleBaseConfig {
-	return e.AnsibleBaseConfig
+func (e bootstrapHostEntry) name() string {
+	return e.AnsibleBaseConfig.Name
 }
 
 func (e bootstrapHostEntry) asMap() (map[string]any, error) {
+	ansibleBaseMap, err := e.AnsibleBaseConfig.asMap()
+	if err != nil {
+		return nil, fmt.Errorf("error converting ansible base config to map for %s: %v", e.AnsibleBaseConfig.Name, err)
+	}
+
 	expandedPublicKey, err := helpers.ExpandPath(e.AnsibleBaseConfig.SSH.PublicKeyPath)
 	if err != nil {
 		return nil, fmt.Errorf("error expanding public key path for %s: %v", e.AnsibleBaseConfig.Name, err)
@@ -58,8 +63,8 @@ func (e bootstrapHostEntry) asMap() (map[string]any, error) {
 		autoUpdateRebootTime = "05:00"
 	}
 
-	return map[string]any{
+	return helpers.MergeMaps(ansibleBaseMap, map[string]any{
 		"ssh_public_key":          string(pubKeyBytes),
 		"auto_update_reboot_time": autoUpdateRebootTime,
-	}, nil
+	}), nil
 }

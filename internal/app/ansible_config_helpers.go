@@ -16,7 +16,7 @@ type playbookConfig interface {
 }
 
 type hostConfig interface {
-	ansibleBaseConfig() ansibleBaseConfig
+	name() string
 	asMap() (map[string]any, error)
 }
 

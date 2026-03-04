@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/dannyvelas/starcommand/internal/helpers"
 	"github.com/goccy/go-yaml"
 )
 
@@ -32,31 +31,13 @@ func (h ansibleHandler) execute(c playbookConfig, playbook string) (map[string]s
 
 func (h ansibleHandler) generateHostVars(c playbookConfig) error {
 	for _, host := range c.hosts() {
-		baseConfig := host.ansibleBaseConfig()
-
-		expandedPrivateKey, err := helpers.ExpandPath(baseConfig.SSH.PrivateKeyPath)
-		if err != nil {
-			return fmt.Errorf("error expanding private key path for %s: %v", baseConfig.Name, err)
-		}
-
-		ansibleUser, err := determineAnsibleUser(baseConfig.SSH.User, baseConfig.IP, baseConfig.SSH.Port, expandedPrivateKey)
-		if err != nil {
-			return fmt.Errorf("error determining ansible user for %s: %v", baseConfig.Name, err)
-		}
-
-		m := map[string]any{
-			"ansible_host": baseConfig.IP,
-			"ansible_port": baseConfig.SSH.Port,
-			"ansible_user": ansibleUser,
-		}
-
 		hostAsMap, err := host.asMap()
 		if err != nil {
-			return fmt.Errorf("error getting host config as map for %s: %v", baseConfig.Name, err)
+			return fmt.Errorf("error getting host config as map for %s: %v", host.name(), err)
 		}
 
-		if err := h.writeHostVarsFile(baseConfig.Name, helpers.MergeMaps(m, hostAsMap)); err != nil {
-			return fmt.Errorf("error writing host vars file for %s: %v", baseConfig.Name, err)
+		if err := h.writeHostVarsFile(host.name(), hostAsMap); err != nil {
+			return fmt.Errorf("error writing host vars file for %s: %v", host.name(), err)
 		}
 	}
 
