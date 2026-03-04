@@ -30,22 +30,14 @@ type configLoader interface {
 // loadConfig fills cfg from c, builds a diagnostics map for all required fields,
 // and runs FillInKeys. If preflight is true, it returns the diagnostics without
 // running FillInKeys. Returns an error if any required fields are missing.
-func loadConfig(cfg configLoader, c *config.Config, name string) (map[string]string, error) {
-	if err := cfg.FillFromConfig(c); err != nil {
+func loadConfig(configLoader configLoader, c *config.Config) (map[string]string, error) {
+	if err := configLoader.FillFromConfig(c); err != nil {
 		return nil, err
 	}
 
-	m, err := buildDiagnostics(cfg)
+	m, err := buildDiagnostics(configLoader)
 	if err != nil {
 		return nil, fmt.Errorf("internal error building diagnostics: %v", err)
-	}
-
-	if hasMissingFields(m) {
-		return m, fmt.Errorf("error getting config for %s:\n%s", name, diagnosticsToTable(m))
-	}
-
-	if err := cfg.FillInKeys(); err != nil {
-		return nil, err
 	}
 
 	return m, nil

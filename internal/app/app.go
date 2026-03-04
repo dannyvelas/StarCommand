@@ -24,9 +24,21 @@ func AnsibleRun(ctx context.Context, c *config.Config, playbook string, prefligh
 		return nil, err
 	}
 
-	m, err := loadConfig(playbookConfig, c, playbook)
-	if preflight || err != nil {
+	m, err := loadConfig(playbookConfig, c)
+	if err != nil {
 		return m, err
+	}
+
+	if preflight {
+		return m, nil
+	}
+
+	if hasMissingFields(m) {
+		return m, fmt.Errorf("error getting config for %s:\n%s", playbook, diagnosticsToTable(m))
+	}
+
+	if err := playbookConfig.FillInKeys(); err != nil {
+		return nil, err
 	}
 
 	if err := promptSensitiveFields(playbookConfig, os.Stdin, os.Stdout); err != nil {
@@ -43,10 +55,10 @@ func AnsibleRun(ctx context.Context, c *config.Config, playbook string, prefligh
 
 func SSHAdd(ctx context.Context, c *config.Config, hostAlias string, preflight bool) (map[string]string, error) {
 	sshConfig := newSSHHost(hostAlias)
-	m, err := loadConfig(sshConfig, c, "ssh add "+hostAlias)
-	if preflight || err != nil {
-		return m, err
-	}
+	//m, err := loadConfig(sshConfig, c, "ssh add "+hostAlias, preflight)
+	//if preflight || err != nil {
+	//	return m, err
+	//}
 
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -64,10 +76,10 @@ func SSHAdd(ctx context.Context, c *config.Config, hostAlias string, preflight b
 
 func TerraformApply(ctx context.Context, c *config.Config, preflight bool) (map[string]string, error) {
 	terraformConfig := newTerraformConfig()
-	m, err := loadConfig(terraformConfig, c, "terraform apply")
-	if preflight || err != nil {
-		return m, err
-	}
+	//m, err := loadConfig(terraformConfig, c, "terraform apply")
+	//if preflight || err != nil {
+	//	return m, err
+	//}
 
 	terraformHandler := newTerraformHandler("./terraform/main.tf")
 	handlerDiagnostics, err := terraformHandler.execute(ctx, terraformConfig)
