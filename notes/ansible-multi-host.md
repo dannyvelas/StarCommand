@@ -96,11 +96,21 @@ inventory generate` time) would bake in a stale result.
 
 ### What is currently broken
   
-when `stc ansible setup-host` runs, the code should be smart enough to run the `../ansible/playbooks/setup-host.yml` playbook for all hosts in *config.Config:
-* suppose there are two hosts in *config.Config, "h" and "k" where "h" needs the playbook to run as "root" and "k" needs the playbook to run as "admin." in this case, "ansibleRun" should execute the `setup-host` playbook as root for host "h" and as admin for host "k".
+when `stc ansible setup-host` runs, the code should be smart enough to run the `../ansible/playbooks/setup-host.yml` playbook for all hosts in *config.Config. same for other playbooks like `../ansible/playbooks/bootstrap-server.yml` and `../ansible/playbooks/setup-vm.yml`.
+* suppose there are two hosts in *config.Config, "h" and "k" where "h" needs the playbook to run as "root" and "k" needs the playbook to run as "admin." in this case, the code should execute the playbook as root for host "h" and as admin for host "k".
 * regardless of required "root"/"admin" permissions for playbooks for the hosts in *config.Config, the playbook should execute in parallel for all of the hosts in *config.Config. I expect this should be possible because ansible's default functionality is to support running the same playbook on multiple target hosts concurrently.
 * suppose that there are two hosts "h" and "k" in *config.Config. suppose both of these hosts have different config values for ip, ssh_port, ssh_private_key_path, ssh_user, etc. our code should make sure that when playbook "p" runs, the configs for host "h" will be used for "p" when "p" is running on "h", and the configs for host "k" will be used for "p" when "p" is running on host "k".
 
 you might wonder why why need `ip`, `ssh_port`, `ssh_private_key_path`, etc for each host. this is because before running a playbook "p" we want to do an ssh check to determine whether we should run "p" as admin or root for a given host
 
 right now it's implementing it wrong. right now, the code only targets one host. it just picks the first host as the target which was arbitrary and wrong.
+
+### How i think it should be fixed
+
+The standard Ansible way to assign specific values for specific hosts is to create a directory named `host_vars`. Inside that directory, you create a file named after each host. Ansible will automatically detect these files and apply the variables to the correct host during execution.
+
+I think we should change the code so that when `stc ansible setup-host` runs, we generate this `host_vars` logic and put it in a specific top-level directory (which is gitignored) in this repo, `.generated`.
+
+that way, when someone runs `stc ansible setup-host`, they can see the vars that were used by peering into the `.generated` directory.
+
+We should probably refactor the ansible config structs so that they can hold the information for more than just one host. they should be able to hold the information for multiple hosts. that way, when that config struct is passed to `ansibleHandler.execute` (e.g. `ansibleHandler.execute(playbookConfig)` on line 48 of `../internal/app/app.go`), `ansibleHandler.execute` can read the config struct and generate the `host_vars` files in the `.generated` directory for each host.
