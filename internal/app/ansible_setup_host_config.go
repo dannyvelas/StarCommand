@@ -17,15 +17,23 @@ type ansibleSetupHostConfig struct {
 	SMTPPassword string `json:"smtp_password" sensitive:"true" prompt:"SMTP password"`
 }
 
-func newAnsibleSetupHostConfig(c *config.Config) *ansibleSetupHostConfig {
+func newAnsibleSetupHostConfig(c *config.Config) (*ansibleSetupHostConfig, map[string]string) {
 	setupConfig := new(ansibleSetupHostConfig)
-	for _, host := range c.Hosts {
+	diagnostics := make(map[string]string)
+
+	if len(c.Hosts) == 0 {
+		diagnostics[".hosts"] = statusMissing
+		return setupConfig, diagnostics
+	}
+
+	for i, host := range c.Hosts {
+		buildStructDiagnostics(host, fmt.Sprintf(".hosts[%d]", i), diagnostics)
 		setupConfig.Hosts = append(setupConfig.Hosts, setupHostEntry{
 			AnsibleBaseConfig: newAnsibleBaseConfig(host.Name, host.IP, host.SSH),
 			Incus:             host.Incus,
 		})
 	}
-	return setupConfig
+	return setupConfig, nil
 }
 
 func (c *ansibleSetupHostConfig) hosts() []hostConfig {

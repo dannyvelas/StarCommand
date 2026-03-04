@@ -20,15 +20,17 @@ type hostConfig interface {
 	asMap() (map[string]any, error)
 }
 
-func getAnsibleConfig(c *config.Config, playbook string) (playbookConfig, error) {
+func getAnsibleConfig(c *config.Config, playbook string) (playbookConfig, map[string]string, error) {
 	switch playbook {
 	case "bootstrap-server":
-		return newAnsibleBootstrapConfig(c), nil
+		c, d := newAnsibleBootstrapConfig(c)
+		return c, d, nil
 	case "setup-host":
-		return newAnsibleSetupHostConfig(c), nil
+		c, d := newAnsibleSetupHostConfig(c)
+		return c, d, nil
 	}
 
-	return nil, fmt.Errorf("error: config for playbook %s %w", playbook, errNotFound)
+	return nil, nil, fmt.Errorf("error: config for playbook %s %w", playbook, errNotFound)
 }
 
 func determineAnsibleUser(sshUser, ip string, port int, privateKeyPath string) (string, error) {

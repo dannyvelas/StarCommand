@@ -18,13 +18,13 @@ type ansibleBootstrapConfig struct {
 	AdminPassword string `json:"admin_password" sensitive:"true" prompt:"Admin password"`
 }
 
-func newAnsibleBootstrapConfig(c *config.Config) (*ansibleBootstrapConfig, map[string]string, error) {
+func newAnsibleBootstrapConfig(c *config.Config) (*ansibleBootstrapConfig, map[string]string) {
 	bootstrapConfig := new(ansibleBootstrapConfig)
 	diagnostics := make(map[string]string)
 
 	if len(c.Hosts) == 0 {
 		diagnostics[".hosts"] = statusMissing
-		return bootstrapConfig, diagnostics, nil
+		return bootstrapConfig, diagnostics
 	}
 
 	for i, host := range c.Hosts {
@@ -38,7 +38,7 @@ func newAnsibleBootstrapConfig(c *config.Config) (*ansibleBootstrapConfig, map[s
 			AutoUpdateRebootTime: host.AutoUpdateRebootTime,
 		})
 	}
-	return bootstrapConfig, diagnostics, nil
+	return bootstrapConfig, diagnostics
 }
 
 func (c *ansibleBootstrapConfig) hosts() []hostConfig {
