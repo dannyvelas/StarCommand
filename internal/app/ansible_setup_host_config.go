@@ -19,21 +19,25 @@ type ansibleSetupHostConfig struct {
 
 func newAnsibleSetupHostConfig(c *config.Config) (*ansibleSetupHostConfig, map[string]string) {
 	setupConfig := new(ansibleSetupHostConfig)
-	diagnostics := make(map[string]string)
-
 	if len(c.Hosts) == 0 {
-		diagnostics[".hosts"] = statusMissing
-		return setupConfig, diagnostics
+		return setupConfig, map[string]string{".hosts": statusMissing}
 	}
 
+	diagnostics := make(map[string]string)
 	for i, host := range c.Hosts {
-		buildStructDiagnostics(host, fmt.Sprintf(".hosts[%d]", i), diagnostics)
+		prefix := fmt.Sprintf(".hosts[%d]", i)
+
+		ansibleBaseConfig, baseDiagnostics := newAnsibleBaseConfig(prefix, host.Name, host.IP, host.SSH.User, host.SSH.Port, host.SSH.PrivateKeyPath)
+		mergedDiagnostics := helpers.MergeMaps(diagnostics, baseDiagnostics)
+
+		setDiagnostic(mergedDiagnostics, prefix+".incus.storage_pool_name", host.Incus.StoragePoolName)
+		setDiagnostic(mergedDiagnostics, prefix+".incus.storage_pool_driver", host.Incus.StoragePoolDriver)
 		setupConfig.Hosts = append(setupConfig.Hosts, setupHostEntry{
-			AnsibleBaseConfig: newAnsibleBaseConfig(host.Name, host.IP, host.SSH),
+			AnsibleBaseConfig: ansibleBaseConfig,
 			Incus:             host.Incus,
 		})
 	}
-	return setupConfig, nil
+	return setupConfig, diagnostics
 }
 
 func (c *ansibleSetupHostConfig) hosts() []hostConfig {

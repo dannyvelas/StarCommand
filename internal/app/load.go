@@ -7,50 +7,20 @@ import (
 	"text/template"
 )
 
+// setDiagnostic records whether val is the zero value for its type.
+func setDiagnostic(diagnostics map[string]string, key string, val any) {
+	if reflect.ValueOf(val).IsZero() {
+		diagnostics[key] = statusMissing
+	} else {
+		diagnostics[key] = statusLoaded
+	}
+}
+
 const (
 	statusMissing = "missing"
 	statusLoaded  = "loaded"
 )
 
-// buildStructDiagnostics walks v (a struct) using yaml tags for naming and records whether
-// required fields are zero or not into diagnostics. Nested structs are recursed into automatically.
-// Only fields tagged with `required:"true"` are validated; nested struct fields are always recursed into.
-func buildStructDiagnostics(v any, prefix string, diagnostics map[string]string) {
-	rv := reflect.ValueOf(v)
-	if rv.Kind() == reflect.Pointer {
-		rv = rv.Elem()
-	}
-	if rv.Kind() != reflect.Struct {
-		return
-	}
-
-	rt := rv.Type()
-	for i := 0; i < rt.NumField(); i++ {
-		field := rt.Field(i)
-		fieldVal := rv.Field(i)
-
-		yamlTag := field.Tag.Get("yaml")
-		if yamlTag == "" || yamlTag == "-" {
-			continue
-		}
-		fieldPrefix := prefix + "." + strings.Split(yamlTag, ",")[0]
-
-		if fieldVal.Kind() == reflect.Struct {
-			buildStructDiagnostics(fieldVal.Interface(), fieldPrefix, diagnostics)
-			continue
-		}
-
-		if field.Tag.Get("required") != "true" {
-			continue
-		}
-
-		if fieldVal.IsZero() {
-			diagnostics[fieldPrefix] = statusMissing
-		} else {
-			diagnostics[fieldPrefix] = statusLoaded
-		}
-	}
-}
 
 func hasMissingFields(m map[string]string) bool {
 	for _, v := range m {

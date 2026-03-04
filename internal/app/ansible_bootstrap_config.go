@@ -20,21 +20,25 @@ type ansibleBootstrapConfig struct {
 
 func newAnsibleBootstrapConfig(c *config.Config) (*ansibleBootstrapConfig, map[string]string) {
 	bootstrapConfig := new(ansibleBootstrapConfig)
-	diagnostics := make(map[string]string)
-
 	if len(c.Hosts) == 0 {
-		diagnostics[".hosts"] = statusMissing
-		return bootstrapConfig, diagnostics
+		return bootstrapConfig, map[string]string{".hosts": statusMissing}
 	}
 
+	diagnostics := make(map[string]string)
 	for i, host := range c.Hosts {
-		buildStructDiagnostics(host, fmt.Sprintf(".hosts[%d]", i), diagnostics)
+		prefix := fmt.Sprintf(".hosts[%d]", i)
+
+		ansibleBaseConfig, baseDiagnostics := newAnsibleBaseConfig(prefix, host.Name, host.IP, host.SSH.User, host.SSH.Port, host.SSH.PrivateKeyPath)
+		mergedDiagnostics := helpers.MergeMaps(diagnostics, baseDiagnostics)
+
+		setDiagnostic(mergedDiagnostics, prefix+".ssh.public_key_path", host.SSH.PublicKeyPath)
 		if host.AutoUpdateRebootTime == "" {
 			host.AutoUpdateRebootTime = "05:00"
 		}
 
 		bootstrapConfig.Hosts = append(bootstrapConfig.Hosts, bootstrapHostEntry{
-			AnsibleBaseConfig:    newAnsibleBaseConfig(host.Name, host.IP, host.SSH),
+			AnsibleBaseConfig:    ansibleBaseConfig,
+			SSHPublicKeyPath:     host.SSH.PublicKeyPath,
 			AutoUpdateRebootTime: host.AutoUpdateRebootTime,
 		})
 	}
@@ -47,6 +51,7 @@ func (c *ansibleBootstrapConfig) hosts() []hostConfig {
 
 type bootstrapHostEntry struct {
 	AnsibleBaseConfig    ansibleBaseConfig
+	SSHPublicKeyPath     string
 	AutoUpdateRebootTime string
 }
 
@@ -60,7 +65,7 @@ func (e bootstrapHostEntry) asMap() (map[string]any, error) {
 		return nil, fmt.Errorf("error converting ansible base config to map for %s: %v", e.AnsibleBaseConfig.Name, err)
 	}
 
-	expandedPublicKey, err := helpers.ExpandPath(e.AnsibleBaseConfig.SSH.PublicKeyPath)
+	expandedPublicKey, err := helpers.ExpandPath(e.SSHPublicKeyPath)
 	if err != nil {
 		return nil, fmt.Errorf("error expanding public key path for %s: %v", e.AnsibleBaseConfig.Name, err)
 	}

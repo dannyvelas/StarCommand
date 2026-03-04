@@ -8,11 +8,11 @@ import (
 )
 
 type sshConfig struct {
-	Alias         string `json:"alias" required:"true"`
-	HostName      string `json:"host_name" required:"true"`
-	User          string `json:"ssh_user" required:"true"`
-	PublicKeyPath string `json:"ssh_public_key_path" required:"true"`
-	Port          int    `json:"ssh_port" required:"true"`
+	Alias         string `json:"alias"`
+	HostName      string `json:"host_name"`
+	User          string `json:"ssh_user"`
+	PublicKeyPath string `json:"ssh_public_key_path"`
+	Port          int    `json:"ssh_port"`
 }
 
 func newSSHConfig(c *config.Config, hostAlias string) (*sshConfig, map[string]string, error) {
@@ -23,7 +23,12 @@ func newSSHConfig(c *config.Config, hostAlias string) (*sshConfig, map[string]st
 	configHost := c.Hosts[i]
 
 	diagnostics := make(map[string]string)
-	buildStructDiagnostics(configHost, fmt.Sprintf(".hosts[%d]", i), diagnostics)
+	prefix := fmt.Sprintf(".hosts[%d]", i)
+	setDiagnostic(diagnostics, prefix+".name", configHost.Name)
+	setDiagnostic(diagnostics, prefix+".ip", configHost.IP)
+	setDiagnostic(diagnostics, prefix+".ssh.user", configHost.SSH.User)
+	setDiagnostic(diagnostics, prefix+".ssh.public_key_path", configHost.SSH.PublicKeyPath)
+	setDiagnostic(diagnostics, prefix+".ssh.port", configHost.SSH.Port)
 
 	return &sshConfig{
 		Alias:         configHost.Name,
