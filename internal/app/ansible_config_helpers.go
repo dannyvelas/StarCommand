@@ -12,7 +12,12 @@ import (
 )
 
 type playbookConfig interface {
-	generateHostVars() error
+	hosts() []hostConfig
+}
+
+type hostConfig interface {
+	ansibleBaseConfig() ansibleBaseConfig
+	asMap() (map[string]any, error)
 }
 
 func getAnsibleConfig(c *config.Config, playbook string) (playbookConfig, error) {

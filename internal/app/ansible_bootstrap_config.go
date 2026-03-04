@@ -3,29 +3,15 @@ package app
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/dannyvelas/starcommand/config"
 	"github.com/dannyvelas/starcommand/internal/helpers"
-	"github.com/goccy/go-yaml"
 )
 
-type bootstrapHostEntry struct {
-	AnsibleBaseConfig    ansibleBaseConfig
-	AutoUpdateRebootTime string
-}
-
-type bootstrapHostVars struct {
-	AnsibleHost          string `yaml:"ansible_host"`
-	AnsiblePort          int    `yaml:"ansible_port"`
-	AnsibleSSHPrivateKey string `yaml:"ansible_ssh_private_key_file"`
-	AnsibleUser          string `yaml:"ansible_user"`
-	SSHPublicKey         string `yaml:"ssh_public_key"`
-	AutoUpdateRebootTime string `yaml:"auto_update_reboot_time"`
-}
+var _ playbookConfig = (*ansibleBootstrapConfig)(nil)
 
 type ansibleBootstrapConfig struct {
-	Hosts []bootstrapHostEntry `json:"-" required:"true"`
+	Hosts []hostConfig `json:"-" required:"true"`
 
 	// Sensitive
 	AdminEmail    string `json:"admin_email" sensitive:"true" prompt:"Admin email"`
@@ -43,55 +29,37 @@ func newAnsibleBootstrapConfig(c *config.Config) *ansibleBootstrapConfig {
 	return bootstrapConfig
 }
 
-func (c *ansibleBootstrapConfig) generateHostVars() error {
-	for _, host := range c.Hosts {
-		ansibleUser, err := determineAnsibleUser(host.AnsibleBaseConfig.SSH.User, host.AnsibleBaseConfig.IP, host.AnsibleBaseConfig.SSH.Port, host.AnsibleBaseConfig.SSH.PrivateKeyPath)
-		if err != nil {
-			return fmt.Errorf("error determining ansible user for %s: %v", host.AnsibleBaseConfig.Name, err)
-		}
+func (c *ansibleBootstrapConfig) hosts() []hostConfig {
+	return c.Hosts
+}
 
-		expandedPrivateKey, err := helpers.ExpandPath(host.AnsibleBaseConfig.SSH.PrivateKeyPath)
-		if err != nil {
-			return fmt.Errorf("error expanding private key path for %s: %v", host.AnsibleBaseConfig.Name, err)
-		}
+type bootstrapHostEntry struct {
+	AnsibleBaseConfig    ansibleBaseConfig
+	AutoUpdateRebootTime string
+}
 
-		expandedPublicKey, err := helpers.ExpandPath(host.AnsibleBaseConfig.SSH.PublicKeyPath)
-		if err != nil {
-			return fmt.Errorf("error expanding public key path for %s: %v", host.AnsibleBaseConfig.Name, err)
-		}
+func (e bootstrapHostEntry) ansibleBaseConfig() ansibleBaseConfig {
+	return e.AnsibleBaseConfig
+}
 
-		pubKeyBytes, err := os.ReadFile(expandedPublicKey)
-		if err != nil {
-			return fmt.Errorf("error reading public key for %s: %v", host.AnsibleBaseConfig.Name, err)
-		}
-
-		autoUpdateRebootTime := host.AutoUpdateRebootTime
-		if autoUpdateRebootTime == "" {
-			autoUpdateRebootTime = "05:00"
-		}
-
-		vars := bootstrapHostVars{
-			AnsibleHost:          host.AnsibleBaseConfig.IP,
-			AnsiblePort:          host.AnsibleBaseConfig.SSH.Port,
-			AnsibleSSHPrivateKey: expandedPrivateKey,
-			AnsibleUser:          ansibleUser,
-			SSHPublicKey:         string(pubKeyBytes),
-			AutoUpdateRebootTime: autoUpdateRebootTime,
-		}
-
-		dir := filepath.Join(".generated", "host_vars", host.AnsibleBaseConfig.Name)
-		if err := os.MkdirAll(dir, 0o755); err != nil {
-			return fmt.Errorf("error creating host_vars dir for %s: %v", host.AnsibleBaseConfig.Name, err)
-		}
-
-		data, err := yaml.Marshal(vars)
-		if err != nil {
-			return fmt.Errorf("error marshaling host vars for %s: %v", host.AnsibleBaseConfig.Name, err)
-		}
-
-		if err := os.WriteFile(filepath.Join(dir, "vars.yml"), data, 0o644); err != nil {
-			return fmt.Errorf("error writing host vars file for %s: %v", host.AnsibleBaseConfig.Name, err)
-		}
+func (e bootstrapHostEntry) asMap() (map[string]any, error) {
+	expandedPublicKey, err := helpers.ExpandPath(e.AnsibleBaseConfig.SSH.PublicKeyPath)
+	if err != nil {
+		return nil, fmt.Errorf("error expanding public key path for %s: %v", e.AnsibleBaseConfig.Name, err)
 	}
-	return nil
+
+	pubKeyBytes, err := os.ReadFile(expandedPublicKey)
+	if err != nil {
+		return nil, fmt.Errorf("error reading public key for %s: %v", e.AnsibleBaseConfig.Name, err)
+	}
+
+	autoUpdateRebootTime := e.AutoUpdateRebootTime
+	if autoUpdateRebootTime == "" {
+		autoUpdateRebootTime = "05:00"
+	}
+
+	return map[string]any{
+		"ssh_public_key":          string(pubKeyBytes),
+		"auto_update_reboot_time": autoUpdateRebootTime,
+	}, nil
 }
