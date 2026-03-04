@@ -16,5 +16,5 @@
 - [ ] add support for `stc setup` running `kubectl apply -f services/traefik.yml`
 - [ ] add support for `stc setup` running `kubectl apply -f services/coredns.yml`
 - [ ] Add OVN support
-- [ ] Add VLAN segmentation (A management VLAN for SSH access to hosts, a separate VLAN for OVN overlay traffic between hosts, A VLAN isolating your lab network from your regular home network)
+- [ ] Add VLAN segmentation (A management VLAN for SSH access to hosts, a separate VLAN for OVN overlay traffic between hosts, A VLAN isolating your server network from your outside network)
 - [ ] Add support for `status` subcommand
