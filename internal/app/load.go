@@ -2,89 +2,54 @@ package app
 
 import (
 	"bytes"
-	"fmt"
 	"reflect"
 	"strings"
 	"text/template"
 )
-
-type reflectField struct {
-	Type  reflect.StructField
-	Value reflect.Value
-}
 
 const (
 	statusMissing = "missing"
 	statusLoaded  = "loaded"
 )
 
-// buildDiagnostics returns a map where each key is the json/yaml tag name of a
-// required field, and each value is statusLoaded if the field is non-zero or `statusMissing`
-// if it is the zero value. Embedded structs are handled recursively.
-func buildDiagnostics(v any) (map[string]string, error) {
-	diagnostics := make(map[string]string)
-
-	tagToFieldMap, err := getTagToFieldMap(v, "conflux", "json")
-	if err != nil {
-		return nil, fmt.Errorf("error getting tag to field map: %v", err)
-	}
-
-	for tag, field := range tagToFieldMap {
-		if _, ok := field.Type.Tag.Lookup("required"); !ok {
-			continue
-		}
-
-		if field.Value.IsZero() {
-			diagnostics[tag] = statusMissing
-		} else {
-			diagnostics[tag] = statusLoaded
-		}
-	}
-
-	return diagnostics, nil
-}
-
-// getTagToFieldMap takes a struct and returns a map where each key is
-// the value of tag `tagName`. each value is a reflect.Value.
-// if `tagName` is not found, it will iterate through `fallbackTags` until it finds a value
-func getTagToFieldMap(v any, tagName string, fallbackTags ...string) (map[string]reflectField, error) {
+// buildStructDiagnostics walks v (a struct) using yaml tags for naming and records whether
+// required fields are zero or not into diagnostics. Nested structs are recursed into automatically.
+// Only fields tagged with `required:""` are validated; nested struct fields are always recursed into.
+func buildStructDiagnostics(v any, prefix string, diagnostics map[string]string) {
 	rv := reflect.ValueOf(v)
-
-	// If a pointer is passed, get the underlying element (the actual struct)
 	if rv.Kind() == reflect.Pointer {
 		rv = rv.Elem()
 	}
-
-	// If it's not a struct, we can't look up tags
 	if rv.Kind() != reflect.Struct {
-		return nil, fmt.Errorf("expected a struct as argument")
+		return
 	}
-
-	tagToFieldMap := make(map[string]reflectField)
 
 	rt := rv.Type()
 	for i := 0; i < rt.NumField(); i++ {
 		field := rt.Field(i)
+		fieldVal := rv.Field(i)
 
-		foundTag := queryForTags(field, tagName, fallbackTags)
-
-		tagToFieldMap[foundTag] = reflectField{field, rv.Field(i)}
-	}
-
-	return tagToFieldMap, nil
-}
-
-func queryForTags(field reflect.StructField, tagName string, fallbackTags []string) string {
-	for i := range len(fallbackTags) + 1 {
-		foundTag := field.Tag.Get(tagName)
-		if foundTag != "" && foundTag != "-" {
-			return strings.Split(foundTag, ",")[0]
-		} else if i == len(fallbackTags) {
-			break
+		yamlTag := field.Tag.Get("yaml")
+		if yamlTag == "" || yamlTag == "-" {
+			continue
 		}
-		tagName = fallbackTags[i]
+		fieldPrefix := prefix + "." + strings.Split(yamlTag, ",")[0]
+
+		if fieldVal.Kind() == reflect.Struct {
+			buildStructDiagnostics(fieldVal.Interface(), fieldPrefix, diagnostics)
+			continue
+		}
+
+		if _, ok := field.Tag.Lookup("required"); !ok {
+			continue
+		}
+
+		if fieldVal.IsZero() {
+			diagnostics[fieldPrefix] = statusMissing
+		} else {
+			diagnostics[fieldPrefix] = statusLoaded
+		}
 	}
-	return field.Name
 }
 
 func hasMissingFields(m map[string]string) bool {
