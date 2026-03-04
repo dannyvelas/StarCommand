@@ -17,9 +17,10 @@ func InventoryGenerate(ctx context.Context, c *config.Config, host *string, pref
 }
 
 func AnsibleRun(ctx context.Context, c *config.Config, playbook string, preflight bool) (map[string]string, error) {
-	ansibleHandler := newAnsibleHandler()
-
-	playbookConfig := newAnsibleBootstrapConfig(c)
+	playbookConfig, err := getAnsibleConfig(c, playbook)
+	if err != nil {
+		return nil, fmt.Errorf("error getting config for %s: %v", playbook, err)
+	}
 
 	m, err := buildDiagnostics(playbookConfig)
 	if err != nil {
@@ -38,6 +39,7 @@ func AnsibleRun(ctx context.Context, c *config.Config, playbook string, prefligh
 		return nil, fmt.Errorf("error prompting for sensitive fields: %v", err)
 	}
 
+	ansibleHandler := newAnsibleHandler()
 	handlerDiagnostics, err := ansibleHandler.execute(playbookConfig, playbook)
 	if err != nil {
 		return nil, fmt.Errorf("error executing command: %v", err)

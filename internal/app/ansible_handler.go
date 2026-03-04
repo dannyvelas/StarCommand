@@ -13,7 +13,7 @@ func newAnsibleHandler() ansibleHandler {
 	return ansibleHandler{}
 }
 
-func (h ansibleHandler) execute(c *ansibleBootstrapConfig, playbook string) (map[string]string, error) {
+func (h ansibleHandler) execute(c playbookConfig, playbook string) (map[string]string, error) {
 	diagnostics := make(map[string]string)
 
 	if err := c.generateHostVars(); err != nil {
