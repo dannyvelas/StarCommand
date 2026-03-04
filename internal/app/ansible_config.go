@@ -26,13 +26,13 @@ func getAnsibleConfig(c *config.Config, playbook string) (playbookConfig, error)
 	return nil, fmt.Errorf("error: config for playbook %s %w", playbook, errNotFound)
 }
 
-func determineAnsibleUser(sshUser, ip, port, privateKeyPath string) (string, error) {
+func determineAnsibleUser(sshUser, ip string, port int, privateKeyPath string) (string, error) {
 	expandedKey, err := helpers.ExpandPath(privateKeyPath)
 	if err != nil {
 		return "", fmt.Errorf("error expanding key path: %v", err)
 	}
 
-	addr := fmt.Sprintf("%s:%s", ip, port)
+	addr := fmt.Sprintf("%s:%d", ip, port)
 	client, sshErr := getSSHClient(sshUser, addr, expandedKey)
 	if sshErr != nil && !errors.Is(sshErr, errConnectingSSH) {
 		return "", fmt.Errorf("error checking ssh: %v", sshErr)

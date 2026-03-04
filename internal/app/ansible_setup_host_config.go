@@ -19,7 +19,7 @@ type setupHostEntry struct {
 
 type setupHostHostVars struct {
 	AnsibleHost          string `yaml:"ansible_host"`
-	AnsiblePort          string `yaml:"ansible_port"`
+	AnsiblePort          int    `yaml:"ansible_port"`
 	AnsibleSSHPrivateKey string `yaml:"ansible_ssh_private_key_file"`
 	AnsibleUser          string `yaml:"ansible_user"`
 	IncusStoragePoolName string `yaml:"incus_storage_pool_name"`
@@ -49,7 +49,7 @@ func newAnsibleSetupHostConfig(c *config.Config) *ansibleSetupHostConfig {
 
 func (c *ansibleSetupHostConfig) generateHostVars() error {
 	for _, host := range c.Hosts {
-		ansibleUser, err := determineAnsibleUser(host.SSH.User, host.IP, portToString(host.SSH.Port), host.SSH.PrivateKeyPath)
+		ansibleUser, err := determineAnsibleUser(host.SSH.User, host.IP, host.SSH.Port, host.SSH.PrivateKeyPath)
 		if err != nil {
 			return fmt.Errorf("error determining ansible user for host %s: %v", host.Name, err)
 		}
@@ -61,7 +61,7 @@ func (c *ansibleSetupHostConfig) generateHostVars() error {
 
 		vars := setupHostHostVars{
 			AnsibleHost:          host.IP,
-			AnsiblePort:          portToString(host.SSH.Port),
+			AnsiblePort:          host.SSH.Port,
 			AnsibleSSHPrivateKey: expandedPrivateKey,
 			AnsibleUser:          ansibleUser,
 			IncusStoragePoolName: host.Incus.StoragePoolName,

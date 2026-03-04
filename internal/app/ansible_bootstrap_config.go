@@ -19,7 +19,7 @@ type bootstrapHostEntry struct {
 
 type bootstrapHostVars struct {
 	AnsibleHost          string `yaml:"ansible_host"`
-	AnsiblePort          string `yaml:"ansible_port"`
+	AnsiblePort          int    `yaml:"ansible_port"`
 	AnsibleSSHPrivateKey string `yaml:"ansible_ssh_private_key_file"`
 	AnsibleUser          string `yaml:"ansible_user"`
 	SSHPublicKey         string `yaml:"ssh_public_key"`
@@ -49,7 +49,7 @@ func newAnsibleBootstrapConfig(c *config.Config) *ansibleBootstrapConfig {
 
 func (c *ansibleBootstrapConfig) generateHostVars() error {
 	for _, host := range c.Hosts {
-		ansibleUser, err := determineAnsibleUser(host.SSH.User, host.IP, portToString(host.SSH.Port), host.SSH.PrivateKeyPath)
+		ansibleUser, err := determineAnsibleUser(host.SSH.User, host.IP, host.SSH.Port, host.SSH.PrivateKeyPath)
 		if err != nil {
 			return fmt.Errorf("error determining ansible user for %s: %v", host.Name, err)
 		}
@@ -76,7 +76,7 @@ func (c *ansibleBootstrapConfig) generateHostVars() error {
 
 		vars := bootstrapHostVars{
 			AnsibleHost:          host.IP,
-			AnsiblePort:          portToString(host.SSH.Port),
+			AnsiblePort:          host.SSH.Port,
 			AnsibleSSHPrivateKey: expandedPrivateKey,
 			AnsibleUser:          ansibleUser,
 			SSHPublicKey:         string(pubKeyBytes),
