@@ -14,7 +14,7 @@ const (
 
 // buildStructDiagnostics walks v (a struct) using yaml tags for naming and records whether
 // required fields are zero or not into diagnostics. Nested structs are recursed into automatically.
-// Only fields tagged with `required:""` are validated; nested struct fields are always recursed into.
+// Only fields tagged with `required:"true"` are validated; nested struct fields are always recursed into.
 func buildStructDiagnostics(v any, prefix string, diagnostics map[string]string) {
 	rv := reflect.ValueOf(v)
 	if rv.Kind() == reflect.Pointer {
@@ -40,7 +40,7 @@ func buildStructDiagnostics(v any, prefix string, diagnostics map[string]string)
 			continue
 		}
 
-		if _, ok := field.Tag.Lookup("required"); !ok {
+		if field.Tag.Get("required") != "true" {
 			continue
 		}
 

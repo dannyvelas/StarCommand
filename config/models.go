@@ -5,8 +5,8 @@ type Config struct {
 }
 
 type Host struct {
-	Name                 string      `yaml:"name"`
-	IP                   string      `yaml:"ip"`
+	Name                 string      `yaml:"name" required:"true"`
+	IP                   string      `yaml:"ip" required:"true"`
 	SSH                  SSHConfig   `yaml:"ssh"`
 	AutoUpdateRebootTime string      `yaml:"auto_update_reboot_time"`
 	WireGuardEndpoint    bool        `yaml:"wireguard_endpoint"`
@@ -22,10 +22,10 @@ type VM struct {
 }
 
 type SSHConfig struct {
-	User           string `yaml:"user"`
-	Port           int    `yaml:"port"`
-	PrivateKeyPath string `yaml:"private_key_path"`
-	PublicKeyPath  string `yaml:"public_key_path"`
+	User           string `yaml:"user" required:"true"`
+	Port           int    `yaml:"port" required:"true"`
+	PrivateKeyPath string `yaml:"private_key_path" required:"true"`
+	PublicKeyPath  string `yaml:"public_key_path" required:"true"`
 }
 
 type IncusConfig struct {
