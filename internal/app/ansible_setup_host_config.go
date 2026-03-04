@@ -1,8 +1,6 @@
 package app
 
 import (
-	"fmt"
-
 	"github.com/dannyvelas/starcommand/config"
 )
 
@@ -29,13 +27,6 @@ func newAnsibleSetupHostConfig() *ansibleSetupHostConfig {
 }
 
 func (c *ansibleSetupHostConfig) FillFromConfig(cfg *config.Config) error {
-	if len(cfg.Hosts) == 0 {
-		return fmt.Errorf("no hosts configured")
-	}
-	h := cfg.Hosts[0]
-	c.fillBaseFromHost(h)
-	c.IncusStoragePoolName = h.Incus.StoragePoolName
-	c.IncusStorageDriver = h.Incus.StoragePoolDriver
 	return nil
 }
 
