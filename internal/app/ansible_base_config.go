@@ -10,7 +10,7 @@ import (
 
 // ansiblePlaybookConfig is implemented by all ansible config types.
 // It extends configLoader with a method for generating per-host host_vars files.
-type ansiblePlaybookConfig interface {
+type playbookConfig interface {
 	configLoader
 	generateHostVars() error
 }
@@ -42,7 +42,7 @@ type setupVMHostVars struct {
 
 func writeHostVarsFile(hostname string, vars any) error {
 	dir := filepath.Join(".generated", "host_vars", hostname)
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return fmt.Errorf("error creating host_vars dir for %s: %v", hostname, err)
 	}
 
@@ -51,7 +51,7 @@ func writeHostVarsFile(hostname string, vars any) error {
 		return fmt.Errorf("error marshaling host vars for %s: %v", hostname, err)
 	}
 
-	if err := os.WriteFile(filepath.Join(dir, "vars.yml"), data, 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "vars.yml"), data, 0o644); err != nil {
 		return fmt.Errorf("error writing host vars file for %s: %v", hostname, err)
 	}
 

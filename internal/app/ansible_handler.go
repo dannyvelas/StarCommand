@@ -19,7 +19,7 @@ func newAnsibleHandler() ansibleHandler {
 	return ansibleHandler{}
 }
 
-func (h ansibleHandler) getConfig(playbook string) (ansiblePlaybookConfig, error) {
+func (h ansibleHandler) getConfig(playbook string) (playbookConfig, error) {
 	switch playbook {
 	case "bootstrap-server":
 		return newAnsibleBootstrapConfig(), nil
@@ -32,7 +32,7 @@ func (h ansibleHandler) getConfig(playbook string) (ansiblePlaybookConfig, error
 	return nil, fmt.Errorf("error: config for playbook %s %w", playbook, errNotFound)
 }
 
-func (h ansibleHandler) execute(cfg ansiblePlaybookConfig, playbook string) (map[string]string, error) {
+func (h ansibleHandler) execute(cfg playbookConfig, playbook string) (map[string]string, error) {
 	diagnostics := make(map[string]string)
 
 	if err := cfg.generateHostVars(); err != nil {

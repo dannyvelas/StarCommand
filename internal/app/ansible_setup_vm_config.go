@@ -7,7 +7,7 @@ import (
 	"github.com/dannyvelas/starcommand/internal/helpers"
 )
 
-var _ ansiblePlaybookConfig = (*ansibleSetupVMConfig)(nil)
+var _ playbookConfig = (*ansibleSetupVMConfig)(nil)
 
 type setupVMEntry struct {
 	Name string

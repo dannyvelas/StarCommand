@@ -8,7 +8,7 @@ import (
 	"github.com/dannyvelas/starcommand/internal/helpers"
 )
 
-var _ ansiblePlaybookConfig = (*ansibleBootstrapConfig)(nil)
+var _ playbookConfig = (*ansibleBootstrapConfig)(nil)
 
 type bootstrapHostEntry struct {
 	Name                 string

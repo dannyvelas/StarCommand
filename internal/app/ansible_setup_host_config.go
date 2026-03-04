@@ -7,7 +7,7 @@ import (
 	"github.com/dannyvelas/starcommand/internal/helpers"
 )
 
-var _ ansiblePlaybookConfig = (*ansibleSetupHostConfig)(nil)
+var _ playbookConfig = (*ansibleSetupHostConfig)(nil)
 
 type setupHostEntry struct {
 	Name  string
