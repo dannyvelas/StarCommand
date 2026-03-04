@@ -8,11 +8,6 @@ import (
 	"github.com/dannyvelas/starcommand/config"
 )
 
-type fillable interface {
-	// FillInKeys takes the keys that are required and uses them to fill out remaining config fields
-	FillInKeys() error
-}
-
 func Setup(ctx context.Context, c *config.Config, hostAliases []string, preflight bool) (map[string]string, error) {
 	return nil, nil
 }
@@ -24,10 +19,7 @@ func InventoryGenerate(ctx context.Context, c *config.Config, host *string, pref
 func AnsibleRun(ctx context.Context, c *config.Config, playbook string, preflight bool) (map[string]string, error) {
 	ansibleHandler := newAnsibleHandler()
 
-	playbookConfig, err := ansibleHandler.getConfig(playbook)
-	if err != nil {
-		return nil, err
-	}
+	playbookConfig := newAnsibleBootstrapConfig()
 
 	m, err := loadConfig(playbookConfig, c)
 	if err != nil {
@@ -40,12 +32,6 @@ func AnsibleRun(ctx context.Context, c *config.Config, playbook string, prefligh
 
 	if hasMissingFields(m) {
 		return m, fmt.Errorf("error getting config for %s:\n%s", playbook, diagnosticsToTable(m))
-	}
-
-	if fillableTarget, ok := playbookConfig.(fillable); ok {
-		if err := fillableTarget.FillInKeys(); err != nil {
-			return nil, fmt.Errorf("error filling in fields: %v", err)
-		}
 	}
 
 	if err := promptSensitiveFields(playbookConfig, os.Stdin, os.Stdout); err != nil {

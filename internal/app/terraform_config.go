@@ -1,12 +1,5 @@
 package app
 
-import (
-	"fmt"
-
-	"github.com/dannyvelas/starcommand/config"
-	"github.com/dannyvelas/starcommand/internal/helpers"
-)
-
 type terraformConfig struct {
 	Endpoint                   string `json:"endpoint" required:"true"`
 	GatewayAddress             string `json:"gateway_address" required:"true"`
@@ -27,17 +20,4 @@ func newTerraformConfig() *terraformConfig {
 		SSHUser:  "root",
 		SSHRealm: "pam",
 	}
-}
-
-func (c *terraformConfig) FillFromConfig(_ *config.Config) error { return nil }
-
-func (c *terraformConfig) FillInKeys() error {
-	expandedPath, err := helpers.ExpandPath(c.SSHPublicKeyPath)
-	if err != nil {
-		return err
-	}
-	c.SSHPublicKeyPath = expandedPath
-
-	c.UserRealm = fmt.Sprintf("%s@%s", c.SSHUser, c.SSHRealm)
-	return nil
 }
