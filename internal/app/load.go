@@ -6,8 +6,6 @@ import (
 	"reflect"
 	"strings"
 	"text/template"
-
-	"github.com/dannyvelas/starcommand/config"
 )
 
 type reflectField struct {
@@ -19,25 +17,6 @@ const (
 	statusMissing = "missing"
 	statusLoaded  = "loaded"
 )
-
-// configLoader is implemented by all config structs that can be loaded from a *config.Config
-type configLoader interface {
-	FillFromConfig(c *config.Config) error
-}
-
-// loadConfig fills cfg from c, builds a diagnostics map for all required fields,
-func loadConfig(configLoader configLoader, c *config.Config) (map[string]string, error) {
-	if err := configLoader.FillFromConfig(c); err != nil {
-		return nil, err
-	}
-
-	m, err := buildDiagnostics(configLoader)
-	if err != nil {
-		return nil, fmt.Errorf("internal error building diagnostics: %v", err)
-	}
-
-	return m, nil
-}
 
 // buildDiagnostics returns a map where each key is the json/yaml tag name of a
 // required field, and each value is statusLoaded if the field is non-zero or `statusMissing`

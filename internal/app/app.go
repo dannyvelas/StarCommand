@@ -19,9 +19,9 @@ func InventoryGenerate(ctx context.Context, c *config.Config, host *string, pref
 func AnsibleRun(ctx context.Context, c *config.Config, playbook string, preflight bool) (map[string]string, error) {
 	ansibleHandler := newAnsibleHandler()
 
-	playbookConfig := newAnsibleBootstrapConfig()
+	playbookConfig := newAnsibleBootstrapConfig(c)
 
-	m, err := loadConfig(playbookConfig, c)
+	m, err := buildDiagnostics(playbookConfig)
 	if err != nil {
 		return m, err
 	}
