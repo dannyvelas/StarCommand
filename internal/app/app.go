@@ -22,11 +22,6 @@ func AnsibleRun(ctx context.Context, c *config.Config, playbook string, prefligh
 		return nil, fmt.Errorf("error getting config for %s: %v", playbook, err)
 	}
 
-	m, err := buildDiagnostics(playbookConfig)
-	if err != nil {
-		return m, err
-	}
-
 	if preflight {
 		return m, nil
 	}

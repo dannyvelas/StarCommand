@@ -28,37 +28,7 @@ func newAnsibleBootstrapConfig(c *config.Config) (*ansibleBootstrapConfig, map[s
 	}
 
 	for i, host := range c.Hosts {
-		key := fmt.Sprintf(".hosts[%d]", i)
-		if host.Name == "" {
-			diagnostics[key+".name"] = statusMissing
-		} else {
-			diagnostics[key+".name"] = statusLoaded
-		}
-		if host.IP == "" {
-			diagnostics[key+".ip"] = statusMissing
-		} else {
-			diagnostics[key+".ip"] = statusLoaded
-		}
-		if host.SSH.User == "" {
-			diagnostics[key+".ssh.user"] = statusMissing
-		} else {
-			diagnostics[key+".ssh.user"] = statusLoaded
-		}
-		if host.SSH.Port == 0 {
-			diagnostics[key+".ssh.port"] = statusMissing
-		} else {
-			diagnostics[key+".ssh.port"] = statusLoaded
-		}
-		if host.SSH.PrivateKeyPath == "" {
-			diagnostics[key+".ssh.private_key_path"] = statusMissing
-		} else {
-			diagnostics[key+".ssh.private_key_path"] = statusLoaded
-		}
-		if host.SSH.PublicKeyPath == "" {
-			diagnostics[key+".ssh.public_key_path"] = statusMissing
-		} else {
-			diagnostics[key+".ssh.public_key_path"] = statusLoaded
-		}
+		buildStructDiagnostics(host, fmt.Sprintf(".hosts[%d]", i), diagnostics)
 		if host.AutoUpdateRebootTime == "" {
 			host.AutoUpdateRebootTime = "05:00"
 		}
