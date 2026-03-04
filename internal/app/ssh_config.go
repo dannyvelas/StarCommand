@@ -15,12 +15,15 @@ type sshConfig struct {
 	Port          int    `json:"ssh_port" required:"true"`
 }
 
-func newSSHConfig(c *config.Config, hostAlias string) (*sshConfig, error) {
+func newSSHConfig(c *config.Config, hostAlias string) (*sshConfig, map[string]string, error) {
 	i := slices.IndexFunc(c.Hosts, func(h config.Host) bool { return h.Name == hostAlias })
 	if i < 0 {
-		return nil, fmt.Errorf("host alias %s not found in config", hostAlias)
+		return nil, nil, fmt.Errorf("host alias %s not found in config", hostAlias)
 	}
 	configHost := c.Hosts[i]
+
+	diagnostics := make(map[string]string)
+	buildStructDiagnostics(configHost, fmt.Sprintf(".hosts[%d]", i), diagnostics)
 
 	return &sshConfig{
 		Alias:         configHost.Name,
@@ -28,5 +31,5 @@ func newSSHConfig(c *config.Config, hostAlias string) (*sshConfig, error) {
 		User:          configHost.SSH.User,
 		PublicKeyPath: configHost.SSH.PublicKeyPath,
 		Port:          configHost.SSH.Port,
-	}, nil
+	}, diagnostics, nil
 }
