@@ -57,7 +57,7 @@ func (h ansibleHandler) runAnsiblePlaybook(playbook string) error {
 }
 
 func (h ansibleHandler) writeHostVarsFile(hostname string, vars any) error {
-	dir := filepath.Join(".generated", "host_vars", hostname)
+	dir := filepath.Join(".generated/ansible/inventory/host_vars", hostname)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return fmt.Errorf("error creating host_vars dir for %s: %v", hostname, err)
 	}
