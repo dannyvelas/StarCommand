@@ -19,8 +19,7 @@ func sshAddCmd(c *config.Config) *cobra.Command {
 
 func sshAddCLI(c *config.Config) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
-		ctx := cmd.Context()
 		hostAlias := args[0]
-		return app.SSHAdd(ctx, c, hostAlias)
+		return app.SSHAdd(cmd.Context(), c, hostAlias)
 	}
 }
