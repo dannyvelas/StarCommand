@@ -68,13 +68,8 @@ func (e bootstrapHostEntry) asMap() (map[string]any, error) {
 		return nil, fmt.Errorf("error reading public key for %s: %v", e.AnsibleBaseConfig.Name, err)
 	}
 
-	autoUpdateRebootTime := e.AutoUpdateRebootTime
-	if autoUpdateRebootTime == "" {
-		autoUpdateRebootTime = "05:00"
-	}
-
 	return helpers.MergeMaps(ansibleBaseMap, map[string]any{
 		"ssh_public_key":          string(pubKeyBytes),
-		"auto_update_reboot_time": autoUpdateRebootTime,
+		"auto_update_reboot_time": e.AutoUpdateRebootTime,
 	}), nil
 }
