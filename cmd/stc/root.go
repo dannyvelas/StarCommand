@@ -12,10 +12,6 @@ func rootCmd(c *config.Config) *cobra.Command {
 		Short: "Scaffold production infrastructure",
 	}
 
-	// get preflight flag
-	var preflight bool
-	rootCmd.PersistentFlags().BoolVar(&preflight, "preflight", false, "Display config diagnostic table instead of executing")
-
 	rootCmd.AddCommand(inventoryCmd(c))
 	rootCmd.AddCommand(ansibleCmd(c))
 	rootCmd.AddCommand(sshCmd(c))
