@@ -31,13 +31,8 @@ func (h ansibleHandler) execute(c playbookConfig, playbook string) (map[string]s
 
 func (h ansibleHandler) generateHostVars(c playbookConfig) error {
 	for _, host := range c.hosts() {
-		hostAsMap, err := host.asMap()
-		if err != nil {
-			return fmt.Errorf("error getting host config as map for %s: %v", host.name(), err)
-		}
-
-		if err := h.writeHostVarsFile(host.name(), hostAsMap); err != nil {
-			return fmt.Errorf("error writing host vars file for %s: %v", host.name(), err)
+		if err := h.writeHostVarsFile(host.Name, host.Map); err != nil {
+			return fmt.Errorf("error writing host vars file for %s: %v", host.Name, err)
 		}
 	}
 
