@@ -5,13 +5,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func ansibleCmd(c *config.Config, preflight bool) *cobra.Command {
+func ansibleCmd(c *config.Config) *cobra.Command {
 	ansibleCmd := &cobra.Command{
 		Use:   "ansible",
 		Short: "Execute ansible commands",
 	}
 
-	ansibleCmd.AddCommand(ansiblePlaybookCmd(c, preflight)...)
+	ansibleCmd.AddCommand(ansiblePlaybookCmd(c)...)
 
 	return ansibleCmd
 }

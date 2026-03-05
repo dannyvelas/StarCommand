@@ -17,27 +17,17 @@ type ansibleSetupHostConfig struct {
 	SMTPPassword string `json:"smtp_password" sensitive:"true" prompt:"SMTP password"`
 }
 
-func newAnsibleSetupHostConfig(c *config.Config) (*ansibleSetupHostConfig, map[string]string) {
+func newAnsibleSetupHostConfig(c *config.Config) *ansibleSetupHostConfig {
 	setupConfig := new(ansibleSetupHostConfig)
-	if len(c.Hosts) == 0 {
-		return setupConfig, map[string]string{".hosts": statusMissing}
-	}
 
-	diagnostics := make(map[string]string)
-	for i, host := range c.Hosts {
-		prefix := fmt.Sprintf(".hosts[%d]", i)
-
-		ansibleBaseConfig, baseDiagnostics := newAnsibleBaseConfig(prefix, host.Name, host.IP, host.SSH.User, host.SSH.Port, host.SSH.PrivateKeyPath)
-		mergedDiagnostics := helpers.MergeMaps(diagnostics, baseDiagnostics)
-
-		setDiagnostic(mergedDiagnostics, prefix+".incus.storage_pool_name", host.Incus.StoragePoolName)
-		setDiagnostic(mergedDiagnostics, prefix+".incus.storage_pool_driver", host.Incus.StoragePoolDriver)
+	for _, host := range c.Hosts {
+		ansibleBaseConfig := newAnsibleBaseConfig(host.Name, host.IP, host.SSH.User, host.SSH.Port, host.SSH.PrivateKeyPath)
 		setupConfig.Hosts = append(setupConfig.Hosts, setupHostEntry{
 			AnsibleBaseConfig: ansibleBaseConfig,
 			Incus:             host.Incus,
 		})
 	}
-	return setupConfig, diagnostics
+	return setupConfig
 }
 
 func (c *ansibleSetupHostConfig) hosts() []hostConfig {

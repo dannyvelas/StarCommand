@@ -8,13 +8,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func inventoryGenerateCmd(c *config.Config, preflight bool) *cobra.Command {
+func inventoryGenerateCmd(c *config.Config) *cobra.Command {
 	var host string
 
 	command := &cobra.Command{
 		Use:   "generate",
 		Short: "Generate the Ansible inventory file for all hosts, or a single host",
-		RunE:  inventoryGenerateCLI(c, preflight, &host),
+		RunE:  inventoryGenerateCLI(c, &host),
 	}
 
 	command.Flags().StringVar(&host, "host", "", "Limit generation to a single host")
@@ -22,11 +22,11 @@ func inventoryGenerateCmd(c *config.Config, preflight bool) *cobra.Command {
 	return command
 }
 
-func inventoryGenerateCLI(c *config.Config, preflight bool, host *string) func(cmd *cobra.Command, args []string) error {
+func inventoryGenerateCLI(c *config.Config, host *string) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		ctx := cmd.Context()
 
-		diagnostics, err := app.InventoryGenerate(ctx, c, host, preflight)
+		diagnostics, err := app.InventoryGenerate(ctx, c, host)
 		if err != nil {
 			return err
 		}

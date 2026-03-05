@@ -5,13 +5,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func terraformCmd(c *config.Config, preflight bool) *cobra.Command {
+func terraformCmd(c *config.Config) *cobra.Command {
 	terraformCmd := &cobra.Command{
 		Use:   "terraform",
 		Short: "Execute terraform commands",
 	}
 
-	terraformCmd.AddCommand(terraformApplyCmd(c, preflight))
+	terraformCmd.AddCommand(terraformApplyCmd(c))
 
 	return terraformCmd
 }

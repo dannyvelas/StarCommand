@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func ansiblePlaybookCmd(c *config.Config, preflight bool) []*cobra.Command {
+func ansiblePlaybookCmd(c *config.Config) []*cobra.Command {
 	playbooks := []string{"bootstrap-server", "setup-host", "setup-vm"}
 	commands := make([]*cobra.Command, 0, len(playbooks))
 
@@ -16,7 +16,7 @@ func ansiblePlaybookCmd(c *config.Config, preflight bool) []*cobra.Command {
 		command := &cobra.Command{
 			Use:   playbook,
 			Short: fmt.Sprintf("Run the %s ansible playbook", playbook),
-			RunE:  ansiblePlaybookCLI(c, playbook, preflight),
+			RunE:  ansiblePlaybookCLI(c, playbook),
 		}
 
 		commands = append(commands, command)
@@ -24,11 +24,11 @@ func ansiblePlaybookCmd(c *config.Config, preflight bool) []*cobra.Command {
 	return commands
 }
 
-func ansiblePlaybookCLI(c *config.Config, playbook string, preflight bool) func(cmd *cobra.Command, args []string) error {
+func ansiblePlaybookCLI(c *config.Config, playbook string) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		ctx := cmd.Context()
 
-		diagnostics, err := app.AnsibleRun(ctx, c, playbook, preflight)
+		diagnostics, err := app.AnsibleRun(ctx, c, playbook)
 		if err != nil {
 			return err
 		}

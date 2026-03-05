@@ -16,10 +16,10 @@ func rootCmd(c *config.Config) *cobra.Command {
 	var preflight bool
 	rootCmd.PersistentFlags().BoolVar(&preflight, "preflight", false, "Display config diagnostic table instead of executing")
 
-	rootCmd.AddCommand(inventoryCmd(c, preflight))
-	rootCmd.AddCommand(ansibleCmd(c, preflight))
-	rootCmd.AddCommand(sshCmd(c, preflight))
-	rootCmd.AddCommand(terraformCmd(c, preflight))
+	rootCmd.AddCommand(inventoryCmd(c))
+	rootCmd.AddCommand(ansibleCmd(c))
+	rootCmd.AddCommand(sshCmd(c))
+	rootCmd.AddCommand(terraformCmd(c))
 
 	return rootCmd
 }

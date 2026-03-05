@@ -14,21 +14,14 @@ type ansibleBaseConfig struct {
 	SSHPrivateKeyPath string
 }
 
-func newAnsibleBaseConfig(prefix, name, ip, sshUser string, sshPort int, sshPrivateKeyPath string) (ansibleBaseConfig, map[string]string) {
-	diagnostics := make(map[string]string)
-	setDiagnostic(diagnostics, prefix+".name", name)
-	setDiagnostic(diagnostics, prefix+".ip", ip)
-	setDiagnostic(diagnostics, prefix+".ssh.user", sshUser)
-	setDiagnostic(diagnostics, prefix+".ssh.port", sshPort)
-	setDiagnostic(diagnostics, prefix+".ssh.private_key_path", sshPrivateKeyPath)
-
+func newAnsibleBaseConfig(name, ip, sshUser string, sshPort int, sshPrivateKeyPath string) ansibleBaseConfig {
 	return ansibleBaseConfig{
 		Name:              name,
 		IP:                ip,
 		SSHUser:           sshUser,
 		SSHPort:           sshPort,
 		SSHPrivateKeyPath: sshPrivateKeyPath,
-	}, diagnostics
+	}
 }
 
 func (c ansibleBaseConfig) asMap() (map[string]any, error) {

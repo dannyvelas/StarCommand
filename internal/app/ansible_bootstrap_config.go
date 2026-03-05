@@ -18,31 +18,24 @@ type ansibleBootstrapConfig struct {
 	AdminPassword string `json:"admin_password" sensitive:"true" prompt:"Admin password"`
 }
 
-func newAnsibleBootstrapConfig(c *config.Config) (*ansibleBootstrapConfig, map[string]string) {
+func newAnsibleBootstrapConfig(c *config.Config) *ansibleBootstrapConfig {
 	bootstrapConfig := new(ansibleBootstrapConfig)
 	if len(c.Hosts) == 0 {
-		return bootstrapConfig, map[string]string{".hosts": statusMissing}
+		return bootstrapConfig
 	}
 
-	diagnostics := make(map[string]string)
-	for i, host := range c.Hosts {
-		prefix := fmt.Sprintf(".hosts[%d]", i)
-
-		ansibleBaseConfig, baseDiagnostics := newAnsibleBaseConfig(prefix, host.Name, host.IP, host.SSH.User, host.SSH.Port, host.SSH.PrivateKeyPath)
-		mergedDiagnostics := helpers.MergeMaps(diagnostics, baseDiagnostics)
-
-		setDiagnostic(mergedDiagnostics, prefix+".ssh.public_key_path", host.SSH.PublicKeyPath)
+	for _, host := range c.Hosts {
 		if host.AutoUpdateRebootTime == "" {
 			host.AutoUpdateRebootTime = "05:00"
 		}
 
 		bootstrapConfig.Hosts = append(bootstrapConfig.Hosts, bootstrapHostEntry{
-			AnsibleBaseConfig:    ansibleBaseConfig,
+			AnsibleBaseConfig:    newAnsibleBaseConfig(host.Name, host.IP, host.SSH.User, host.SSH.Port, host.SSH.PrivateKeyPath),
 			SSHPublicKeyPath:     host.SSH.PublicKeyPath,
 			AutoUpdateRebootTime: host.AutoUpdateRebootTime,
 		})
 	}
-	return bootstrapConfig, diagnostics
+	return bootstrapConfig
 }
 
 func (c *ansibleBootstrapConfig) hosts() []hostConfig {
