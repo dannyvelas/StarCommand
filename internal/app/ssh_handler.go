@@ -23,26 +23,23 @@ func newSSHHandler(homeDir string) sshHandler {
 	}
 }
 
-func (h sshHandler) execute(sshConfig *sshConfig, hostAlias string) (map[string]string, error) {
-	diagnostics := make(map[string]string)
-
+func (h sshHandler) execute(sshConfig *sshConfig, hostAlias string) error {
 	sshFilePath := filepath.Join(h.homeDir, ".ssh", "config")
 
 	alreadyExists, err := h.contentAlreadyExists(sshFilePath, hostAlias)
 	if err != nil {
-		return diagnostics, fmt.Errorf("error checking if %s already exists in %s file: %v", hostAlias, sshFilePath, err)
+		return fmt.Errorf("error checking if %s already exists in %s file: %v", hostAlias, sshFilePath, err)
 	}
 
 	if alreadyExists {
-		diagnostics["Write to "+sshFilePath] = fmt.Sprintf("skipping: %s host already present", hostAlias)
-		return diagnostics, nil
+		return fmt.Errorf("skipping write to %s, host already present", sshFilePath)
 	}
 
 	if err := h.writeFile(sshConfig, sshFilePath); err != nil {
-		return diagnostics, fmt.Errorf("error writing to %s file: %v", sshFilePath, err)
+		return fmt.Errorf("error writing to %s file: %v", sshFilePath, err)
 	}
 
-	return diagnostics, nil
+	return nil
 }
 
 func (h sshHandler) contentAlreadyExists(sshFilePath, hostAlias string) (bool, error) {

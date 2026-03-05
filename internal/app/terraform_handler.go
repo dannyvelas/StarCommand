@@ -14,6 +14,6 @@ func newTerraformHandler(terraformFilePath string) terraformHandler {
 	}
 }
 
-func (h terraformHandler) execute(ctx context.Context, config *terraformConfig) (map[string]string, error) {
-	return nil, executeTerraformFlow(ctx, config, h.terraformFilePath, config.TerraformVersionConstraint)
+func (h terraformHandler) execute(ctx context.Context, config *terraformConfig) error {
+	return executeTerraformFlow(ctx, config, h.terraformFilePath, config.TerraformVersionConstraint)
 }

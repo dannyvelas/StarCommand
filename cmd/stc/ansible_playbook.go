@@ -27,15 +27,6 @@ func ansiblePlaybookCmd(c *config.Config) []*cobra.Command {
 func ansiblePlaybookCLI(c *config.Config, playbook string) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		ctx := cmd.Context()
-
-		diagnostics, err := app.AnsibleRun(ctx, c, playbook)
-		if err != nil {
-			return err
-		}
-
-		if len(diagnostics) > 0 {
-			fmt.Printf("%s\n", app.DiagnosticsToTable(diagnostics))
-		}
-		return nil
+		return app.AnsibleRun(ctx, c, playbook)
 	}
 }

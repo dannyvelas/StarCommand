@@ -15,18 +15,16 @@ func newAnsibleHandler() ansibleHandler {
 	return ansibleHandler{}
 }
 
-func (h ansibleHandler) execute(c playbookConfig, playbook string) (map[string]string, error) {
-	diagnostics := make(map[string]string)
-
+func (h ansibleHandler) execute(c playbookConfig, playbook string) error {
 	if err := h.generateHostVars(c); err != nil {
-		return diagnostics, fmt.Errorf("error generating host vars: %v", err)
+		return fmt.Errorf("error generating host vars: %v", err)
 	}
 
 	if err := h.runAnsiblePlaybook(playbook); err != nil {
-		return diagnostics, fmt.Errorf("error running ansible playbook: %v", err)
+		return fmt.Errorf("error running ansible playbook: %v", err)
 	}
 
-	return diagnostics, nil
+	return nil
 }
 
 func (h ansibleHandler) generateHostVars(c playbookConfig) error {
