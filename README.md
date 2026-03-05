@@ -181,8 +181,6 @@ Low-level commands:
   ansible setup-vm                       Run the setup-vm playbook against all VMs in the inventory
   ssh add <host>                         Add a host to ~/.ssh/config
   terraform apply                        Apply the Terraform project
-
-All commands above accept --preflight to display a config diagnostic table instead of executing.
 ```
 
 `stc` wraps these low-level commands because they require config resolution — secret fetching, inventory generation, and var merging — that would otherwise need to be done manually.
