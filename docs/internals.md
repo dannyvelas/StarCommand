@@ -2,7 +2,7 @@
 
 ## How `stc setup` works
 
-`stc setup` provisions one or more hosts end-to-end. It runs the same sequence of steps for each host, detecting existing cluster state along the way so that subsequent hosts join rather than reinitialize.
+`stc setup` applies desired state to all hosts in `stc.yml`. It is safe to run at any time — Ansible's idempotency means already-provisioned hosts are verified quickly and skipped where no changes are needed. New hosts are fully provisioned. Pass `--host <host>` to limit execution to a single host.
 
 ### 1. Generate Ansible inventory
 > `stc inventory generate`
@@ -12,12 +12,12 @@ An Ansible inventory file is generated from `stc.yml`. It includes all configure
 ### 2. Bootstrap hosts
 > `stc ansible bootstrap-server` · [bootstrap-server.yml](../ansible/playbooks/bootstrap-server.yml)
 
-Runs against all hosts. Hardens the OS: configures UFW, enforces SSH key-only authentication, and enables unattended security updates.
+Runs concurrently against all hosts. Hardens the OS: configures UFW, enforces SSH key-only authentication, and enables unattended security updates.
 
 ### 3. Set up hosts
 > `stc ansible setup-host` · [setup-host.yml](../ansible/playbooks/setup-host.yml)
 
-Runs against all hosts. Installs and configures host-level services:
+Runs concurrently against all hosts. Installs and configures host-level services:
 
 - **Incus** — installs the hypervisor, creates a default storage pool and NAT bridge network (`incusbr0`), and opens the Incus API port in UFW
 - **WireGuard** — installs and configures a WireGuard VPN server (on the designated VPN host only)
@@ -81,29 +81,37 @@ Incus clustering is set up before VMs are created so that Terraform provisions V
   incus admin init                # run on the new host, providing the join token when prompted
   ```
 
-### 8. Create VMs with Terraform
+---
+
+Once all hosts have been registered, VMs are provisioned and configured concurrently across all hosts:
+
+### 8. Create all VMs with Terraform
 > `stc terraform apply` · [terraform/main.tf](../terraform/main.tf)
 
-Terraform provisions the VMs for this host via Incus. Each VM is on a private NAT subnet and is not directly reachable from the physical network.
+Terraform provisions VMs for all hosts in a single run via Incus. Each VM is on a private NAT subnet and is not directly reachable from the physical network.
 
-### 9. Bootstrap VMs
-> `stc ansible bootstrap-server --vms` · [bootstrap-server.yml](../ansible/playbooks/bootstrap-server.yml)
+### 9. Bootstrap all VMs
+> `stc ansible bootstrap-server --host <vm1> --host <vm2> ...` · [bootstrap-server.yml](../ansible/playbooks/bootstrap-server.yml)
 
-Same OS hardening as step 2, now applied to the newly created VMs.
+Same OS hardening as step 2, now applied concurrently to all newly created VMs across all hosts. `stc setup` passes all VM names automatically.
 
-### 10. Set up VMs
+### 10. Set up all VMs
 > `stc ansible setup-vm` · [setup-vm.yml](../ansible/playbooks/setup-vm.yml)
 
-Runs against all VMs for this host. Installs VM-level services: Docker and storage mount points.
+Runs concurrently against all VMs. Installs VM-level services: Docker and storage mount points.
 
-### 11. Register VMs in `~/.ssh/config`
+---
+
+The following steps run once per VM, in order:
+
+### 11. Register VM in `~/.ssh/config`
 > `stc ssh add <vm>`
 
-Each VM is added to `~/.ssh/config` with a `ProxyJump` directive pointing to its parent host, making it reachable by name from your workstation.
+The VM is added to `~/.ssh/config` with a `ProxyJump` directive pointing to its parent host, making it reachable by name from your workstation.
 
 ### 12. Join k3s cluster (agent)
 
-Each VM joins the k3s cluster as a worker node, making it available for workload scheduling.
+The VM joins the k3s cluster as a worker node, making it available for workload scheduling.
 
 ```
 curl -sfL https://get.k3s.io | K3S_URL=https://<first-host-ip>:6443 \
@@ -112,7 +120,7 @@ curl -sfL https://get.k3s.io | K3S_URL=https://<first-host-ip>:6443 \
 
 ---
 
-Once all hosts are processed:
+Once all VMs are set up:
 
 ### 13. Deploy Traefik
 

@@ -116,16 +116,16 @@ export STC_ADMIN_PASSWORD=...
 
 ## Usage
 
-### Bootstrap infrastructure
+### Provision hosts
 
-Provision each server — this hardens the OS, installs WireGuard (on the designated VPN host), installs a hypervisor (Incus), configures OVN overlay networking, joins k3s, and deploys Traefik and CoreDNS on the cluster:
+Apply the desired state to all hosts in `stc.yml`. Ansible's idempotency means this is safe to run at any time — already-provisioned hosts are verified quickly, new hosts are fully provisioned:
 
 ```bash
-stc setup                     # setup all hosts specified in your config
-stc setup --host <your-host>  # setup only one host. If a cluster already exists, join this host to that cluster. Otherwise, initialize a new cluster
+stc setup                     # apply desired state to all hosts
+stc setup --host <your-host>  # limit to one host (useful for testing or scoping a single machine)
 ```
 
-After `stc setup` completes, update your network's DHCP configuration to distribute the cluster as the DNS server. This is a one-time manual step — after this, every host on your network resolves service subdomains automatically.
+After the first `stc setup` completes, update your network's DHCP configuration to distribute the cluster as the DNS server. This is a one-time manual step — after this, every host on your network resolves service subdomains automatically.
 
 For a deeper look at how `stc setup` works internally, see [docs/internals.md](docs/internals.md).
 
@@ -167,20 +167,19 @@ stc teardown # destroy all VMs via Terraform
 stc <command> [options]
 
 Commands:
-  setup [--host <host>]                  Set up one or more physical hosts (hardening, hypervisor, VPN, reverse proxy, VM, OVN, k3s)
+  setup [--host <host>]                  Apply desired state to all hosts. If --host is given, limit to that host only
   wg add <name>                          Add a WireGuard client (registers peer server-side, generates client config)
   status                                 Show cluster status (hosts, services, VPN, k3s)
   teardown                               Tear down all VMs
   version                                Print version
 
 Low-level commands:
-  inventory generate [--host <host>]     Generate the Ansible inventory file for all hosts, or a single host
-  ansible bootstrap-server               Run the bootstrap-server playbook against all hosts in the inventory
-  ansible bootstrap-server --vms         Run the bootstrap-server playbook against all VMs in the inventory
-  ansible setup-host                     Run the setup-host playbook against all hosts in the inventory
-  ansible setup-vm                       Run the setup-vm playbook against all VMs in the inventory
-  ssh add <host>                         Add a host to ~/.ssh/config
-  terraform apply                        Apply the Terraform project
+  inventory generate                       Generate the Ansible inventory file for all hosts
+  ansible bootstrap-server [--host <h>]... Run the bootstrap-server playbook against all hosts/VMs, or limit to the ones given
+  ansible setup-host [--host <h>]...       Run the setup-host playbook against all hosts, or limit to the ones given
+  ansible setup-vm [--host <h>]...         Run the setup-vm playbook against all VMs, or limit to the ones given
+  ssh add <host>                           Add a host to ~/.ssh/config
+  terraform apply                          Apply the Terraform project
 ```
 
 `stc` wraps these low-level commands because they require config resolution — secret fetching, inventory generation, and var merging — that would otherwise need to be done manually.
