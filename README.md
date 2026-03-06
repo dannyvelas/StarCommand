@@ -121,8 +121,9 @@ export STC_ADMIN_PASSWORD=...
 Apply the desired state to all hosts in `stc.yml`. Ansible's idempotency means this is safe to run at any time — already-provisioned hosts are verified quickly, new hosts are fully provisioned:
 
 ```bash
-stc setup                     # apply desired state to all hosts
-stc setup --host <your-host>  # limit to one host (useful for testing or scoping a single machine)
+stc setup                                        # apply desired state to all hosts
+stc setup --host <host>                          # limit to one host
+stc setup --host <host1> --host <host2>          # limit to a subset of hosts
 ```
 
 After the first `stc setup` completes, update your network's DHCP configuration to distribute the cluster as the DNS server. This is a one-time manual step — after this, every host on your network resolves service subdomains automatically.
