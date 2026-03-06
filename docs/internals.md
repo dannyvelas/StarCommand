@@ -2,7 +2,7 @@
 
 ## How `stc setup` works
 
-`stc setup` applies desired state to all hosts in `stc.yml`. It is safe to run at any time — Ansible's idempotency means already-provisioned hosts are verified quickly and skipped where no changes are needed. New hosts are fully provisioned. Pass `--host <host>` to limit execution to a single host.
+`stc setup` applies desired state to all hosts in `stc.yml`. It is safe to run at any time — Ansible's idempotency means already-provisioned hosts are verified quickly and skipped where no changes are needed. New hosts are fully provisioned. Pass one or more `--host` flags to limit execution to a specific subset.
 
 ### 1. Generate Ansible inventory
 > `stc inventory generate`
@@ -96,9 +96,9 @@ Terraform provisions VMs for all hosts in a single run via Incus. Each VM is on 
 Same OS hardening as step 2, now applied concurrently to all newly created VMs across all hosts. `stc setup` passes all VM names automatically.
 
 ### 10. Set up all VMs
-> `stc ansible setup-vm` · [setup-vm.yml](../ansible/playbooks/setup-vm.yml)
+> `stc ansible setup-vm --host <vm1> --host <vm2> ...` · [setup-vm.yml](../ansible/playbooks/setup-vm.yml)
 
-Runs concurrently against all VMs. Installs VM-level services: Docker and storage mount points.
+Installs VM-level services concurrently across all VMs: Docker and storage mount points. `stc setup` passes all VM names automatically.
 
 ---
 

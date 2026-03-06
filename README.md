@@ -167,7 +167,7 @@ stc teardown # destroy all VMs via Terraform
 stc <command> [options]
 
 Commands:
-  setup [--host <host>]                  Apply desired state to all hosts. If --host is given, limit to that host only
+  setup [--host <h>]...                  Apply desired state to all hosts, or limit to the ones given
   wg add <name>                          Add a WireGuard client (registers peer server-side, generates client config)
   status                                 Show cluster status (hosts, services, VPN, k3s)
   teardown                               Tear down all VMs
@@ -214,7 +214,7 @@ If you've modified playbooks or Terraform files, standard git conflict resolutio
 When you add or migrate servers:
 
 1. Update `stc.yml` with the new host IPs and storage paths
-2. Run `stc setup --host <new-host>` for each new host
+2. Run `stc setup` — already-provisioned hosts are skipped, new ones are fully provisioned
 3. k3s automatically joins the new node to the cluster
 4. OVN extends the overlay network to the new host
 5. Deploy services with `kubectl` — no changes to manifests needed, k3s schedules across the cluster
