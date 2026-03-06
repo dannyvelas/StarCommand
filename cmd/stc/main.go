@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/dannyvelas/starcommand/config"
+	"github.com/dannyvelas/starcommand/internal/config"
 	"github.com/joho/godotenv"
 )
 

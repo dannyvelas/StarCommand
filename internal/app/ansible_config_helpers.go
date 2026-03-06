@@ -3,7 +3,7 @@ package app
 import (
 	"fmt"
 
-	"github.com/dannyvelas/starcommand/config"
+	"github.com/dannyvelas/starcommand/internal/config"
 )
 
 type playbookConfig interface {

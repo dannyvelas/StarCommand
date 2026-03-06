@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/dannyvelas/starcommand/config"
 	"github.com/dannyvelas/starcommand/internal/app"
+	"github.com/dannyvelas/starcommand/internal/config"
 	"github.com/spf13/cobra"
 )
 

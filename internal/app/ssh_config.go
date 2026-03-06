@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/dannyvelas/starcommand/config"
+	"github.com/dannyvelas/starcommand/internal/config"
 )
 
 type sshConfig struct {

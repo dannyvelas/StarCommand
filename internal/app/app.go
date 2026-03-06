@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dannyvelas/starcommand/config"
+	"github.com/dannyvelas/starcommand/internal/config"
 )
 
 func Setup(ctx context.Context, c *config.Config, hostAliases []string) error {
