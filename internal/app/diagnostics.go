@@ -16,24 +16,6 @@ type Diagnostic struct {
 
 type Diagnostics []Diagnostic
 
-func (d *Diagnostics) hasErrors() bool {
-	for _, d := range *d {
-		if d.Status != statusLoaded {
-			return true
-		}
-	}
-	return false
-}
-
-// setDiagnostic records whether val is the zero value for its type.
-func (d *Diagnostics) setDiagnostic(field string, val any) {
-	if reflect.ValueOf(val).IsZero() {
-		*d = append(*d, Diagnostic{Field: field, Status: errNotFound.Error()})
-	} else {
-		*d = append(*d, Diagnostic{Field: field, Status: statusLoaded})
-	}
-}
-
 // DiagnosticsToTable takes a diagnostics slice and returns it as a pretty-printed formatted table
 // This is useful as a user-friendly report of missing and found configuration values
 func (d *Diagnostics) ToTable() string {
@@ -96,8 +78,34 @@ func (d *Diagnostics) ToTable() string {
 	return buf.String()
 }
 
-func (d *Diagnostics) AppendWithPrefix(src []Diagnostic, prefix string) {
+func (d *Diagnostics) hasErrors() bool {
+	for _, d := range *d {
+		if d.Status != statusLoaded {
+			return true
+		}
+	}
+	return false
+}
+
+// setDiagnostic records whether val is the zero value for its type.
+func (d *Diagnostics) set(field string, val any) {
+	if reflect.ValueOf(val).IsZero() {
+		*d = append(*d, Diagnostic{Field: field, Status: errNotFound.Error()})
+	} else {
+		*d = append(*d, Diagnostic{Field: field, Status: statusLoaded})
+	}
+}
+
+func (d *Diagnostics) appendWithPrefix(prefix string, src ...Diagnostic) {
 	for _, v := range src {
 		*d = append(*d, Diagnostic{Field: prefix + v.Field, Status: v.Status})
 	}
+}
+
+func (d *Diagnostics) append(src ...Diagnostic) {
+	*d = append(*d, Diagnostics(src)...)
+}
+
+func (d *Diagnostics) Len() int {
+	return len(*d)
 }

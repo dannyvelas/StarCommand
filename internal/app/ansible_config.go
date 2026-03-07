@@ -10,7 +10,7 @@ type ansibleConfig interface {
 	hosts() []ansibleHostConfig
 }
 
-func getAnsibleConfig(playbook string, hosts []models.Host) (ansibleConfig, map[string]string, error) {
+func getAnsibleConfig(playbook string, hosts []models.Host) (ansibleConfig, *Diagnostics, error) {
 	switch playbook {
 	case "bootstrap-host":
 		c, d := newAnsibleBootstrapConfig(hosts)

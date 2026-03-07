@@ -28,7 +28,7 @@ func InventoryGenerate(ctx context.Context, c *models.Config, preflight bool) er
 	return nil
 }
 
-func AnsibleRun(ctx context.Context, c *models.Config, playbook string, hosts []string, preflight bool) (map[string]string, error) {
+func AnsibleRun(ctx context.Context, c *models.Config, playbook string, hosts []string, preflight bool) (*Diagnostics, error) {
 	resolvedHostNames := resolveHostNames(c, hosts)
 	targets, err := resolveHosts(c, resolvedHostNames...)
 	if err != nil {
@@ -44,7 +44,7 @@ func AnsibleRun(ctx context.Context, c *models.Config, playbook string, hosts []
 		return diagnostics, nil
 	}
 
-	if hasErrors(diagnostics) {
+	if diagnostics.hasErrors() {
 		return diagnostics, fmt.Errorf("config validation failed")
 	}
 

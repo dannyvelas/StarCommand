@@ -29,8 +29,8 @@ func ansiblePlaybookCmd(c *models.Config, preflight *bool) []*cobra.Command {
 func ansiblePlaybookCLI(c *models.Config, playbook string, hosts *[]string, preflight *bool) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		diagnostics, err := app.AnsibleRun(cmd.Context(), c, playbook, *hosts, *preflight)
-		if len(diagnostics) > 0 {
-			fmt.Printf("%s\n", app.DiagnosticsToTable(diagnostics))
+		if diagnostics.Len() > 0 {
+			fmt.Printf("%s\n", diagnostics.ToTable())
 		}
 		return err
 	}

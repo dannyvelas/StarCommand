@@ -15,20 +15,20 @@ type ansibleHostConfig struct {
 	Map           map[string]any
 }
 
-func newAnsibleBaseConfig(name, ip, sshUser string, sshPort int, sshPrivateKeyPath string) (ansibleHostConfig, map[string]string) {
-	diagnostics := make(map[string]string)
+func newAnsibleBaseConfig(name, ip, sshUser string, sshPort int, sshPrivateKeyPath string) (ansibleHostConfig, *Diagnostics) {
+	diagnostics := new(Diagnostics)
 
 	// query data
 	expandedPrivateKey, err := helpers.ExpandPath(sshPrivateKeyPath)
 	if err != nil {
-		diagnostics[".ssh.private_key_path"] = fmt.Sprintf("error expanding path: %v", err)
+		diagnostics.append(Diagnostic{Field: ".ssh.private_key_path", Status: fmt.Sprintf("error expanding path: %v", err)})
 	}
 
 	// set diagnostics
-	setDiagnostic(diagnostics, ".name", name)
-	setDiagnostic(diagnostics, ".ip", ip)
-	setDiagnostic(diagnostics, ".ssh.user", sshUser)
-	setDiagnostic(diagnostics, ".ssh.port", sshPort)
+	diagnostics.set(".name", name)
+	diagnostics.set(".ip", ip)
+	diagnostics.set(".ssh.user", sshUser)
+	diagnostics.set(".ssh.port", sshPort)
 
 	return ansibleHostConfig{
 		Name:          name,

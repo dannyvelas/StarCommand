@@ -18,27 +18,20 @@ type ansibleBootstrapConfig struct {
 	AdminPassword string `json:"admin_password" sensitive:"true" prompt:"Admin password"`
 }
 
-func autoUpdateRebootTime(t string) string {
-	if t == "" {
-		return "05:00"
-	}
-	return t
-}
-
-func newAnsibleBootstrapConfig(hosts []models.Host) (*ansibleBootstrapConfig, map[string]string) {
+func newAnsibleBootstrapConfig(hosts []models.Host) (*ansibleBootstrapConfig, *Diagnostics) {
 	bootstrapConfig := &ansibleBootstrapConfig{}
-	diagnostics := make(map[string]string)
+	diagnostics := new(Diagnostics)
 
 	for i, host := range hosts {
 		prefix := fmt.Sprintf(".hosts[%d]", i)
 
 		// query data
 		baseConfig, baseDiagnostics := newAnsibleBaseConfig(host.Name, host.IP, host.SSH.User, host.SSH.Port, host.SSH.PrivateKeyPath)
-		mapsCopyWithPrefix(diagnostics, baseDiagnostics, prefix)
+		diagnostics.appendWithPrefix(prefix, *baseDiagnostics...)
 
 		pubKeyContent, err := readPublicKey(host.SSH.PublicKeyPath)
 		if err != nil {
-			diagnostics[prefix+".ssh.public_key_path"] = fmt.Sprintf("error reading public key: %v", err)
+			diagnostics.append(Diagnostic{Field: prefix + ".ssh.public_key_path", Status: err.Error()})
 		}
 
 		// set fields
@@ -49,7 +42,7 @@ func newAnsibleBootstrapConfig(hosts []models.Host) (*ansibleBootstrapConfig, ma
 
 		bootstrapConfig.Hosts = append(bootstrapConfig.Hosts, baseConfig)
 	}
-	return bootstrapConfig, nil
+	return bootstrapConfig, diagnostics
 }
 
 func (c *ansibleBootstrapConfig) hosts() []ansibleHostConfig {
@@ -72,4 +65,11 @@ func readPublicKey(path string) (string, error) {
 	}
 
 	return string(pubKeyBytes), nil
+}
+
+func autoUpdateRebootTime(t string) string {
+	if t == "" {
+		return "05:00"
+	}
+	return t
 }

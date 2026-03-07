@@ -16,20 +16,20 @@ type ansibleSetupHostConfig struct {
 	SMTPPassword string `json:"smtp_password" sensitive:"true" prompt:"SMTP password"`
 }
 
-func newAnsibleSetupHostConfig(hosts []models.Host) (*ansibleSetupHostConfig, map[string]string) {
+func newAnsibleSetupHostConfig(hosts []models.Host) (*ansibleSetupHostConfig, *Diagnostics) {
 	setupConfig := new(ansibleSetupHostConfig)
-	diagnostics := make(map[string]string)
+	diagnostics := new(Diagnostics)
 
 	for i, host := range hosts {
 		prefix := fmt.Sprintf(".hosts[%d]", i)
 
 		// query data
 		baseConfig, baseDiagnostics := newAnsibleBaseConfig(host.Name, host.IP, host.SSH.User, host.SSH.Port, host.SSH.PrivateKeyPath)
-		mapsCopyWithPrefix(diagnostics, baseDiagnostics, prefix)
+		diagnostics.appendWithPrefix(prefix, *baseDiagnostics...)
 
 		// set diagnostics
-		setDiagnostic(diagnostics, prefix+".incus.storage_pool_name", host.Incus.StoragePoolName)
-		setDiagnostic(diagnostics, prefix+".incus.storage_driver", host.Incus.StoragePoolDriver)
+		diagnostics.set(prefix+".incus.storage_pool_name", host.Incus.StoragePoolName)
+		diagnostics.set(prefix+".incus.storage_driver", host.Incus.StoragePoolDriver)
 
 		baseConfig.Map = map[string]any{
 			"incus_storage_pool_name": host.Incus.StoragePoolName,
