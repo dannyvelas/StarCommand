@@ -12,7 +12,7 @@ type sshConfig struct {
 	Port          int    `json:"ssh_port"`
 }
 
-func newSSHConfig(c *models.Config, host models.Host) (*sshConfig, error) {
+func newSSHConfig(host models.Host) (*sshConfig, error) {
 	return &sshConfig{
 		Alias:         host.Name,
 		HostName:      host.IP,

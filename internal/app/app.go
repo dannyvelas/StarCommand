@@ -58,7 +58,7 @@ func SSHAdd(ctx context.Context, c *models.Config, host string) error {
 		return fmt.Errorf("error resolving hosts: %v", err)
 	}
 
-	sshConfig, err := newSSHConfig(c, targets[0])
+	sshConfig, err := newSSHConfig(targets[0])
 	if err != nil {
 		return fmt.Errorf("error creating ssh config: %v", err)
 	}
