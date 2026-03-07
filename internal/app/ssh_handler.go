@@ -11,6 +11,13 @@ import (
 	"github.com/spf13/afero"
 )
 
+var sshTmpl = template.Must(template.New("sshConfig").Parse(`Host {{ .Alias }}
+  HostName {{ .HostName }}
+  User {{ .User }}
+  IdentityFile {{ .PublicKeyPath }}
+  Port {{ .Port }}
+`))
+
 type sshHandler struct {
 	fs      afero.Fs
 	homeDir string
@@ -86,21 +93,8 @@ func (h sshHandler) writeFile(config *sshConfig, sshFilePath string) error {
 }
 
 func (h sshHandler) buildHostBlock(config *sshConfig) ([]byte, error) {
-	const hostTmpl = `
-Host {{ .Alias }}
-  HostName {{ .HostName }}
-  User {{ .User }}
-  IdentityFile {{ .PublicKeyPath }}
-  Port {{ .Port }}
-`
-
-	tmpl, err := template.New("sshConfig").Parse(hostTmpl)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing ssh config template: %v", err)
-	}
-
 	var buf bytes.Buffer
-	if err := tmpl.Execute(&buf, config); err != nil {
+	if err := sshTmpl.Execute(&buf, config); err != nil {
 		return nil, fmt.Errorf("error executing ssh config template: %v", err)
 	}
 
