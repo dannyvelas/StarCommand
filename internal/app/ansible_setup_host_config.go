@@ -37,13 +37,11 @@ func newAnsibleSetupHostConfig(hosts []models.Host) (*ansibleSetupHostConfig, er
 
 func (c *ansibleSetupHostConfig) validate() map[string]string {
 	diagnostics := make(map[string]string)
+	setBaseHostDiagnostics(diagnostics, c.Hosts)
 	for i, host := range c.Hosts {
-		pfx := fmt.Sprintf(".hosts[%d]", i)
-		setDiagnostic(diagnostics, pfx+".name", host.Name)
-		setDiagnostic(diagnostics, pfx+".ip", host.IP)
-		setDiagnostic(diagnostics, pfx+".ssh.user", host.SSHUser)
-		setDiagnostic(diagnostics, pfx+".ssh.port", host.SSHPort)
-		setDiagnostic(diagnostics, pfx+".ssh.private_key_path", host.SSHPrivateKey)
+		prefix := fmt.Sprintf(".hosts[%d]", i)
+		setDiagnostic(diagnostics, prefix+".incus.storage_pool_name", host.Map["incus_storage_pool_name"])
+		setDiagnostic(diagnostics, prefix+".incus.storage_driver", host.Map["incus_storage_driver"])
 	}
 	return diagnostics
 }

@@ -53,13 +53,10 @@ func newAnsibleBootstrapConfig(hosts []models.Host) (*ansibleBootstrapConfig, er
 
 func (c *ansibleBootstrapConfig) validate() map[string]string {
 	diagnostics := make(map[string]string)
+	setBaseHostDiagnostics(diagnostics, c.Hosts)
 	for i, host := range c.Hosts {
-		pfx := fmt.Sprintf(".hosts[%d]", i)
-		setDiagnostic(diagnostics, pfx+".name", host.Name)
-		setDiagnostic(diagnostics, pfx+".ip", host.IP)
-		setDiagnostic(diagnostics, pfx+".ssh.user", host.SSHUser)
-		setDiagnostic(diagnostics, pfx+".ssh.port", host.SSHPort)
-		setDiagnostic(diagnostics, pfx+".ssh.private_key_path", host.SSHPrivateKey)
+		prefix := fmt.Sprintf(".hosts[%d]", i)
+		setDiagnostic(diagnostics, prefix+".ssh.public_key_path", host.Map["ssh_public_key"])
 	}
 	return diagnostics
 }

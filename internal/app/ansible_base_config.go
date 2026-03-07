@@ -20,3 +20,14 @@ func newAnsibleBaseConfig(name, ip, sshUser string, sshPort int, sshPrivateKeyPa
 		SSHPrivateKey: expandedPrivateKey,
 	}, nil
 }
+
+func setBaseHostDiagnostics(diagnostics map[string]string, hosts []ansibleHostConfig) {
+	for i, host := range hosts {
+		prefix := fmt.Sprintf(".hosts[%d]", i)
+		setDiagnostic(diagnostics, prefix+".name", host.Name)
+		setDiagnostic(diagnostics, prefix+".ip", host.IP)
+		setDiagnostic(diagnostics, prefix+".ssh.user", host.SSHUser)
+		setDiagnostic(diagnostics, prefix+".ssh.port", host.SSHPort)
+		setDiagnostic(diagnostics, prefix+".ssh.private_key_path", host.SSHPrivateKey)
+	}
+}
