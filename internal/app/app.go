@@ -13,6 +13,18 @@ func Setup(ctx context.Context, c *models.Config, hosts []string) error {
 }
 
 func InventoryGenerate(ctx context.Context, c *models.Config) error {
+	resolvedHostNames := resolveHostNames(c, nil)
+	targets, err := resolveHosts(c, resolvedHostNames...)
+	if err != nil {
+		return fmt.Errorf("error resolving hosts: %v", err)
+	}
+
+	inventoryConfig := newInventoryConfig(targets)
+	inventoryHandler := newInventoryHandler()
+	if err := inventoryHandler.execute(inventoryConfig); err != nil {
+		return fmt.Errorf("error executing command: %v", err)
+	}
+
 	return nil
 }
 
