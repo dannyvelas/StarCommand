@@ -7,14 +7,18 @@ import (
 	"text/template"
 )
 
-const (
-	statusMissing = "missing"
-	statusLoaded  = "loaded"
-)
+const statusLoaded = "loaded"
 
-func hasErrors(m map[string]string) bool {
-	for _, v := range m {
-		if v != statusLoaded {
+type Diagnostic struct {
+	Field  string
+	Status string
+}
+
+type Diagnostics []Diagnostic
+
+func (d *Diagnostics) hasErrors() bool {
+	for _, d := range *d {
+		if d.Status != statusLoaded {
 			return true
 		}
 	}
@@ -22,34 +26,34 @@ func hasErrors(m map[string]string) bool {
 }
 
 // setDiagnostic records whether val is the zero value for its type.
-func setDiagnostic(diagnostics map[string]string, key string, val any) {
+func (d *Diagnostics) setDiagnostic(field string, val any) {
 	if reflect.ValueOf(val).IsZero() {
-		diagnostics[key] = statusMissing
+		*d = append(*d, Diagnostic{Field: field, Status: errNotFound.Error()})
 	} else {
-		diagnostics[key] = statusLoaded
+		*d = append(*d, Diagnostic{Field: field, Status: statusLoaded})
 	}
 }
 
-// DiagnosticsToTable takes a diagnostic map and returns it as a pretty-printed formatted table
+// DiagnosticsToTable takes a diagnostics slice and returns it as a pretty-printed formatted table
 // This is useful as a user-friendly report of missing and found configuration values
-func DiagnosticsToTable(data map[string]string) string {
+func (d *Diagnostics) ToTable() string {
 	headerCol1 := "SUBJECT"
 	headerCol2 := "STATUS"
 
 	maxKeyLen := len(headerCol1)
 	maxValueLen := len(headerCol2)
 
-	for k, v := range data {
-		if len(k) > maxKeyLen {
-			maxKeyLen = len(k)
+	for _, d := range *d {
+		if len(d.Field) > maxKeyLen {
+			maxKeyLen = len(d.Field)
 		}
-		if len(v) > maxValueLen {
-			maxValueLen = len(v)
+		if len(d.Status) > maxValueLen {
+			maxValueLen = len(d.Status)
 		}
 	}
 
 	type tableContext struct {
-		Data       map[string]string
+		Data       []Diagnostic
 		HeaderCol1 string
 		HeaderCol2 string
 		KeyWidth   int
@@ -62,7 +66,7 @@ func DiagnosticsToTable(data map[string]string) string {
 	line := strings.Repeat("-", totalLineLength)
 
 	ctx := tableContext{
-		Data:       data,
+		Data:       *d,
 		HeaderCol1: headerCol1,
 		HeaderCol2: headerCol2,
 		KeyWidth:   maxKeyLen,
@@ -73,8 +77,8 @@ func DiagnosticsToTable(data map[string]string) string {
 	const tableTmpl = `{{ .Line }}
 | {{ printf "%-*s" .KeyWidth .HeaderCol1 }} | {{ printf "%-*s" .ValueWidth .HeaderCol2 }} |
 {{ .Line }}
-{{- range $key, $val := .Data }}
-| {{ printf "%-*s" $.KeyWidth $key }} | {{ printf "%-*s" $.ValueWidth $val }} |
+{{- range .Data }}
+| {{ printf "%-*s" $.KeyWidth .Field }} | {{ printf "%-*s" $.ValueWidth .Status }} |
 {{- end }}
 {{ .Line }}
 `
@@ -92,8 +96,8 @@ func DiagnosticsToTable(data map[string]string) string {
 	return buf.String()
 }
 
-func mapsCopyWithPrefix(dest, src map[string]string, prefix string) {
-	for k, v := range src {
-		dest[prefix+k] = v
+func (d *Diagnostics) AppendWithPrefix(src []Diagnostic, prefix string) {
+	for _, v := range src {
+		*d = append(*d, Diagnostic{Field: prefix + v.Field, Status: v.Status})
 	}
 }
