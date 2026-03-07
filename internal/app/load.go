@@ -12,6 +12,15 @@ const (
 	statusLoaded  = "loaded"
 )
 
+func hasErrors(m map[string]string) bool {
+	for _, v := range m {
+		if v != statusLoaded {
+			return true
+		}
+	}
+	return false
+}
+
 // setDiagnostic records whether val is the zero value for its type.
 func setDiagnostic(diagnostics map[string]string, key string, val any) {
 	if reflect.ValueOf(val).IsZero() {
@@ -81,4 +90,10 @@ func DiagnosticsToTable(data map[string]string) string {
 	}
 
 	return buf.String()
+}
+
+func mapsCopyWithPrefix(dest, src map[string]string, prefix string) {
+	for k, v := range src {
+		dest[prefix+k] = v
+	}
 }

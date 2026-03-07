@@ -25,20 +25,23 @@ func autoUpdateRebootTime(t string) string {
 	return t
 }
 
-func newAnsibleBootstrapConfig(hosts []models.Host) (*ansibleBootstrapConfig, error) {
-	bootstrapConfig := new(ansibleBootstrapConfig)
+func newAnsibleBootstrapConfig(hosts []models.Host) (*ansibleBootstrapConfig, map[string]string) {
+	bootstrapConfig := &ansibleBootstrapConfig{}
+	diagnostics := make(map[string]string)
 
-	for _, host := range hosts {
-		baseConfig, err := newAnsibleBaseConfig(host.Name, host.IP, host.SSH.User, host.SSH.Port, host.SSH.PrivateKeyPath)
-		if err != nil {
-			return nil, fmt.Errorf("error creating base config for %s: %v", host.Name, err)
-		}
+	for i, host := range hosts {
+		prefix := fmt.Sprintf(".hosts[%d]", i)
+
+		// query data
+		baseConfig, baseDiagnostics := newAnsibleBaseConfig(host.Name, host.IP, host.SSH.User, host.SSH.Port, host.SSH.PrivateKeyPath)
+		mapsCopyWithPrefix(diagnostics, baseDiagnostics, prefix)
 
 		pubKeyContent, err := readPublicKey(host.SSH.PublicKeyPath)
 		if err != nil {
-			return nil, fmt.Errorf("error reading public key for %s: %v", host.Name, err)
+			diagnostics[prefix+".ssh.public_key_path"] = fmt.Sprintf("error reading public key: %v", err)
 		}
 
+		// set fields
 		baseConfig.Map = map[string]any{
 			"ssh_public_key":          pubKeyContent,
 			"auto_update_reboot_time": autoUpdateRebootTime(host.AutoUpdateRebootTime),
@@ -49,23 +52,13 @@ func newAnsibleBootstrapConfig(hosts []models.Host) (*ansibleBootstrapConfig, er
 	return bootstrapConfig, nil
 }
 
-func (c *ansibleBootstrapConfig) validate() map[string]string {
-	diagnostics := make(map[string]string)
-	setBaseHostDiagnostics(diagnostics, c.Hosts)
-	for i, host := range c.Hosts {
-		prefix := fmt.Sprintf(".hosts[%d]", i)
-		setDiagnostic(diagnostics, prefix+".ssh.public_key_path", host.Map["ssh_public_key"])
-	}
-	return diagnostics
-}
-
 func (c *ansibleBootstrapConfig) hosts() []ansibleHostConfig {
 	return c.Hosts
 }
 
 func readPublicKey(path string) (string, error) {
 	if path == "" {
-		return "", nil
+		return "", errNotFound
 	}
 
 	expandedPath, err := helpers.ExpandPath(path)

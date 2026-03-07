@@ -35,13 +35,17 @@ func AnsibleRun(ctx context.Context, c *models.Config, playbook string, hosts []
 		return nil, fmt.Errorf("error resolving hosts: %v", err)
 	}
 
-	playbookConfig, err := getAnsibleConfig(playbook, targets)
+	playbookConfig, diagnostics, err := getAnsibleConfig(playbook, targets)
 	if err != nil {
 		return nil, fmt.Errorf("error getting config for %s: %v", playbook, err)
 	}
 
 	if preflight {
-		return playbookConfig.validate(), nil
+		return diagnostics, nil
+	}
+
+	if hasErrors(diagnostics) {
+		return diagnostics, fmt.Errorf("config validation failed")
 	}
 
 	if err := promptSensitiveFields(playbookConfig, os.Stdin, os.Stdout); err != nil {

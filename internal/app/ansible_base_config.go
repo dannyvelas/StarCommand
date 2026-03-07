@@ -6,11 +6,29 @@ import (
 	"github.com/dannyvelas/starcommand/internal/helpers"
 )
 
-func newAnsibleBaseConfig(name, ip, sshUser string, sshPort int, sshPrivateKeyPath string) (ansibleHostConfig, error) {
+type ansibleHostConfig struct {
+	Name          string
+	IP            string
+	SSHUser       string
+	SSHPort       int
+	SSHPrivateKey string
+	Map           map[string]any
+}
+
+func newAnsibleBaseConfig(name, ip, sshUser string, sshPort int, sshPrivateKeyPath string) (ansibleHostConfig, map[string]string) {
+	diagnostics := make(map[string]string)
+
+	// query data
 	expandedPrivateKey, err := helpers.ExpandPath(sshPrivateKeyPath)
 	if err != nil {
-		return ansibleHostConfig{}, fmt.Errorf("error expanding private key path for %s: %v", name, err)
+		diagnostics[".ssh.private_key_path"] = fmt.Sprintf("error expanding path: %v", err)
 	}
+
+	// set diagnostics
+	setDiagnostic(diagnostics, ".name", name)
+	setDiagnostic(diagnostics, ".ip", ip)
+	setDiagnostic(diagnostics, ".ssh.user", sshUser)
+	setDiagnostic(diagnostics, ".ssh.port", sshPort)
 
 	return ansibleHostConfig{
 		Name:          name,
@@ -18,16 +36,5 @@ func newAnsibleBaseConfig(name, ip, sshUser string, sshPort int, sshPrivateKeyPa
 		SSHUser:       sshUser,
 		SSHPort:       sshPort,
 		SSHPrivateKey: expandedPrivateKey,
-	}, nil
-}
-
-func setBaseHostDiagnostics(diagnostics map[string]string, hosts []ansibleHostConfig) {
-	for i, host := range hosts {
-		prefix := fmt.Sprintf(".hosts[%d]", i)
-		setDiagnostic(diagnostics, prefix+".name", host.Name)
-		setDiagnostic(diagnostics, prefix+".ip", host.IP)
-		setDiagnostic(diagnostics, prefix+".ssh.user", host.SSHUser)
-		setDiagnostic(diagnostics, prefix+".ssh.port", host.SSHPort)
-		setDiagnostic(diagnostics, prefix+".ssh.private_key_path", host.SSHPrivateKey)
-	}
+	}, diagnostics
 }

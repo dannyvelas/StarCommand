@@ -8,25 +8,17 @@ import (
 
 type playbookConfig interface {
 	hosts() []ansibleHostConfig
-	validate() map[string]string
 }
 
-type ansibleHostConfig struct {
-	Name          string
-	IP            string
-	SSHUser       string
-	SSHPort       int
-	SSHPrivateKey string
-	Map           map[string]any
-}
-
-func getAnsibleConfig(playbook string, hosts []models.Host) (playbookConfig, error) {
+func getAnsibleConfig(playbook string, hosts []models.Host) (playbookConfig, map[string]string, error) {
 	switch playbook {
 	case "bootstrap-host":
-		return newAnsibleBootstrapConfig(hosts)
+		c, d := newAnsibleBootstrapConfig(hosts)
+		return c, d, nil
 	case "setup-host":
-		return newAnsibleSetupHostConfig(hosts)
+		c, d := newAnsibleSetupHostConfig(hosts)
+		return c, d, nil
 	}
 
-	return nil, fmt.Errorf("error: config for playbook %s %w", playbook, errNotFound)
+	return nil, nil, fmt.Errorf("error: config for playbook %s %w", playbook, errNotFound)
 }
