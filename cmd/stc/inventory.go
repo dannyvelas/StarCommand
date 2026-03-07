@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/dannyvelas/starcommand/internal/config"
+	"github.com/dannyvelas/starcommand/internal/models"
 	"github.com/spf13/cobra"
 )
 
-func inventoryCmd(c *config.Config) *cobra.Command {
+func inventoryCmd(c *models.Config) *cobra.Command {
 	inventoryCmd := &cobra.Command{
 		Use:   "inventory",
 		Short: "Execute ansible inventory commands",

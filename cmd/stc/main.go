@@ -6,7 +6,8 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/dannyvelas/starcommand/internal/config"
+	"github.com/dannyvelas/starcommand/internal/models"
+	"github.com/goccy/go-yaml"
 	"github.com/joho/godotenv"
 )
 
@@ -16,9 +17,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	c, err := config.NewConfig("stc.yml")
+	c, err := newConfig("stc.yml")
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error loading config: %v", err)
+		fmt.Fprintf(os.Stderr, err.Error())
 		os.Exit(1)
 	}
 
@@ -29,4 +30,18 @@ func main() {
 	if err := rootCmd.ExecuteContext(ctx); err != nil {
 		os.Exit(1)
 	}
+}
+
+func newConfig(file string) (*models.Config, error) {
+	data, err := os.ReadFile(file)
+	if err != nil {
+		return nil, fmt.Errorf("error reading config file %q: %w", file, err)
+	}
+
+	var c models.Config
+	if err := yaml.Unmarshal(data, &c); err != nil {
+		return nil, fmt.Errorf("error parsing config file %q: %w", file, err)
+	}
+
+	return &c, nil
 }

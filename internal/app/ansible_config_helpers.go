@@ -3,7 +3,7 @@ package app
 import (
 	"fmt"
 
-	"github.com/dannyvelas/starcommand/internal/config"
+	"github.com/dannyvelas/starcommand/internal/models"
 )
 
 type playbookConfig interface {
@@ -15,7 +15,7 @@ type ansibleHostConfig struct {
 	Map  map[string]any
 }
 
-func getAnsibleConfig(playbook string, hosts []config.Host) (playbookConfig, error) {
+func getAnsibleConfig(playbook string, hosts []models.Host) (playbookConfig, error) {
 	switch playbook {
 	case "bootstrap-server":
 		return newAnsibleBootstrapConfig(hosts)

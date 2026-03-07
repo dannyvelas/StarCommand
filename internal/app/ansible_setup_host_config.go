@@ -3,8 +3,8 @@ package app
 import (
 	"fmt"
 
-	"github.com/dannyvelas/starcommand/internal/config"
 	"github.com/dannyvelas/starcommand/internal/helpers"
+	"github.com/dannyvelas/starcommand/internal/models"
 )
 
 var _ playbookConfig = (*ansibleSetupHostConfig)(nil)
@@ -17,7 +17,7 @@ type ansibleSetupHostConfig struct {
 	SMTPPassword string `json:"smtp_password" sensitive:"true" prompt:"SMTP password"`
 }
 
-func newAnsibleSetupHostConfig(hosts []config.Host) (*ansibleSetupHostConfig, error) {
+func newAnsibleSetupHostConfig(hosts []models.Host) (*ansibleSetupHostConfig, error) {
 	setupConfig := new(ansibleSetupHostConfig)
 
 	for _, host := range hosts {

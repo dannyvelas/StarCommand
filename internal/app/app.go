@@ -5,20 +5,20 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dannyvelas/starcommand/internal/config"
+	"github.com/dannyvelas/starcommand/internal/models"
 )
 
-func Setup(ctx context.Context, c *config.Config, hosts []string) error {
+func Setup(ctx context.Context, c *models.Config, hosts []string) error {
 	return nil
 }
 
-func InventoryGenerate(ctx context.Context, c *config.Config) error {
+func InventoryGenerate(ctx context.Context, c *models.Config) error {
 	return nil
 }
 
-func AnsibleRun(ctx context.Context, c *config.Config, playbook string, hosts []string) error {
+func AnsibleRun(ctx context.Context, c *models.Config, playbook string, hosts []string) error {
 	resolvedHostNames := resolveHostNames(c, hosts)
-	targets, err := resolveHosts(c, resolvedHostNames)
+	targets, err := resolveHosts(c, resolvedHostNames...)
 	if err != nil {
 		return fmt.Errorf("error resolving hosts: %v", err)
 	}
@@ -40,8 +40,13 @@ func AnsibleRun(ctx context.Context, c *config.Config, playbook string, hosts []
 	return nil
 }
 
-func SSHAdd(ctx context.Context, c *config.Config, host string) error {
-	sshConfig, err := newSSHConfig(c, host)
+func SSHAdd(ctx context.Context, c *models.Config, host string) error {
+	targets, err := resolveHosts(c, host)
+	if err != nil {
+		return fmt.Errorf("error resolving hosts: %v", err)
+	}
+
+	sshConfig, err := newSSHConfig(c, targets[0])
 	if err != nil {
 		return fmt.Errorf("error creating ssh config: %v", err)
 	}
@@ -63,7 +68,7 @@ func SSHAdd(ctx context.Context, c *config.Config, host string) error {
 	return nil
 }
 
-func TerraformApply(ctx context.Context, c *config.Config) error {
+func TerraformApply(ctx context.Context, c *models.Config) error {
 	terraformConfig := newTerraformConfig()
 
 	terraformHandler := newTerraformHandler("./terraform/main.tf")
@@ -74,11 +79,11 @@ func TerraformApply(ctx context.Context, c *config.Config) error {
 	return nil
 }
 
-func resolveHosts(c *config.Config, hostNames []string) ([]config.Host, error) {
+func resolveHosts(c *models.Config, hostNames ...string) ([]models.Host, error) {
 	hostsNotFound := make([]string, 0)
 	nameToHostMap := getNameToHostMap(c)
 
-	configHosts := make([]config.Host, 0, len(hostNames))
+	configHosts := make([]models.Host, 0, len(hostNames))
 	for _, hostName := range hostNames {
 		host, found := nameToHostMap[hostName]
 		if !found {
@@ -96,8 +101,8 @@ func resolveHosts(c *config.Config, hostNames []string) ([]config.Host, error) {
 	return configHosts, nil
 }
 
-func getNameToHostMap(c *config.Config) map[string]config.Host {
-	nameToHostMap := make(map[string]config.Host, len(c.Hosts))
+func getNameToHostMap(c *models.Config) map[string]models.Host {
+	nameToHostMap := make(map[string]models.Host, len(c.Hosts))
 	for _, host := range c.Hosts {
 		nameToHostMap[host.Name] = host
 	}
@@ -107,7 +112,7 @@ func getNameToHostMap(c *config.Config) map[string]config.Host {
 // getHostList returns hosts if non-empty, otherwise returns the name of every
 // non-VM host defined in c. This reflects the CLI semantics where omitting
 // --host flags is equivalent to passing all hosts explicitly.
-func resolveHostNames(c *config.Config, cliHosts []string) []string {
+func resolveHostNames(c *models.Config, cliHosts []string) []string {
 	if len(cliHosts) > 0 {
 		return cliHosts
 	}

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dannyvelas/starcommand/internal/config"
 	"github.com/dannyvelas/starcommand/internal/helpers"
+	"github.com/dannyvelas/starcommand/internal/models"
 )
 
 var _ playbookConfig = (*ansibleBootstrapConfig)(nil)
@@ -18,7 +18,7 @@ type ansibleBootstrapConfig struct {
 	AdminPassword string `json:"admin_password" sensitive:"true" prompt:"Admin password"`
 }
 
-func newAnsibleBootstrapConfig(hosts []config.Host) (*ansibleBootstrapConfig, error) {
+func newAnsibleBootstrapConfig(hosts []models.Host) (*ansibleBootstrapConfig, error) {
 	bootstrapConfig := new(ansibleBootstrapConfig)
 
 	for _, host := range hosts {

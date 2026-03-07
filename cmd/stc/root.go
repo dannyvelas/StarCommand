@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/dannyvelas/starcommand/internal/config"
+	"github.com/dannyvelas/starcommand/internal/models"
 	"github.com/spf13/cobra"
 )
 
-func rootCmd(c *config.Config) *cobra.Command {
+func rootCmd(c *models.Config) *cobra.Command {
 	// rootCmd represents the base command when called without any subcommands
 	rootCmd := &cobra.Command{
 		Use:   "stc",

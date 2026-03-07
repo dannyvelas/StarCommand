@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/dannyvelas/starcommand/internal/config"
+	"github.com/dannyvelas/starcommand/internal/models"
 	"github.com/spf13/cobra"
 )
 
-func sshCmd(c *config.Config) *cobra.Command {
+func sshCmd(c *models.Config) *cobra.Command {
 	sshCmd := &cobra.Command{
 		Use:   "ssh",
 		Short: "ssh-related utilities",

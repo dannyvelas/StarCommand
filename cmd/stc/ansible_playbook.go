@@ -4,11 +4,11 @@ import (
 	"fmt"
 
 	"github.com/dannyvelas/starcommand/internal/app"
-	"github.com/dannyvelas/starcommand/internal/config"
+	"github.com/dannyvelas/starcommand/internal/models"
 	"github.com/spf13/cobra"
 )
 
-func ansiblePlaybookCmd(c *config.Config) []*cobra.Command {
+func ansiblePlaybookCmd(c *models.Config) []*cobra.Command {
 	playbooks := []string{"bootstrap-server", "setup-host", "setup-vm"}
 	commands := make([]*cobra.Command, 0, len(playbooks))
 
@@ -26,7 +26,7 @@ func ansiblePlaybookCmd(c *config.Config) []*cobra.Command {
 	return commands
 }
 
-func ansiblePlaybookCLI(c *config.Config, playbook string, hosts *[]string) func(cmd *cobra.Command, args []string) error {
+func ansiblePlaybookCLI(c *models.Config, playbook string, hosts *[]string) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		return app.AnsibleRun(cmd.Context(), c, playbook, *hosts)
 	}

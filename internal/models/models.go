@@ -1,4 +1,5 @@
-package config
+// Package models has the global structs used throughout the application
+package models
 
 type Config struct {
 	Hosts []Host `yaml:"hosts"`
