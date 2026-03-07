@@ -23,13 +23,11 @@ func newAnsibleSetupHostConfig(hosts []models.Host) (*ansibleSetupHostConfig, *D
 	for i, host := range hosts {
 		prefix := fmt.Sprintf(".hosts[%d]", i)
 
-		// query data
 		baseConfig, baseDiagnostics := newAnsibleBaseConfig(host.Name, host.IP, host.SSH.User, host.SSH.Port, host.SSH.PrivateKeyPath)
 		diagnostics.appendWithPrefix(prefix, *baseDiagnostics...)
 
-		// set diagnostics
-		diagnostics.set(prefix+".incus.storage_pool_name", host.Incus.StoragePoolName)
-		diagnostics.set(prefix+".incus.storage_driver", host.Incus.StoragePoolDriver)
+		diagnostics.appendChecked(prefix+".incus.storage_pool_name", host.Incus.StoragePoolName)
+		diagnostics.appendChecked(prefix+".incus.storage_driver", host.Incus.StoragePoolDriver)
 
 		baseConfig.Map = map[string]any{
 			"incus_storage_pool_name": host.Incus.StoragePoolName,

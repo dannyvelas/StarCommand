@@ -87,8 +87,7 @@ func (d *Diagnostics) hasErrors() bool {
 	return false
 }
 
-// setDiagnostic records whether val is the zero value for its type.
-func (d *Diagnostics) set(field string, val any) {
+func (d *Diagnostics) appendChecked(field string, val any) {
 	if reflect.ValueOf(val).IsZero() {
 		*d = append(*d, Diagnostic{Field: field, Status: errNotFound.Error()})
 	} else {

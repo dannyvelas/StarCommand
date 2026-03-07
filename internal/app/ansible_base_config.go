@@ -18,17 +18,15 @@ type ansibleHostConfig struct {
 func newAnsibleBaseConfig(name, ip, sshUser string, sshPort int, sshPrivateKeyPath string) (ansibleHostConfig, *Diagnostics) {
 	diagnostics := new(Diagnostics)
 
-	// query data
 	expandedPrivateKey, err := helpers.ExpandPath(sshPrivateKeyPath)
 	if err != nil {
 		diagnostics.append(Diagnostic{Field: ".ssh.private_key_path", Status: fmt.Sprintf("error expanding path: %v", err)})
 	}
 
-	// set diagnostics
-	diagnostics.set(".name", name)
-	diagnostics.set(".ip", ip)
-	diagnostics.set(".ssh.user", sshUser)
-	diagnostics.set(".ssh.port", sshPort)
+	diagnostics.appendChecked(".name", name)
+	diagnostics.appendChecked(".ip", ip)
+	diagnostics.appendChecked(".ssh.user", sshUser)
+	diagnostics.appendChecked(".ssh.port", sshPort)
 
 	return ansibleHostConfig{
 		Name:          name,

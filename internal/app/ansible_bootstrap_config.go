@@ -32,7 +32,7 @@ func newAnsibleBootstrapConfig(hosts []models.Host) (*ansibleBootstrapConfig, *D
 		if err != nil {
 			diagnostics.append(Diagnostic{Field: prefix + ".ssh.public_key_path", Status: err.Error()})
 		} else {
-			diagnostics.set(prefix+".ssh.public_key_path", pubKeyContent)
+			diagnostics.append(Diagnostic{Field: prefix + ".ssh.public_key_path", Status: statusLoaded})
 		}
 
 		baseConfig.Map = map[string]any{
