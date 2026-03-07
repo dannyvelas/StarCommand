@@ -16,7 +16,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	configMux, err := config.NewConfig("stc.yml")
+	c, err := config.NewConfig("stc.yml")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error loading config: %v", err)
 		os.Exit(1)
@@ -25,7 +25,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	rootCmd := rootCmd(configMux)
+	rootCmd := rootCmd(c)
 	if err := rootCmd.ExecuteContext(ctx); err != nil {
 		os.Exit(1)
 	}
