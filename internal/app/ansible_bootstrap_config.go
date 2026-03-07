@@ -11,14 +11,15 @@ import (
 var _ ansibleConfig = (*ansibleBootstrapConfig)(nil)
 
 type ansibleBootstrapConfig struct {
-	Hosts []ansibleHostConfig
+	hosts       []ansibleHostConfig
+	diagnostics *Diagnostics
 
 	// Sensitive
 	AdminEmail    string `json:"admin_email" sensitive:"true" prompt:"Admin email"`
 	AdminPassword string `json:"admin_password" sensitive:"true" prompt:"Admin password"`
 }
 
-func newAnsibleBootstrapConfig(hosts []models.Host) (*ansibleBootstrapConfig, *Diagnostics) {
+func newAnsibleBootstrapConfig(hosts []models.Host) *ansibleBootstrapConfig {
 	bootstrapConfig := new(ansibleBootstrapConfig)
 	diagnostics := new(Diagnostics)
 
@@ -40,13 +41,20 @@ func newAnsibleBootstrapConfig(hosts []models.Host) (*ansibleBootstrapConfig, *D
 			"auto_update_reboot_time": autoUpdateRebootTime(host.AutoUpdateRebootTime),
 		}
 
-		bootstrapConfig.Hosts = append(bootstrapConfig.Hosts, baseConfig)
+		bootstrapConfig.hosts = append(bootstrapConfig.hosts, baseConfig)
 	}
-	return bootstrapConfig, diagnostics
+
+	bootstrapConfig.diagnostics = diagnostics
+
+	return bootstrapConfig
 }
 
-func (c *ansibleBootstrapConfig) hosts() []ansibleHostConfig {
-	return c.Hosts
+func (c *ansibleBootstrapConfig) getHosts() []ansibleHostConfig {
+	return c.hosts
+}
+
+func (c *ansibleBootstrapConfig) getDiagnostics() *Diagnostics {
+	return c.diagnostics
 }
 
 func readPublicKey(path string) (string, error) {

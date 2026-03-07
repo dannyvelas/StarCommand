@@ -35,11 +35,15 @@ func AnsibleRun(ctx context.Context, c *models.Config, playbook string, hosts []
 		return nil, fmt.Errorf("error resolving hosts: %v", err)
 	}
 
-	ansibleConfig, diagnostics, err := getAnsibleConfig(playbook, targets)
+	ansibleConfig, err := getAnsibleConfig(playbook, targets)
 	if err != nil {
 		return nil, fmt.Errorf("error getting config for %s: %v", playbook, err)
 	}
 
+	diagnostics, err := validate(ansibleConfig)
+	if err != nil {
+		return nil, fmt.Errorf("error validating config: %v", err)
+	}
 	if preflight {
 		return diagnostics, nil
 	}
@@ -97,6 +101,14 @@ func TerraformApply(ctx context.Context, c *models.Config, preflight bool) error
 	}
 
 	return nil
+}
+
+func validate(ansibleConfig ansibleConfig) (*Diagnostics, error) {
+	diagnostics := ansibleConfig.getDiagnostics()
+	if err := appendSensitiveDiagnostics(diagnostics, ansibleConfig); err != nil {
+		return nil, err
+	}
+	return diagnostics, nil
 }
 
 func resolveHosts(c *models.Config, hostNames ...string) ([]models.Host, error) {

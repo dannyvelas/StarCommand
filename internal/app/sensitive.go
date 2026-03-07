@@ -18,6 +18,33 @@ var (
 	errUnsupportedType = errors.New("unsupported field type")
 )
 
+// forEachSensitiveField calls fn for each field tagged sensitive:"true" on the
+// struct that v points to. v must be a pointer to a struct. Returns an error if
+// v is not a pointer to a struct, or if fn returns an error.
+func forEachSensitiveField(v any, fn func(reflect.StructField, reflect.Value) error) error {
+	rv := reflect.ValueOf(v)
+	if rv.Kind() != reflect.Pointer {
+		return fmt.Errorf("forEachSensitiveField: %w", errNotPointer)
+	}
+	rv = rv.Elem()
+	if rv.Kind() != reflect.Struct {
+		return fmt.Errorf("forEachSensitiveField: argument must be a pointer to a struct")
+	}
+
+	rt := rv.Type()
+	for i := 0; i < rt.NumField(); i++ {
+		field := rt.Field(i)
+		if field.Tag.Get("sensitive") != "true" {
+			continue
+		}
+		if err := fn(field, rv.Field(i)); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // promptSensitiveFields fills fields tagged `sensitive:"true"` on the given
 // struct pointer. For each such field, it first checks for a matching
 // environment variable (case-insensitive, prefixed with "STC_" + json tag or
@@ -27,33 +54,13 @@ var (
 // Returns an error if a sensitive field has a type other than string, int, float, or bool.
 // Also returns an error if v is not a pointer, or if the user enters an empty value.
 func promptSensitiveFields(v any, r io.Reader, w io.Writer) error {
-	rv := reflect.ValueOf(v)
-	if rv.Kind() != reflect.Pointer {
-		return fmt.Errorf("promptSensitiveFields: %w", errNotPointer)
-	}
-	rv = rv.Elem()
-	if rv.Kind() != reflect.Struct {
-		return fmt.Errorf("promptSensitiveFields: argument must be a pointer to a struct")
-	}
-
-	rt := rv.Type()
-	for i := 0; i < rt.NumField(); i++ {
-		field := rt.Field(i)
-		if field.Tag.Get("sensitive") != "true" {
-			continue
-		}
-
+	return forEachSensitiveField(v, func(field reflect.StructField, fieldVal reflect.Value) error {
 		value, err := resolveFieldValue(field, r, w)
 		if err != nil {
 			return err
 		}
-
-		if err := setSensitiveField(rv.Field(i), field, value); err != nil {
-			return err
-		}
-	}
-
-	return nil
+		return setSensitiveField(fieldVal, field, value)
+	})
 }
 
 // resolveFieldValue returns the value for a sensitive field, sourced from an
@@ -69,14 +76,41 @@ func resolveFieldValue(field reflect.StructField, r io.Reader, w io.Writer) (str
 	return readPromptValue(r, w, promptLabel(field))
 }
 
+// fieldJSONKey returns the json tag name for field, or the field name if no
+// json tag is set.
+func fieldJSONKey(field reflect.StructField) string {
+	if jsonTag := field.Tag.Get("json"); jsonTag != "" {
+		return strings.Split(jsonTag, ",")[0]
+	}
+	return field.Name
+}
+
 // fieldEnvKey returns "STC_" + the json tag name, or "STC_" + the field name
 // if no json tag is set.
 func fieldEnvKey(field reflect.StructField) string {
-	suffix := field.Name
-	if jsonTag := field.Tag.Get("json"); jsonTag != "" {
-		suffix = strings.Split(jsonTag, ",")[0]
-	}
-	return "STC_" + suffix
+	return "STC_" + fieldJSONKey(field)
+}
+
+// isSetByEnvVar reports whether the env var corresponding to field is present
+// and non-empty.
+func isSetByEnvVar(field reflect.StructField) bool {
+	value, found := lookupEnvInsensitive(fieldEnvKey(field))
+	return found && value != ""
+}
+
+// appendSensitiveDiagnostics appends a diagnostic entry for each
+// sensitive-tagged field of v, indicating whether the field can be resolved
+// from an environment variable ("loaded") or will require an interactive prompt
+// ("will prompt"). v must be a pointer to a struct.
+func appendSensitiveDiagnostics(diagnostics *Diagnostics, v any) error {
+	return forEachSensitiveField(v, func(field reflect.StructField, _ reflect.Value) error {
+		status := statusWillPrompt
+		if isSetByEnvVar(field) {
+			status = statusLoaded
+		}
+		diagnostics.append(diagnostic{Field: fieldJSONKey(field), Status: status})
+		return nil
+	})
 }
 
 // promptLabel returns the prompt tag value, or the field name if no prompt tag is set.

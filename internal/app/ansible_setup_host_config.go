@@ -9,14 +9,15 @@ import (
 var _ ansibleConfig = (*ansibleSetupHostConfig)(nil)
 
 type ansibleSetupHostConfig struct {
-	Hosts []ansibleHostConfig
+	hosts       []ansibleHostConfig
+	diagnostics *Diagnostics
 
 	// Sensitive
 	SMTPUser     string `json:"smtp_user" sensitive:"true" prompt:"SMTP username"`
 	SMTPPassword string `json:"smtp_password" sensitive:"true" prompt:"SMTP password"`
 }
 
-func newAnsibleSetupHostConfig(hosts []models.Host) (*ansibleSetupHostConfig, *Diagnostics) {
+func newAnsibleSetupHostConfig(hosts []models.Host) *ansibleSetupHostConfig {
 	setupConfig := new(ansibleSetupHostConfig)
 	diagnostics := new(Diagnostics)
 
@@ -34,11 +35,17 @@ func newAnsibleSetupHostConfig(hosts []models.Host) (*ansibleSetupHostConfig, *D
 			"incus_storage_driver":    host.Incus.StoragePoolDriver,
 		}
 
-		setupConfig.Hosts = append(setupConfig.Hosts, baseConfig)
+		setupConfig.hosts = append(setupConfig.hosts, baseConfig)
 	}
-	return setupConfig, diagnostics
+
+	setupConfig.diagnostics = diagnostics
+	return setupConfig
 }
 
-func (c *ansibleSetupHostConfig) hosts() []ansibleHostConfig {
-	return c.Hosts
+func (c *ansibleSetupHostConfig) getHosts() []ansibleHostConfig {
+	return c.hosts
+}
+
+func (c *ansibleSetupHostConfig) getDiagnostics() *Diagnostics {
+	return c.diagnostics
 }

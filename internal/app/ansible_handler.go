@@ -33,7 +33,7 @@ func (h ansibleHandler) execute(c ansibleConfig, playbook string) error {
 }
 
 func (h ansibleHandler) generateHostVars(c ansibleConfig) error {
-	for _, host := range c.hosts() {
+	for _, host := range c.getHosts() {
 		ansibleUser, err := determineAnsibleUser(host.SSHUser, host.IP, host.SSHPort, host.SSHPrivateKey)
 		if err != nil {
 			return fmt.Errorf("error determining ansible user for %s: %v", host.Name, err)

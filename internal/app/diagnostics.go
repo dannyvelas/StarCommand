@@ -7,7 +7,10 @@ import (
 	"text/template"
 )
 
-const statusLoaded = "loaded"
+const (
+	statusLoaded     = "loaded"
+	statusWillPrompt = "will prompt"
+)
 
 type diagnostic struct {
 	Field  string
