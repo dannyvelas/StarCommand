@@ -8,15 +8,15 @@ import (
 	"github.com/dannyvelas/starcommand/internal/config"
 )
 
-func Setup(ctx context.Context, c *config.Config, hostAliases []string) error {
+func Setup(ctx context.Context, c *config.Config, hosts []string) error {
 	return nil
 }
 
-func InventoryGenerate(ctx context.Context, c *config.Config, host *string) error {
+func InventoryGenerate(ctx context.Context, c *config.Config) error {
 	return nil
 }
 
-func AnsibleRun(ctx context.Context, c *config.Config, playbook string) error {
+func AnsibleRun(ctx context.Context, c *config.Config, playbook string, hosts []string) error {
 	playbookConfig, err := getAnsibleConfig(c, playbook)
 	if err != nil {
 		return fmt.Errorf("error getting config for %s: %v", playbook, err)
@@ -34,8 +34,8 @@ func AnsibleRun(ctx context.Context, c *config.Config, playbook string) error {
 	return nil
 }
 
-func SSHAdd(ctx context.Context, c *config.Config, hostAlias string) error {
-	sshConfig, err := newSSHConfig(c, hostAlias)
+func SSHAdd(ctx context.Context, c *config.Config, host string) error {
+	sshConfig, err := newSSHConfig(c, host)
 	if err != nil {
 		return fmt.Errorf("error creating ssh config: %v", err)
 	}
@@ -50,7 +50,7 @@ func SSHAdd(ctx context.Context, c *config.Config, hostAlias string) error {
 	}
 
 	sshHandler := newSSHHandler(homeDir)
-	if err := sshHandler.execute(sshConfig, hostAlias); err != nil {
+	if err := sshHandler.execute(sshConfig, host); err != nil {
 		return fmt.Errorf("error executing command: %v", err)
 	}
 

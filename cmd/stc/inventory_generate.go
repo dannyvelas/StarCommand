@@ -7,22 +7,18 @@ import (
 )
 
 func inventoryGenerateCmd(c *config.Config) *cobra.Command {
-	var host string
-
 	command := &cobra.Command{
 		Use:   "generate",
 		Short: "Generate the Ansible inventory file for all hosts, or a single host",
-		RunE:  inventoryGenerateCLI(c, &host),
+		RunE:  inventoryGenerateCLI(c),
 	}
-
-	command.Flags().StringVar(&host, "host", "", "Limit generation to a single host")
 
 	return command
 }
 
-func inventoryGenerateCLI(c *config.Config, host *string) func(cmd *cobra.Command, args []string) error {
+func inventoryGenerateCLI(c *config.Config) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		ctx := cmd.Context()
-		return app.InventoryGenerate(ctx, c, host)
+		return app.InventoryGenerate(ctx, c)
 	}
 }
