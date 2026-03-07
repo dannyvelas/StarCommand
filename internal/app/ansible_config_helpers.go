@@ -8,11 +8,16 @@ import (
 
 type playbookConfig interface {
 	hosts() []ansibleHostConfig
+	validate() map[string]string
 }
 
 type ansibleHostConfig struct {
-	Name string
-	Map  map[string]any
+	Name          string
+	IP            string
+	SSHUser       string
+	SSHPort       int
+	SSHPrivateKey string
+	Map           map[string]any
 }
 
 func getAnsibleConfig(playbook string, hosts []models.Host) (playbookConfig, error) {

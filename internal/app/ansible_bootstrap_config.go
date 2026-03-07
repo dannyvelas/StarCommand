@@ -41,17 +41,27 @@ func newAnsibleBootstrapConfig(hosts []models.Host) (*ansibleBootstrapConfig, er
 			host.AutoUpdateRebootTime = "05:00"
 		}
 
-		mergedMaps := helpers.MergeMaps(baseConfig.Map, map[string]any{
+		baseConfig.Map = map[string]any{
 			"ssh_public_key":          string(pubKeyBytes),
 			"auto_update_reboot_time": host.AutoUpdateRebootTime,
-		})
+		}
 
-		bootstrapConfig.Hosts = append(bootstrapConfig.Hosts, ansibleHostConfig{
-			Name: host.Name,
-			Map:  mergedMaps,
-		})
+		bootstrapConfig.Hosts = append(bootstrapConfig.Hosts, baseConfig)
 	}
 	return bootstrapConfig, nil
+}
+
+func (c *ansibleBootstrapConfig) validate() map[string]string {
+	diagnostics := make(map[string]string)
+	for i, host := range c.Hosts {
+		pfx := fmt.Sprintf(".hosts[%d]", i)
+		setDiagnostic(diagnostics, pfx+".name", host.Name)
+		setDiagnostic(diagnostics, pfx+".ip", host.IP)
+		setDiagnostic(diagnostics, pfx+".ssh.user", host.SSHUser)
+		setDiagnostic(diagnostics, pfx+".ssh.port", host.SSHPort)
+		setDiagnostic(diagnostics, pfx+".ssh.private_key_path", host.SSHPrivateKey)
+	}
+	return diagnostics
 }
 
 func (c *ansibleBootstrapConfig) hosts() []ansibleHostConfig {

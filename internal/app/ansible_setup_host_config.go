@@ -3,7 +3,6 @@ package app
 import (
 	"fmt"
 
-	"github.com/dannyvelas/starcommand/internal/helpers"
 	"github.com/dannyvelas/starcommand/internal/models"
 )
 
@@ -26,17 +25,27 @@ func newAnsibleSetupHostConfig(hosts []models.Host) (*ansibleSetupHostConfig, er
 			return nil, fmt.Errorf("error creating base config for %s: %v", host.Name, err)
 		}
 
-		mergedMaps := helpers.MergeMaps(baseConfig.Map, map[string]any{
+		baseConfig.Map = map[string]any{
 			"incus_storage_pool_name": host.Incus.StoragePoolName,
 			"incus_storage_driver":    host.Incus.StoragePoolDriver,
-		})
+		}
 
-		setupConfig.Hosts = append(setupConfig.Hosts, ansibleHostConfig{
-			Name: host.Name,
-			Map:  mergedMaps,
-		})
+		setupConfig.Hosts = append(setupConfig.Hosts, baseConfig)
 	}
 	return setupConfig, nil
+}
+
+func (c *ansibleSetupHostConfig) validate() map[string]string {
+	diagnostics := make(map[string]string)
+	for i, host := range c.Hosts {
+		pfx := fmt.Sprintf(".hosts[%d]", i)
+		setDiagnostic(diagnostics, pfx+".name", host.Name)
+		setDiagnostic(diagnostics, pfx+".ip", host.IP)
+		setDiagnostic(diagnostics, pfx+".ssh.user", host.SSHUser)
+		setDiagnostic(diagnostics, pfx+".ssh.port", host.SSHPort)
+		setDiagnostic(diagnostics, pfx+".ssh.private_key_path", host.SSHPrivateKey)
+	}
+	return diagnostics
 }
 
 func (c *ansibleSetupHostConfig) hosts() []ansibleHostConfig {

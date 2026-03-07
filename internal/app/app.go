@@ -28,28 +28,32 @@ func InventoryGenerate(ctx context.Context, c *models.Config) error {
 	return nil
 }
 
-func AnsibleRun(ctx context.Context, c *models.Config, playbook string, hosts []string) error {
+func AnsibleRun(ctx context.Context, c *models.Config, playbook string, hosts []string, preflight bool) (map[string]string, error) {
 	resolvedHostNames := resolveHostNames(c, hosts)
 	targets, err := resolveHosts(c, resolvedHostNames...)
 	if err != nil {
-		return fmt.Errorf("error resolving hosts: %v", err)
+		return nil, fmt.Errorf("error resolving hosts: %v", err)
 	}
 
 	playbookConfig, err := getAnsibleConfig(playbook, targets)
 	if err != nil {
-		return fmt.Errorf("error getting config for %s: %v", playbook, err)
+		return nil, fmt.Errorf("error getting config for %s: %v", playbook, err)
+	}
+
+	if preflight {
+		return playbookConfig.validate(), nil
 	}
 
 	if err := promptSensitiveFields(playbookConfig, os.Stdin, os.Stdout); err != nil {
-		return fmt.Errorf("error prompting for sensitive fields: %v", err)
+		return nil, fmt.Errorf("error prompting for sensitive fields: %v", err)
 	}
 
 	ansibleHandler := newAnsibleHandler()
 	if err := ansibleHandler.execute(playbookConfig, playbook); err != nil {
-		return fmt.Errorf("error executing command: %v", err)
+		return nil, fmt.Errorf("error executing command: %v", err)
 	}
 
-	return nil
+	return nil, nil
 }
 
 func SSHAdd(ctx context.Context, c *models.Config, host string) error {
