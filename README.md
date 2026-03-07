@@ -134,6 +134,8 @@ This prints a diagnostic table without executing the command. Any field showing 
 --------------------------------------------------
 ```
 
+Once you declare an STC environmental variable, that table will show `loaded` for it on subsequent runs.
+
 `stc` generates all tool-specific configs (Ansible inventory, Terraform vars) into `.generated/`. You never edit those files directly. The directory is created automatically the first time you run `stc setup` or any low-level command (without `--preflight`). It is safe to delete and regenerate at any time — re-running `stc setup` will recreate everything correctly.
 
 ## Usage
