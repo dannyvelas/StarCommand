@@ -1,5 +1,5 @@
 1. create ansible inventory file with hosts and its VMs. VMs have proxyjump set to true so that later on, ansible playbooks can be run on them
-2. ansible-playbook bootstrap-server.yml -u root # runs for all hosts added in inventory in step#1
+2. ansible-playbook bootstrap-host.yml -u root # runs for all hosts added in inventory in step#1
 3. ansible-playbook setup-host.yml # runs for all hosts added in inventory in step#1
    for each host {
 4.   add {{.HOST}} to ~/.ssh/config (if not already there)
@@ -19,7 +19,7 @@
      }
 
 7.   cd terraform && terraform init && terraform apply
-8.   ansible-playbook bootstrap-server.yml --limit vms -u root
+8.   ansible-playbook bootstrap-host.yml --limit vms -u root
 9.   ansible-playbook setup-vm.yml
      for vm in host.vms {
 10.    add vm to ~/.ssh/config (if not already there)

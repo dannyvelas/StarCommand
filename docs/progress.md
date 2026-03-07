@@ -4,7 +4,7 @@
 - [ ] Finish writing logic to read config so that ansible playbooks have the data they need
 - [ ] Test if sensitive value reading works
 - [ ] Explore if there's a way to reduce duplication in `../internal/app/app.go`
-- [ ] Test that bootstrap-server.yml playbook works via `stc ansible bootstrap-server`
+- [ ] Test that bootstrap-host.yml playbook works via `stc ansible bootstrap-host`
 - [ ] Test that setup-host.yml playbook works via `stc ansible setup-host`
 - [ ] Test that setup-vm.yml playbook works via `stc ansible setup-vm`
 - [ ] Test that terraform project works via `stc terraform apply` 
