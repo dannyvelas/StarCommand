@@ -17,7 +17,8 @@ func InventoryGenerate(ctx context.Context, c *config.Config) error {
 }
 
 func AnsibleRun(ctx context.Context, c *config.Config, playbook string, hosts []string) error {
-	targets, err := resolveHosts(c, hosts)
+	resolvedHostNames := resolveHostNames(c, hosts)
+	targets, err := resolveHosts(c, resolvedHostNames)
 	if err != nil {
 		return fmt.Errorf("error resolving hosts: %v", err)
 	}
@@ -73,9 +74,8 @@ func TerraformApply(ctx context.Context, c *config.Config) error {
 	return nil
 }
 
-func resolveHosts(c *config.Config, cliHosts []string) ([]config.Host, error) {
+func resolveHosts(c *config.Config, hostNames []string) ([]config.Host, error) {
 	hostsNotFound := make([]string, 0)
-	hostNames := resolveHostNames(c, cliHosts)
 	nameToHostMap := getNameToHostMap(c)
 
 	configHosts := make([]config.Host, 0, len(hostNames))
