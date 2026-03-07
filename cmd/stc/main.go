@@ -13,13 +13,13 @@ import (
 
 func main() {
 	if err := godotenv.Load(); err != nil {
-		fmt.Fprintf(os.Stderr, "error loading .env file: %v", err)
+		fmt.Fprintf(os.Stderr, "error loading .env file: %v\n", err)
 		os.Exit(1)
 	}
 
 	c, err := newConfig("stc.yml")
 	if err != nil {
-		fmt.Fprintf(os.Stderr, err.Error())
+		fmt.Fprintf(os.Stderr, "%v\n", err.Error())
 		os.Exit(1)
 	}
 
