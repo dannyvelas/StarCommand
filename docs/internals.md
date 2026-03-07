@@ -10,7 +10,7 @@
 An Ansible inventory file is generated from `stc.yml`. It includes all configured hosts and their VMs. VMs are configured with `ProxyJump` pointing to their parent host, so that later Ansible steps can reach them through the host without requiring the VMs to be directly accessible on the network.
 
 ### 2. Bootstrap hosts
-> `stc ansible bootstrap-server` · [bootstrap-server.yml](../ansible/playbooks/bootstrap-server.yml)
+> `stc ansible bootstrap-host` · [bootstrap-host.yml](../ansible/playbooks/bootstrap-host.yml)
 
 Runs concurrently against all hosts. Hardens the OS: configures UFW, enforces SSH key-only authentication, and enables unattended security updates.
 
@@ -91,7 +91,7 @@ Once all hosts have been registered, VMs are provisioned and configured concurre
 Terraform provisions VMs for all hosts in a single run via Incus. Each VM is on a private NAT subnet and is not directly reachable from the physical network.
 
 ### 9. Bootstrap all VMs
-> `stc ansible bootstrap-server --host <vm1> --host <vm2> ...` · [bootstrap-server.yml](../ansible/playbooks/bootstrap-server.yml)
+> `stc ansible bootstrap-host --host <vm1> --host <vm2> ...` · [bootstrap-host.yml](../ansible/playbooks/bootstrap-host.yml)
 
 Same OS hardening as step 2, now applied concurrently to all newly created VMs across all hosts. `stc setup` passes all VM names automatically.
 

@@ -23,11 +23,11 @@ tasks:
     cmds:
       # for host in hosts {
       #   ./bin/labctl ansible inventory add {{.HOST}} # creates inventory file with host and also the VMs of this host. if an inventory file already exists, it will override it
-      #   ./bin/labctl ansible playbook run bootstrap-server.yml --limit {{.HOST}} -u root
+      #   ./bin/labctl ansible playbook run bootstrap-host.yml --limit {{.HOST}} -u root
       #   ./bin/labctl ansible playbook run setup-host.yml --limit {{.HOST}}
       #   ./bin/labctl ssh add {{.HOST}}
       #   ./bin/labctl terrafom apply VM # creates one or more VMs (depending on what is in config) each VM will get an IP which is defined in config
-      #   ./bin/labctl ansible playbook run bootstrap-server.yml --limit vms -u root
+      #   ./bin/labctl ansible playbook run bootstrap-host.yml --limit vms -u root
       #   for vm in host.vms {
       #     ./bin/labctl ssh add vm
       #   }
@@ -70,7 +70,7 @@ tasks:
   #     # adds to [remote_vps] group
   #     - ./bin/labctl ansible inventory add {{.HOST}}
 
-  #     # run ansible-playbook bootstrap-server.yml --limit $host -u root
+  #     # run ansible-playbook bootstrap-host.yml --limit $host -u root
   #     # run ansible-playbook setup-remote.yml
   #     - ./bin/labctl ansible playbook run {{.HOST}}
 

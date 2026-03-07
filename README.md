@@ -174,7 +174,7 @@ Commands:
 
 Low-level commands:
   inventory generate                       Generate the Ansible inventory file for all hosts
-  ansible bootstrap-server [--host <h>]... Run the bootstrap-server playbook against all hosts/VMs, or limit to the ones given
+  ansible bootstrap-host [--host <h>]...   Run the bootstrap-host playbook against all hosts/VMs, or limit to the ones given
   ansible setup-host [--host <h>]...       Run the setup-host playbook against all hosts, or limit to the ones given
   ansible setup-vm [--host <h>]...         Run the setup-vm playbook against all VMs, or limit to the ones given
   ssh add <host>                           Add a host to ~/.ssh/config

@@ -9,7 +9,7 @@ import (
 )
 
 func ansiblePlaybookCmd(c *models.Config) []*cobra.Command {
-	playbooks := []string{"bootstrap-server", "setup-host", "setup-vm"}
+	playbooks := []string{"bootstrap-host", "setup-host", "setup-vm"}
 	commands := make([]*cobra.Command, 0, len(playbooks))
 
 	for _, playbook := range playbooks {

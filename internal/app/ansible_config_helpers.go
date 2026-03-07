@@ -17,7 +17,7 @@ type ansibleHostConfig struct {
 
 func getAnsibleConfig(playbook string, hosts []models.Host) (playbookConfig, error) {
 	switch playbook {
-	case "bootstrap-server":
+	case "bootstrap-host":
 		return newAnsibleBootstrapConfig(hosts)
 	case "setup-host":
 		return newAnsibleSetupHostConfig(hosts)

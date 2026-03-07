@@ -107,8 +107,8 @@
 - [x] add support where the user can check the configs that were missing/found that are necessary to run:
   - `stc setup`, or `stc setup --host <host>`
   - `stc inventory [--host <host>]`
-  - `stc ansible bootstrap-server`
-  - `stc ansible bootstrap-server --vms`
+  - `stc ansible bootstrap-host`
+  - `stc ansible bootstrap-host --vms`
   - `stc ansible setup-host`
   - `stc ansible setup-vm`
   - `stc ssh add <host>`
