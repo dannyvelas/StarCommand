@@ -32,6 +32,8 @@ func newAnsibleBootstrapConfig(hosts []models.Host) (*ansibleBootstrapConfig, *D
 		pubKeyContent, err := readPublicKey(host.SSH.PublicKeyPath)
 		if err != nil {
 			diagnostics.append(Diagnostic{Field: prefix + ".ssh.public_key_path", Status: err.Error()})
+		} else {
+			diagnostics.set(prefix+".ssh.public_key_path", pubKeyContent)
 		}
 
 		// set fields
