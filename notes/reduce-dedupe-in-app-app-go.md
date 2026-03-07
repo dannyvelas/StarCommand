@@ -10,11 +10,11 @@
 
 | Resource  | verb             | arg2     |
 |-----------|------------------|----------|
-| Ansible   | bootstrap-server |          |
-| Ansible   | setup-host       |          |
-| Ansible   | setup-remote     |          |
-| Ansible   | setup-vm         |          |
+| Ansible   | bootstrap-server | <host>[] |
+| Ansible   | setup-host       | <host>[] |
+| Ansible   | setup-remote     | <host>[] |
+| Ansible   | setup-vm         | <host>[] |
 | SSH       | add              | <host>   |
 | Terraform | apply            |          |
-| Inventory | add              | <host>[] |
+| Inventory | add              |          |
 | Setup     |                  | <host>[] |
