@@ -108,7 +108,7 @@ func appendSensitiveDiagnostics(diagnostics *Diagnostics, v any) error {
 		if isSetByEnvVar(field) {
 			status = statusLoaded
 		}
-		diagnostics.append(diagnostic{Field: fieldJSONKey(field), Status: status})
+		diagnostics.append(diagnostic{Field: strings.ToUpper(fieldEnvKey(field)), Status: status})
 		return nil
 	})
 }

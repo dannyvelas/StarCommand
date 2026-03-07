@@ -112,6 +112,28 @@ Each field is explained inline in [`stc.example.yml`](stc.example.yml). Non-sens
 export STC_ADMIN_PASSWORD=...
 ```
 
+To find the exact set of environment variables a given command needs, run it with `--preflight`:
+
+```bash
+stc ansible bootstrap-host --preflight
+```
+
+This prints a diagnostic table without executing the command. Any field showing `will prompt` must be supplied as an env var for the command to run non-interactively:
+
+```
+--------------------------------------------------
+| SUBJECT                         | STATUS      |
+--------------------------------------------------
+| .hosts[0].name                  | loaded      |
+| .hosts[0].ip                    | loaded      |
+| .hosts[0].ssh.user              | loaded      |
+| .hosts[0].ssh.port              | loaded      |
+| .hosts[0].ssh.public_key_path   | loaded      |
+| STC_ADMIN_EMAIL                 | will prompt |
+| STC_ADMIN_PASSWORD              | will prompt |
+--------------------------------------------------
+```
+
 `stc` generates all tool-specific configs (Ansible inventory, Terraform vars) into `.generated/`. You never edit those files directly.
 
 ## Usage
@@ -179,6 +201,8 @@ Low-level commands:
   ansible setup-vm [--host <h>]...         Run the setup-vm playbook against all VMs, or limit to the ones given
   ssh add <host>                           Add a host to ~/.ssh/config
   terraform apply                          Apply the Terraform project
+
+All commands above accept --preflight to display a config diagnostic table instead of executing (see [Configure](#2-configure)).
 ```
 
 `stc` wraps these low-level commands because they require config resolution — secret fetching, inventory generation, and var merging — that would otherwise need to be done manually.
