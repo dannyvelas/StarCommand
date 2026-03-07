@@ -28,7 +28,6 @@ func ansiblePlaybookCmd(c *config.Config) []*cobra.Command {
 
 func ansiblePlaybookCLI(c *config.Config, playbook string, hosts *[]string) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
-		ctx := cmd.Context()
-		return app.AnsibleRun(ctx, c, playbook, *hosts)
+		return app.AnsibleRun(cmd.Context(), c, playbook, *hosts)
 	}
 }
