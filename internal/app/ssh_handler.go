@@ -72,7 +72,11 @@ func (h sshHandler) writeFile(config *sshConfig, sshFilePath string) error {
 	}
 	defer func() { _ = f.Close() }()
 
-	hostBlock := h.buildHostBlock(config)
+	hostBlock, err := h.buildHostBlock(config)
+	if err != nil {
+		return fmt.Errorf("error building ssh config host block: %v", err)
+	}
+
 	if _, err := f.Seek(0, 2); err != nil {
 		return fmt.Errorf("error seeking to end of ssh config: %v", err)
 	}
@@ -81,7 +85,7 @@ func (h sshHandler) writeFile(config *sshConfig, sshFilePath string) error {
 	return err
 }
 
-func (h sshHandler) buildHostBlock(config *sshConfig) []byte {
+func (h sshHandler) buildHostBlock(config *sshConfig) ([]byte, error) {
 	const hostTmpl = `
 Host {{ .Alias }}
   HostName {{ .HostName }}
@@ -92,13 +96,13 @@ Host {{ .Alias }}
 
 	tmpl, err := template.New("sshConfig").Parse(hostTmpl)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("error parsing ssh config template: %v", err)
 	}
 
 	var buf bytes.Buffer
 	if err := tmpl.Execute(&buf, config); err != nil {
-		panic(err)
+		return nil, fmt.Errorf("error executing ssh config template: %v", err)
 	}
 
-	return buf.Bytes()
+	return buf.Bytes(), nil
 }
