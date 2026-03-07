@@ -18,6 +18,13 @@ type ansibleBootstrapConfig struct {
 	AdminPassword string `json:"admin_password" sensitive:"true" prompt:"Admin password"`
 }
 
+func autoUpdateRebootTime(t string) string {
+	if t == "" {
+		return "05:00"
+	}
+	return t
+}
+
 func newAnsibleBootstrapConfig(hosts []models.Host) (*ansibleBootstrapConfig, error) {
 	bootstrapConfig := new(ansibleBootstrapConfig)
 
@@ -27,23 +34,14 @@ func newAnsibleBootstrapConfig(hosts []models.Host) (*ansibleBootstrapConfig, er
 			return nil, fmt.Errorf("error creating base config for %s: %v", host.Name, err)
 		}
 
-		expandedPublicKey, err := helpers.ExpandPath(host.SSH.PublicKeyPath)
-		if err != nil {
-			return nil, fmt.Errorf("error expanding public key path for %s: %v", host.Name, err)
-		}
-
-		pubKeyBytes, err := os.ReadFile(expandedPublicKey)
+		pubKeyContent, err := readPublicKey(host.SSH.PublicKeyPath)
 		if err != nil {
 			return nil, fmt.Errorf("error reading public key for %s: %v", host.Name, err)
 		}
 
-		if host.AutoUpdateRebootTime == "" {
-			host.AutoUpdateRebootTime = "05:00"
-		}
-
 		baseConfig.Map = map[string]any{
-			"ssh_public_key":          string(pubKeyBytes),
-			"auto_update_reboot_time": host.AutoUpdateRebootTime,
+			"ssh_public_key":          pubKeyContent,
+			"auto_update_reboot_time": autoUpdateRebootTime(host.AutoUpdateRebootTime),
 		}
 
 		bootstrapConfig.Hosts = append(bootstrapConfig.Hosts, baseConfig)
@@ -63,4 +61,22 @@ func (c *ansibleBootstrapConfig) validate() map[string]string {
 
 func (c *ansibleBootstrapConfig) hosts() []ansibleHostConfig {
 	return c.Hosts
+}
+
+func readPublicKey(path string) (string, error) {
+	if path == "" {
+		return "", nil
+	}
+
+	expandedPath, err := helpers.ExpandPath(path)
+	if err != nil {
+		return "", fmt.Errorf("error expanding path: %v", err)
+	}
+
+	pubKeyBytes, err := os.ReadFile(expandedPath)
+	if err != nil {
+		return "", fmt.Errorf("error reading file: %v", err)
+	}
+
+	return string(pubKeyBytes), nil
 }
