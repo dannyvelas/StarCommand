@@ -17,7 +17,12 @@ func InventoryGenerate(ctx context.Context, c *config.Config) error {
 }
 
 func AnsibleRun(ctx context.Context, c *config.Config, playbook string, hosts []string) error {
-	playbookConfig, err := getAnsibleConfig(c, playbook)
+	targets, err := resolveHosts(c, hosts)
+	if err != nil {
+		return fmt.Errorf("error resolving hosts: %v", err)
+	}
+
+	playbookConfig, err := getAnsibleConfig(playbook, targets)
 	if err != nil {
 		return fmt.Errorf("error getting config for %s: %v", playbook, err)
 	}
@@ -66,4 +71,49 @@ func TerraformApply(ctx context.Context, c *config.Config) error {
 	}
 
 	return nil
+}
+
+func resolveHosts(c *config.Config, cliHosts []string) ([]config.Host, error) {
+	hostsNotFound := make([]string, 0)
+	hostNames := resolveHostNames(c, cliHosts)
+	nameToHostMap := getNameToHostMap(c)
+
+	configHosts := make([]config.Host, 0, len(hostNames))
+	for _, hostName := range hostNames {
+		host, found := nameToHostMap[hostName]
+		if !found {
+			hostsNotFound = append(hostsNotFound, hostName)
+			continue
+		}
+
+		configHosts = append(configHosts, host)
+	}
+
+	if len(hostsNotFound) > 0 {
+		return nil, fmt.Errorf("the following hosts were not found in the config: %v", hostsNotFound)
+	}
+
+	return configHosts, nil
+}
+
+func getNameToHostMap(c *config.Config) map[string]config.Host {
+	nameToHostMap := make(map[string]config.Host, len(c.Hosts))
+	for _, host := range c.Hosts {
+		nameToHostMap[host.Name] = host
+	}
+	return nameToHostMap
+}
+
+// getHostList returns hosts if non-empty, otherwise returns the name of every
+// non-VM host defined in c. This reflects the CLI semantics where omitting
+// --host flags is equivalent to passing all hosts explicitly.
+func resolveHostNames(c *config.Config, cliHosts []string) []string {
+	if len(cliHosts) > 0 {
+		return cliHosts
+	}
+	configHostNames := make([]string, 0, len(c.Hosts))
+	for _, h := range c.Hosts {
+		configHostNames = append(configHostNames, h.Name)
+	}
+	return configHostNames
 }

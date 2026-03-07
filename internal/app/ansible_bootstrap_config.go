@@ -18,10 +18,10 @@ type ansibleBootstrapConfig struct {
 	AdminPassword string `json:"admin_password" sensitive:"true" prompt:"Admin password"`
 }
 
-func newAnsibleBootstrapConfig(c *config.Config) (*ansibleBootstrapConfig, error) {
+func newAnsibleBootstrapConfig(hosts []config.Host) (*ansibleBootstrapConfig, error) {
 	bootstrapConfig := new(ansibleBootstrapConfig)
 
-	for _, host := range c.Hosts {
+	for _, host := range hosts {
 		baseConfig, err := newAnsibleBaseConfig(host.Name, host.IP, host.SSH.User, host.SSH.Port, host.SSH.PrivateKeyPath)
 		if err != nil {
 			return nil, fmt.Errorf("error creating base config for %s: %v", host.Name, err)

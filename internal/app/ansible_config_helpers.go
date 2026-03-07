@@ -15,12 +15,12 @@ type ansibleHostConfig struct {
 	Map  map[string]any
 }
 
-func getAnsibleConfig(c *config.Config, playbook string) (playbookConfig, error) {
+func getAnsibleConfig(playbook string, hosts []config.Host) (playbookConfig, error) {
 	switch playbook {
 	case "bootstrap-server":
-		return newAnsibleBootstrapConfig(c)
+		return newAnsibleBootstrapConfig(hosts)
 	case "setup-host":
-		return newAnsibleSetupHostConfig(c)
+		return newAnsibleSetupHostConfig(hosts)
 	}
 
 	return nil, fmt.Errorf("error: config for playbook %s %w", playbook, errNotFound)
