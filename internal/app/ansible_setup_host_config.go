@@ -27,14 +27,6 @@ func newAnsibleSetupHostConfig(hosts []models.Host) *ansibleSetupHostConfig {
 		baseConfig, baseDiagnostics := newAnsibleBaseConfig(host.Name, host.IP, host.SSH.User, host.SSH.Port, host.SSH.PrivateKeyPath)
 		diagnostics.appendWithPrefix(prefix, *baseDiagnostics...)
 
-		diagnostics.appendChecked(prefix+".incus.storage_pool_name", host.Incus.StoragePoolName)
-		diagnostics.appendChecked(prefix+".incus.storage_driver", host.Incus.StoragePoolDriver)
-
-		baseConfig.Map = map[string]any{
-			"incus_storage_pool_name": host.Incus.StoragePoolName,
-			"incus_storage_driver":    host.Incus.StoragePoolDriver,
-		}
-
 		setupConfig.hosts = append(setupConfig.hosts, baseConfig)
 	}
 
