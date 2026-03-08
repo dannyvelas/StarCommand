@@ -27,7 +27,7 @@
       Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
       Unattended-Upgrade::Remove-Unused-Dependencies "true";
       Unattended-Upgrade::Automatic-Reboot "true";
-      Unattended-Upgrade::Automatic-Reboot-Time "{{ reboot_time }}";
+      Unattended-Upgrade::Automatic-Reboot-Time "{{ auto_update_reboot_time }}";
 
 - name: Ensure unattended-upgrades service is enabled
   ansible.builtin.service:
