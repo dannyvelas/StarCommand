@@ -15,3 +15,15 @@ variable "network_bridge" {
   type        = string
   default     = "incusbr0"
 }
+
+variable "storage_pool_name" {
+  description = "Name of the Incus storage pool"
+  type        = string
+  default     = "default"
+}
+
+variable "storage_pool_driver" {
+  description = "Storage driver for the Incus storage pool (e.g. dir, btrfs, zfs)"
+  type        = string
+  default     = "dir"
+}

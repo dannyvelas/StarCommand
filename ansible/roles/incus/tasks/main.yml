@@ -23,23 +23,6 @@
     state: started
     enabled: yes
 
-- name: Initialize Incus Storage Pool (default)
-  lxc.incus.incus_storage_pool:
-    name: "{{ incus_storage_pool_name }}"
-    driver: "{{ incus_storage_driver }}"
-    config:
-      source: /var/lib/incus/storage-pools/default
-    state: present
-
-- name: Initialize Incus Network (incusbr0)
-  lxc.incus.incus_network:
-    name: incusbr0
-    type: bridge
-    config:
-      "ipv4.address": "10.0.100.1/24"
-      "ipv4.nat": "true"
-      "ipv6.address": "none"
-    state: present
 
 - name: Allow Incus API (8443)
   community.general.ufw:

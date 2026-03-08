@@ -18,6 +18,25 @@ locals {
   ssh_key = trimspace(file(var.ssh_public_key_path))
 }
 
+resource "incus_storage_pool" "default" {
+  name   = var.storage_pool_name
+  driver = var.storage_pool_driver
+
+  config = {
+    source = "/var/lib/incus/storage-pools/${var.storage_pool_name}"
+  }
+}
+
+resource "incus_network" "bridge" {
+  name = var.network_bridge
+
+  config = {
+    "ipv4.address" = "10.0.100.1/24"
+    "ipv4.nat"     = "true"
+    "ipv6.address" = "none"
+  }
+}
+
 resource "incus_profile" "basic" {
   name        = "basic"
   description = "Basic networking and root disk configuration"
@@ -26,7 +45,7 @@ resource "incus_profile" "basic" {
     name = "eth0"
     type = "nic"
     properties = {
-      network = var.network_bridge
+      network = incus_network.bridge.name
       name    = "eth0"
     }
   }
@@ -36,7 +55,7 @@ resource "incus_profile" "basic" {
     type = "disk"
     properties = {
       path = "/"
-      pool = "default"
+      pool = incus_storage_pool.default.name
     }
   }
 }
