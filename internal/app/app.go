@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"fmt"
-	"maps"
 	"os"
 
 	"github.com/dannyvelas/starcommand/internal/models"
@@ -56,10 +55,6 @@ func AnsibleRun(ctx context.Context, c *models.Config, playbook string, hosts []
 
 	if err := promptSensitiveFields(ansibleConfig, os.Stdin, os.Stdout); err != nil {
 		return nil, fmt.Errorf("error prompting for sensitive fields: %v", err)
-	}
-
-	if err := addSensitiveFields(ansibleConfig); err != nil {
-		return nil, fmt.Errorf("error adding sensitive fields to config: %v", err)
 	}
 
 	ansibleHandler := newAnsibleHandler()
@@ -115,19 +110,6 @@ func validate(ansibleConfig ansibleConfig) (*Diagnostics, error) {
 		return nil, err
 	}
 	return diagnostics, nil
-}
-
-func addSensitiveFields(ansibleConfig ansibleConfig) error {
-	senstiveFields, err := getSensitiveFields(ansibleConfig)
-	if err != nil {
-		return fmt.Errorf("error getting sensitive fields: %v", err)
-	}
-
-	for _, host := range ansibleConfig.getHosts() {
-		maps.Copy(host.Map, senstiveFields)
-	}
-
-	return nil
 }
 
 func resolveHosts(c *models.Config, hostNames ...string) ([]models.Host, error) {

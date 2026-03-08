@@ -32,7 +32,18 @@ func (h ansibleHandler) execute(c ansibleConfig, playbook string) error {
 		hostNames = append(hostNames, host.Name)
 	}
 
-	if err := h.runAnsiblePlaybook(playbook, hostNames); err != nil {
+	sensitiveFields, err := getSensitiveFields(c)
+	if err != nil {
+		return fmt.Errorf("error collecting sensitive fields: %v", err)
+	}
+
+	extraVarsFile, cleanup, err := h.createTempVarsFile(sensitiveFields)
+	if err != nil {
+		return fmt.Errorf("error writing sensitive vars: %v", err)
+	}
+	defer cleanup()
+
+	if err := h.runAnsiblePlaybook(playbook, hostNames, extraVarsFile); err != nil {
 		return fmt.Errorf("error running ansible playbook: %v", err)
 	}
 
@@ -41,7 +52,7 @@ func (h ansibleHandler) execute(c ansibleConfig, playbook string) error {
 
 func (h ansibleHandler) generateHostVars(c ansibleConfig) error {
 	for _, host := range c.getHosts() {
-		ansibleUser, err := determineAnsibleUser(host.SSHUser, host.IP, host.SSHPort, host.SSHPrivateKey)
+		ansibleUser, err := h.determineAnsibleUser(host.SSHUser, host.IP, host.SSHPort, host.SSHPrivateKey)
 		if err != nil {
 			return fmt.Errorf("error determining ansible user for %s: %v", host.Name, err)
 		}
@@ -60,13 +71,8 @@ func (h ansibleHandler) generateHostVars(c ansibleConfig) error {
 	return nil
 }
 
-func (h ansibleHandler) runAnsiblePlaybook(playbook string, hostNames []string) error {
-	playbookPath := filepath.Join("ansible", "playbooks", playbook+".yml")
-	args := []string{
-		"-i", filepath.Join(".generated", "ansible", "inventory", "hosts.yml"),
-		"--limit", strings.Join(hostNames, ","),
-		playbookPath,
-	}
+func (h ansibleHandler) runAnsiblePlaybook(playbook string, hostNames []string, extraVarsFile string) error {
+	args := h.buildPlaybookArgs(playbook, hostNames, extraVarsFile)
 
 	cmd := exec.Command("ansible-playbook", args...)
 	cmd.Stdout = os.Stdout
@@ -96,14 +102,49 @@ func (h ansibleHandler) writeHostVarsFile(hostname string, vars any) error {
 	return nil
 }
 
-func determineAnsibleUser(sshUser, ip string, port int, privateKeyPath string) (string, error) {
+func (h ansibleHandler) createTempVarsFile(vars map[string]any) (path string, cleanup func(), err error) {
+	if len(vars) == 0 {
+		return "", func() {}, nil
+	}
+
+	data, err := yaml.Marshal(vars)
+	if err != nil {
+		return "", nil, fmt.Errorf("error marshaling vars: %v", err)
+	}
+
+	f, err := os.CreateTemp("", "stc-vars-*.yml")
+	if err != nil {
+		return "", nil, fmt.Errorf("error creating temp file: %v", err)
+	}
+	defer func() { _ = f.Close() }()
+
+	if _, err := f.Write(data); err != nil {
+		_ = os.Remove(f.Name())
+		return "", nil, fmt.Errorf("error writing temp file: %v", err)
+	}
+
+	tmpPath := f.Name()
+	return tmpPath, func() { _ = os.Remove(tmpPath) }, nil
+}
+
+func (h ansibleHandler) buildPlaybookArgs(playbook string, hostNames []string, extraVarsFile string) []string {
+	inventoryPath := filepath.Join(".generated", "ansible", "inventory", "hosts.yml")
+	playbookPath := filepath.Join("ansible", "playbooks", playbook+".yml")
+	base := []string{"-i", inventoryPath, "--limit", strings.Join(hostNames, ",")}
+	if extraVarsFile == "" {
+		return append(base, playbookPath)
+	}
+	return append(base, "-e", "@"+extraVarsFile, playbookPath)
+}
+
+func (h ansibleHandler) determineAnsibleUser(sshUser, ip string, port int, privateKeyPath string) (string, error) {
 	expandedKey, err := helpers.ExpandPath(privateKeyPath)
 	if err != nil {
 		return "", fmt.Errorf("error expanding key path: %v", err)
 	}
 
 	addr := fmt.Sprintf("%s:%d", ip, port)
-	client, sshErr := getSSHClient(sshUser, addr, expandedKey)
+	client, sshErr := h.getSSHClient(sshUser, addr, expandedKey)
 	if sshErr != nil && !errors.Is(sshErr, errConnectingSSH) {
 		return "", fmt.Errorf("error checking ssh: %v", sshErr)
 	} else if sshErr == nil {
@@ -114,7 +155,7 @@ func determineAnsibleUser(sshUser, ip string, port int, privateKeyPath string) (
 	return "root", nil
 }
 
-func getSSHClient(user, addr, privateKeyPath string) (*ssh.Client, error) {
+func (h ansibleHandler) getSSHClient(user, addr, privateKeyPath string) (*ssh.Client, error) {
 	key, err := os.ReadFile(privateKeyPath)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read private key: %v", err)
