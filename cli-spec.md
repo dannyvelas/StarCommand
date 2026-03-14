@@ -184,3 +184,8 @@ Low-level commands:
 - `stc` has a setup command which takes 0 or more `--host` arguments.
 - It also takes an optional `--preflight` argument.
 - This `setup` command will read an `stc.yml` file in the root of the directory 
+
+## Constitution
+
+1. The code should promote a world-class user experience.
+2. The code should be written with as little code duplication as possible. it should be written in a way that will allow the code to grow and scale if many more `ansible` subcommands are added.
