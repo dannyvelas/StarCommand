@@ -210,6 +210,7 @@ Commands:
 ## stc has an `ssh add` command
 
 - `stc` has an `ssh add` command which takes exactly 1 positional argument `<host>`, where `<host>` is either a top-level host name or a VM name as defined in `stc.yml`.
+- It also takes an optional `--preflight` flag.
 - This command reads connection details for the given host or VM from `stc.yml` and appends a new `Host` block to `~/.ssh/config` on the local workstation. If `~/.ssh/config` does not exist, it is created with `0600` permissions.
 - The required config values for a top-level host are: `.name`, `.ip`, `.ssh.user`, `.ssh.public_key_path`, and `.ssh.port`. The resulting block looks like:
   ```
@@ -228,6 +229,19 @@ Commands:
     Port <vm.ssh.port>
     ProxyJump <parent.ssh.user>@<parent.ip>
   ```
+- If the `--preflight` flag is passed, `stc` will print a diagnostic table showing the status of each required config value, then exit with code 0 without writing anything to `~/.ssh/config`. There are no secret variables for this command, so all rows will show either `loaded` or `not found`. An example for a top-level host would look like:
+  ```
+  ---------------------------------------------
+  | CONFIG NAME                 | STATUS      |
+  ---------------------------------------------
+  | host-01.name                | loaded      |
+  | host-01.ip                  | loaded      |
+  | host-01.ssh.user            | loaded      |
+  | host-01.ssh.public_key_path | loaded      |
+  | host-01.ssh.port            | loaded      |
+  ---------------------------------------------
+  ```
+- If the `--preflight` flag is NOT passed, `stc` will check if any of the required config values are missing. If any are missing, it will print the same diagnostic table and exit with exit code 1.
 - If `~/.ssh/config` already contains an entry whose `Host` alias matches the given name, `stc` will skip the write and print a user-friendly message indicating the entry already exists. It will exit with code 0.
 - This command has no secret variables and does not prompt for any input.
 
