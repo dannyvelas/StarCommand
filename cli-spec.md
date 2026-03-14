@@ -7,12 +7,12 @@ publish: false
 ## Spec
 
 `stc` is a CLI that:
-- Allows you to have one source-of-truth for all your infrastructure configuration, `stc.yml`, so that you don't have to manually copy-paste values between Ansible and Terraform config files.
-- Abstracts Ansible and Terraform steps, so that you can run a single command to provision your entire infrastructure without having to worry about the order of operations or the specific Ansible/Terraform commands to run for each tool
+- Allows you to have one source-of-truth for all your infrastructure configuration, `stc.yml`, so that you don't have to manually create Ansible config files.
+- Abstracts Ansible steps, so that you can run simple and intuitive `stc` commands instead of running ansible commands. With ansible commands, you'd have to worry about complicated ansible command syntax and flags like `--limit` or `-e`.
 
 ## The stc.yml file
 
-As mentioned above, the `stc` CLI treats `stc.yml` as the source-of-truth of all the information that will be provided to terraform and ansible.
+As mentioned above, the `stc` CLI treats `stc.yml` as the source-of-truth of all the information that will be provided to ansible playbooks.
 
 ### stc.yml Schema Description
 
@@ -88,21 +88,6 @@ hosts:
         auto_update_reboot_time: "05:00"
 ```
 
-## Overview of commands that `stc` should support:
-
-```
-stc <command> [options]
-
-Commands:
-  inventory generate                       Generate the Ansible inventory file for all hosts
-  ansible bootstrap-host [--host <h>]...   Run the bootstrap-host playbook against all hosts/VMs, or limit to the ones given
-  ansible setup-host [--host <h>]...       Run the setup-host playbook against all hosts, or limit to the ones given
-  ssh add <host>                           Add a host to ~/.ssh/config
-  terraform apply                          Apply the Terraform project
-
-<h> is the host name as defined in stc.yml.
-```
-
 ## `stc` has an `inventory generate` command
 
 - `stc` has an `inventory generate` command which does NOT have any expect any flags.
@@ -134,10 +119,10 @@ Commands:
 
 - `stc` has an `ansible bootstrap-host` command which takes 0 or more `--host <h>` arguments where `<h>` can be either a top-level host name or a VM name as defined in `stc.yml`.
 - It also takes an optional `--preflight` command.
-- This command operates on a collection of hosts. We'll denote this collection as `hosts`. `hosts` is set by the `--host` arguments that are passed in. If 0 `--host <h>` arguments are passed, `stc` will use every single top-level host name in `stc.yml` as `hosts` (VMs are not included in the default).
-- Every ansible playbook requires the following 4 fields (at minimum) to be present in every host in `hosts`: `.name`, `.ip`, `.ssh.user`, and `.ssh.port`. Let's call these the "base configs".
-- The `./ansible/playbooks/bootstrap-host.yml` playbook specifically additionally needs these 3 variables to be set for each host in `hosts`: `ssh_port`, `ssh_public_key`, and `auto_update_reboot_time`. Let's call these the "bootstrap configs".
-- The `./ansible/playbooks/bootstrap-host.yml` playbook specifically also needs 2 secret variables to be set for each host in `hosts`: `admin_email` and `admin_password`. These values will NOT and will never be present in `stc.yml`.  Let's call these "bootstrap secrets".
+- This command operates on a collection of hosts. We'll denote this collection as `final_hosts`. `final_hosts` is set by the `--host` arguments that are passed in. If 0 `--host <h>` arguments are passed, `stc` will use every single top-level host name in `stc.yml` as `final_hosts` (VMs are not included in the default).
+- Every ansible playbook requires the following 4 fields (at minimum) to be present in every host in `final_hosts`: `.name`, `.ip`, `.ssh.user`, and `.ssh.port`. Let's call these the "base configs".
+- The `./ansible/playbooks/bootstrap-host.yml` playbook specifically additionally needs these 3 variables to be set for each host in `final_hosts`: `ssh_port`, `ssh_public_key`, and `auto_update_reboot_time`. Let's call these the "bootstrap configs".
+- The `./ansible/playbooks/bootstrap-host.yml` playbook specifically also needs 2 secret variables to be set for each host in `final_hosts`: `admin_email` and `admin_password`. These values will NOT and will never be present in `stc.yml`.  Let's call these "bootstrap secrets".
 - In other words, the `bootstrap-host.yml` playbook requires a total of 9 config values.
 - If the `--preflight` flag is passed, `stc` will print a diagnostic table of two columns. There will be one row in this table for each host, for each config value. in other words, if there are `n` hosts, there will be `7n + 2` rows. `7n` because there are `7` config values per host. `+2` because of the 2 bootstrap secrets.
   - The header of the first column will be called `CONFIG NAME`. The first column will be the fully qualified path of the config in `stc.yml`. The header of the second column will `STATUS`. It will be `loaded` if that config value was found or `not found` if that config value was not found. The "bootstrap secret" rows will behave a little bit differently. These don't have a path in `stc.yml` since they will never be in `stc.yml`. Instead of their `CONFIG NAME` column having a fully qualified yaml path, they will have the name of an environmental variable. For `admin_email` the corresponding environmental variable is `STC_ADMIN_EMAIL`. For `admin_password` the corresponding is `STC_ADMIN_PASSWORD`. Since these values will never be in `stc.yml`, they would always come up as `not found`. This wouldn't make much sense. Instead, the code will look for these values in the environment. For `admin_email` it will look for `STC_ADMIN_EMAIL` in the environment. If it finds an entry with a value, it will set the `STATUS` cell for the corresponding row to `loaded`. If it does not find it, it will set the `STATUS` cell for the corresponding row to `will prompt`. After printing, `stc` will exit with a status code of 0. it is done. The sole job of `--preflight` is to print a diagnostic table. An example diagnostic table would look something like this (note, this is not based on the example `stc.yml` above, this is just a random example):
@@ -165,7 +150,7 @@ Commands:
   - if `STC_ADMIN_EMAIL` is not set in the environment, `stc` will ask the user to enter the value for `admin_email` in a user-friendly way. it will associate the value that the user enters as the admin email, after trimming whitespace. if it IS set in the environment and its, it won't prompt the user. It will associate the value found in the environment as the admin email.
   - if `STC_ADMIN_PASSWORD` is not set in the environment, `stc` will ask the user to enter the value for `admin_password` in a user-friendly way. it will associate the value that the user enters as the admin password, after trimming whitespace. if it IS set in the environment, it won't prompt the user. It will associate the value found in the environment as the admin password.
 - Finally, this command will use all 9 values that were found in some combination of stc.yml / prompting / the environment to pass as ansible configs.
-- For a given host `my_awesome_host` in `hosts`, `stc` should communicate the "base configs" and "bootstrap configs" to ansible by creating the following file: `.generated/ansible/inventory/host_vars/my_awesome_host/vars.yml`, and putting all the "base configs" and "bootstrap configs" inside of that file. `stc` should NOT put the "bootstrap secrets" there. instead, `stc` should create a temporary file, and put the bootstrap secrets in there,
+- For a given host `my_awesome_host` in `final_hosts`, `stc` should communicate the "base configs" and "bootstrap configs" to ansible by creating the following file: `.generated/ansible/inventory/host_vars/my_awesome_host/vars.yml`, and putting all the "base configs" and "bootstrap configs" inside of that file. `stc` should NOT put the "bootstrap secrets" there. instead, `stc` should create a temporary file, and put the bootstrap secrets in there,
 - Finally, `stc` should run `./ansible/playbooks/bootstrap-host.yml` and pass that temporary file as an argument to the ansible playbook.
 
 ### edge cases
@@ -176,8 +161,8 @@ Commands:
 
 - `stc` has an `ansible setup-host` command which takes 0 or more `--host <h>` arguments where `<h>` can be either a top-level host name or a VM name as defined in `stc.yml`.
 - It also takes an optional `--preflight` flag.
-- This command operates on a collection of hosts. We'll denote this collection as `hosts`. `hosts` is set by the `--host` arguments that are passed in. If 0 `--host <h>` arguments are passed, `stc` will use every single top-level host name in `stc.yml` as `hosts` (VMs are not included in the default).
-- Every ansible playbook requires the following 4 fields (at minimum) to be present in every host in `hosts`: `.name`, `.ip`, `.ssh.user`, and `.ssh.port`. Let's call these the "base configs".
+- This command operates on a collection of hosts. We'll denote this collection as `final_hosts`. `final_hosts` is set by the `--host` arguments that are passed in. If 0 `--host <h>` arguments are passed, `stc` will use every single top-level host name in `stc.yml` as `final_hosts` (VMs are not included in the default).
+- Every ansible playbook requires the following 4 fields (at minimum) to be present in every host in `final_hosts`: `.name`, `.ip`, `.ssh.user`, and `.ssh.port`. Let's call these the "base configs".
 - The `./ansible/playbooks/setup-host.yml` playbook does not require any additional non-secret variables beyond the "base configs".
 - The `./ansible/playbooks/setup-host.yml` playbook additionally needs 2 secret variables: `smtp_user` and `smtp_password`. These values will NOT and will never be present in `stc.yml`. Let's call these the "setup secrets".
 - In other words, the `setup-host.yml` playbook requires a total of `4n + 2` config values, where `n` is the number of hosts.
@@ -199,15 +184,14 @@ Commands:
 - Next, for any of [`STC_SMTP_USER`, `STC_SMTP_PASSWORD`] that are not set in the environment, `stc` will prompt the user to enter the value through stdin in a user-friendly way. In other words:
   - if `STC_SMTP_USER` is not set in the environment, `stc` will ask the user to enter the value for `smtp_user` in a user-friendly way. It will associate the value that the user enters as the SMTP username, after trimming whitespace. If it IS set in the environment, it won't prompt the user.
   - if `STC_SMTP_PASSWORD` is not set in the environment, `stc` will ask the user to enter the value for `smtp_password` in a user-friendly way. It will associate the value that the user enters as the SMTP password, after trimming whitespace. If it IS set in the environment, it won't prompt the user.
-- Finally, this command will use all values found in some combination of `stc.yml` / prompting / the environment to pass as ansible configs. The "base configs" are communicated to ansible by creating `.generated/ansible/inventory/host_vars/<host-name>/vars.yml` for each host in `hosts`. The "setup secrets" are NOT written there. Instead, `stc` creates a temporary file containing only the setup secrets, and passes it to the ansible playbook as an extra vars file.
+- Finally, this command will use all values found in some combination of `stc.yml` / prompting / the environment to pass as ansible configs. The "base configs" are communicated to ansible by creating `.generated/ansible/inventory/host_vars/<host-name>/vars.yml` for each host in `final_hosts`. The "setup secrets" are NOT written there. Instead, `stc` creates a temporary file containing only the setup secrets, and passes it to the ansible playbook as an extra vars file.
 - Finally, `stc` should run `./ansible/playbooks/setup-host.yml`.
 
 ### edge cases
 - If one or more `--host` arguments are provided for names that do not match any top-level host or VM in `stc.yml`, this command should print a user friendly error indicating all of the names that were passed as arguments but were not found in `stc.yml`.
 - If there are no hosts in `stc.yml` this command will print a user friendly error indicating this and exit with exit code 1.
 
-
-## stc has an `ssh add` command
+## stc has an `ssh add <host>` command
 
 - `stc` has an `ssh add` command which takes exactly 1 positional argument `<host>`, where `<host>` is either a top-level host name or a VM name as defined in `stc.yml`.
 - It also takes an optional `--preflight` flag.
@@ -249,7 +233,15 @@ Commands:
 - If the given `<host>` argument does not match any top-level host or VM in `stc.yml`, this command should print a user friendly error and exit with exit code 1.
 - If there are no hosts in `stc.yml` this command will print a user friendly error indicating this and exit with exit code 1.
 
-## Constitution
+## stc has a `setup` command
 
-1. The code should promote a world-class user experience.
-2. The code should be very well-structured for the problem at hand. Think carefully about the right code patterns that would be perfect for this problem. The code shouldn't be messy or have duplication. Duplication is bad because a developer might update one part of the code and forget to update another part of the code. In forgetting to update the other part of the code a bug could get introduced. The could should be written in a way that will allow the code to grow and scale if many more `ansible` subcommands are added.
+- `stc` has an `setup` command which takes 0 or more `--host <h>` arguments where `<h>` can be either a top-level host name or a VM name as defined in `stc.yml`.
+- It also takes an optional `--preflight` flag.
+- This command operates on a collection of hosts. We'll denote this collection as `final_hosts`. `final_hosts` is set by the `--host` arguments that are passed in. If 0 `--host <h>` arguments are passed, `stc` will use every single top-level host name in `stc.yml` as `final_hosts` (VMs are not included in the default).
+- Suppose that `$hostArgs` is a shell variable that holds 0 or more `--host <h>` arguments, where `<h>` can be either a top-level host name or a VM name as defined in `stc.yml`. Suppose that `$preflight` is a shell variable that either holds the string `--preflight` or the empty string. For every possible value of `$hostArgs`, and for every possible value of `$preflight`, running `stc setup $hostArgs $preflight` would be the same as running the following commands in order:
+  - `stc inventory generate`
+  - `stc ansible setup-host $hostArgs $preflight`
+  - `stc ansible bootstrap-host $hostArgs $preflight`
+  - `stc ssh add $hostArgs $preflight`
+- However, `stc setup` offers one convenience over manually running those commands individually. If the `--preflight` argument is provided, `stc setup` *merges* the diagnostic tables of all of those commands. In other words, if someone runs `stc setup --preflight`, instead of seeing 1 diagnostic table for `stc inventory generate`, and 1 diagnostic table for `stc ansible setup-host` and 1 diagnostic table for `stc bootstrap-host`, and 1 diagnostic table for `ssh add`, showing a total of 4 diagnostic tables, `stc setup` will show 1 diagnostic table which has the aggregated results of all 4 commands.
+- Also, ideally, instead of prompting you once for secret variables necessary for `stc ansible setup-host` and then executing that, and then prompting you again for secret variables necessary for `stc ansible bootstrap-host` and then executing that, `stc setup` will prompt you for all secret variables upfront before executing the ansible playbooks.
