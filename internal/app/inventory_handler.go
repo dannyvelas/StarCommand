@@ -41,7 +41,7 @@ func (h inventoryHandler) execute(c inventoryConfig) error {
 	if err != nil {
 		return fmt.Errorf("creating hosts.yml: %v", err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	if err := inventoryTmpl.Execute(f, c); err != nil {
 		return fmt.Errorf("executing inventory template: %v", err)
