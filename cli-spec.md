@@ -207,6 +207,34 @@ Commands:
 - If there are no hosts in `stc.yml` this command will print a user friendly error indicating this and exit with exit code 1.
 
 
+## stc has an `ssh add` command
+
+- `stc` has an `ssh add` command which takes exactly 1 positional argument `<host>`, where `<host>` is either a top-level host name or a VM name as defined in `stc.yml`.
+- This command reads connection details for the given host or VM from `stc.yml` and appends a new `Host` block to `~/.ssh/config` on the local workstation. If `~/.ssh/config` does not exist, it is created with `0600` permissions.
+- The required config values for a top-level host are: `.name`, `.ip`, `.ssh.user`, `.ssh.public_key_path`, and `.ssh.port`. The resulting block looks like:
+  ```
+  Host <name>
+    HostName <ip>
+    User <ssh.user>
+    IdentityFile <ssh.public_key_path>
+    Port <ssh.port>
+  ```
+- For a VM, the same 5 fields are required from the VM's own config, plus the parent host's `.ip` and `.ssh.user` in order to construct a `ProxyJump` directive. The resulting block looks like:
+  ```
+  Host <vm.name>
+    HostName <vm.ip>
+    User <vm.ssh.user>
+    IdentityFile <vm.ssh.public_key_path>
+    Port <vm.ssh.port>
+    ProxyJump <parent.ssh.user>@<parent.ip>
+  ```
+- If `~/.ssh/config` already contains an entry whose `Host` alias matches the given name, `stc` will skip the write and print a user-friendly message indicating the entry already exists. It will exit with code 0.
+- This command has no secret variables and does not prompt for any input.
+
+### edge cases
+- If the given `<host>` argument does not match any top-level host or VM in `stc.yml`, this command should print a user friendly error and exit with exit code 1.
+- If there are no hosts in `stc.yml` this command will print a user friendly error indicating this and exit with exit code 1.
+
 ## Constitution
 
 1. The code should promote a world-class user experience.
