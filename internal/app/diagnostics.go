@@ -19,7 +19,16 @@ type diagnostic struct {
 
 type Diagnostics []diagnostic
 
-// ToTable takes a diagnostics slice and returns it as a pretty-printed formatted table
+var tableTmpl = template.Must(template.New("table").Parse(`{{ .Line }}
+| {{ printf "%-*s" .KeyWidth .HeaderCol1 }} | {{ printf "%-*s" .ValueWidth .HeaderCol2 }} |
+{{ .Line }}
+{{- range .Data }}
+| {{ printf "%-*s" $.KeyWidth .Field }} | {{ printf "%-*s" $.ValueWidth .Status }} |
+{{- end }}
+{{ .Line }}
+`))
+
+// ToTable returns a pretty-printed diagnostic table
 // This is useful as a user-friendly report of missing and found configuration values
 func (d *Diagnostics) ToTable() string {
 	headerCol1 := "SUBJECT"
@@ -59,24 +68,8 @@ func (d *Diagnostics) ToTable() string {
 		Line:       line,
 	}
 
-	const tableTmpl = `{{ .Line }}
-| {{ printf "%-*s" .KeyWidth .HeaderCol1 }} | {{ printf "%-*s" .ValueWidth .HeaderCol2 }} |
-{{ .Line }}
-{{- range .Data }}
-| {{ printf "%-*s" $.KeyWidth .Field }} | {{ printf "%-*s" $.ValueWidth .Status }} |
-{{- end }}
-{{ .Line }}
-`
-
-	tmpl, err := template.New("table").Parse(tableTmpl)
-	if err != nil {
-		panic(err)
-	}
-
 	var buf bytes.Buffer
-	if err := tmpl.Execute(&buf, ctx); err != nil {
-		panic(err)
-	}
+	_ = tableTmpl.Execute(&buf, ctx)
 
 	return buf.String()
 }
