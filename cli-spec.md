@@ -138,6 +138,23 @@ Low-level commands:
     ```
 - If there are no hosts in `stc.yml` this command will print a user friendly error indicating this and exit with exit code 1.
 
+## `stc` has `ansible bootstrap-host` command
+
+- `stc` has an `ansible bootstrap-host` command which takes 0 or more `--host <h>` arguments where `<h>` should be a host name as defined in `stc.yml`.
+- It also takes an optional `--preflight` command.
+- This command operates on a collection of hosts. We'll denote this collection as `hosts`. `hosts` is set by the `--host` arguments that are passed in. If 0 `--host <h>` arguments are passed, `stc` will use every single top-level host name in `stc.yml` as `hosts`.
+- Every ansible playbook requires the following 4 fields (at minimum) to be present in every host in `hosts`: `.name`, `.ip`, `.ssh.user`, and `.ssh.port`. Let's call these the "base configs".
+- The `./ansible/playbooks/bootstrap-host.yml` playbook specifically additionally needs these 3 variables to be set for each host in `hosts`: `ssh_port`, `ssh_public_key`, and `auto_update_reboot_time`. Let's call these the "bootstrap configs".
+- The `./ansible/playbooks/bootstrap-host.yml` playbook specifically also needs 2 secret variables to be set for each host in `hosts`: `admin_email` and `admin_password`. These values will NOT and will never be present in `stc.yml`.  Let's call these "bootstrap secrets".
+- In other words, the `bootstrap-host.yml` playbook requires a total of 9 config values.
+- If the `--preflight` flag is passed, `stc` will print a diagnostic table of two columns. there will be one row in this table for each host, for each config value. in other words, if there are `n` hosts, there will be `9n` rows. The header of the first column will be called `CONFIG NAME`. The first column will be the name of a config value. The header of the second column will `STATUS`. It will be `loaded` if that config value was found or `not found` if that config value was not found. The "bootstrap secret" rows will behave a little bit differently. These will never be in `stc.yml` so naturally they would always come up as `not found`. This wouldn't make much sense. In
+- Assuming the `--preflight` command is NOT passed, `stc` will run the `./ansible/playbooks/bootstrap-host.yml` playbook for all `hosts`.
+- This command will check that all `hosts` have all "base configs" set and all "bootstrap configs" set.
+- If the `--preflight` command IS passed, `stc` 
+
+- If one or more `--host` arguments are provided for hosts that are not present in `stc.yml`, this command should print a user friendly error indicating all of the host names that were passed as arguments but were not present in `stc.yml`.
+- If there are no hosts in `stc.yml` this command will print a user friendly error indicating this and exit with exit code 1.
+
 ## stc has a `setup` command
 
 - `stc` has a setup command which takes 0 or more `--host` arguments.
