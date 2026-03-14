@@ -94,17 +94,9 @@ hosts:
 stc <command> [options]
 
 Commands:
-  setup [--host <h>]...                  Apply desired state to all hosts, or limit to the ones given
-  wg add <name>                          Add a WireGuard client (registers peer server-side, generates client config)
-  status                                 Show cluster status (hosts, services, VPN, k3s)
-  teardown                               Tear down all VMs
-  version                                Print version
-
-Low-level commands:
   inventory generate                       Generate the Ansible inventory file for all hosts
   ansible bootstrap-host [--host <h>]...   Run the bootstrap-host playbook against all hosts/VMs, or limit to the ones given
   ansible setup-host [--host <h>]...       Run the setup-host playbook against all hosts, or limit to the ones given
-  ansible setup-vm [--host <h>]...         Run the setup-vm playbook against all VMs, or limit to the ones given
   ssh add <host>                           Add a host to ~/.ssh/config
   terraform apply                          Apply the Terraform project
 
@@ -140,9 +132,9 @@ Low-level commands:
 
 ## `stc` has `ansible bootstrap-host` command
 
-- `stc` has an `ansible bootstrap-host` command which takes 0 or more `--host <h>` arguments where `<h>` should be a host name as defined in `stc.yml`.
+- `stc` has an `ansible bootstrap-host` command which takes 0 or more `--host <h>` arguments where `<h>` can be either a top-level host name or a VM name as defined in `stc.yml`.
 - It also takes an optional `--preflight` command.
-- This command operates on a collection of hosts. We'll denote this collection as `hosts`. `hosts` is set by the `--host` arguments that are passed in. If 0 `--host <h>` arguments are passed, `stc` will use every single top-level host name in `stc.yml` as `hosts`.
+- This command operates on a collection of hosts. We'll denote this collection as `hosts`. `hosts` is set by the `--host` arguments that are passed in. If 0 `--host <h>` arguments are passed, `stc` will use every single top-level host name in `stc.yml` as `hosts` (VMs are not included in the default).
 - Every ansible playbook requires the following 4 fields (at minimum) to be present in every host in `hosts`: `.name`, `.ip`, `.ssh.user`, and `.ssh.port`. Let's call these the "base configs".
 - The `./ansible/playbooks/bootstrap-host.yml` playbook specifically additionally needs these 3 variables to be set for each host in `hosts`: `ssh_port`, `ssh_public_key`, and `auto_update_reboot_time`. Let's call these the "bootstrap configs".
 - The `./ansible/playbooks/bootstrap-host.yml` playbook specifically also needs 2 secret variables to be set for each host in `hosts`: `admin_email` and `admin_password`. These values will NOT and will never be present in `stc.yml`.  Let's call these "bootstrap secrets".
@@ -177,14 +169,14 @@ Low-level commands:
 - Finally, `stc` should run `./ansible/playbooks/bootstrap-host.yml` and pass that temporary file as an argument to the ansible playbook.
 
 ### edge cases
-- If one or more `--host` arguments are provided for hosts that are not present in `stc.yml`, this command should print a user friendly error indicating all of the host names that were passed as arguments but were not present in `stc.yml`.
+- If one or more `--host` arguments are provided for names that do not match any top-level host or VM in `stc.yml`, this command should print a user friendly error indicating all of the names that were passed as arguments but were not found in `stc.yml`.
 - If there are no hosts in `stc.yml` this command will print a user friendly error indicating this and exit with exit code 1.
 
 ## stc has an `ansible setup-host` command
 
-- `stc` has an `ansible setup-host` command which takes 0 or more `--host <h>` arguments where `<h>` should be a host name as defined in `stc.yml`.
+- `stc` has an `ansible setup-host` command which takes 0 or more `--host <h>` arguments where `<h>` can be either a top-level host name or a VM name as defined in `stc.yml`.
 - It also takes an optional `--preflight` flag.
-- This command operates on a collection of hosts. We'll denote this collection as `hosts`. `hosts` is set by the `--host` arguments that are passed in. If 0 `--host <h>` arguments are passed, `stc` will use every single top-level host name in `stc.yml` as `hosts`.
+- This command operates on a collection of hosts. We'll denote this collection as `hosts`. `hosts` is set by the `--host` arguments that are passed in. If 0 `--host <h>` arguments are passed, `stc` will use every single top-level host name in `stc.yml` as `hosts` (VMs are not included in the default).
 - Every ansible playbook requires the following 4 fields (at minimum) to be present in every host in `hosts`: `.name`, `.ip`, `.ssh.user`, and `.ssh.port`. Let's call these the "base configs".
 - The `./ansible/playbooks/setup-host.yml` playbook does not require any additional non-secret variables beyond the "base configs".
 - The `./ansible/playbooks/setup-host.yml` playbook additionally needs 2 secret variables: `smtp_user` and `smtp_password`. These values will NOT and will never be present in `stc.yml`. Let's call these the "setup secrets".
@@ -211,16 +203,11 @@ Low-level commands:
 - Finally, `stc` should run `./ansible/playbooks/setup-host.yml`.
 
 ### edge cases
-- If one or more `--host` arguments are provided for hosts that are not present in `stc.yml`, this command should print a user friendly error indicating all of the host names that were passed as arguments but were not present in `stc.yml`.
+- If one or more `--host` arguments are provided for names that do not match any top-level host or VM in `stc.yml`, this command should print a user friendly error indicating all of the names that were passed as arguments but were not found in `stc.yml`.
 - If there are no hosts in `stc.yml` this command will print a user friendly error indicating this and exit with exit code 1.
 
-## stc has a `setup` command
-
-- `stc` has a setup command which takes 0 or more `--host` arguments.
-- It also takes an optional `--preflight` argument.
-- This `setup` command will read an `stc.yml` file in the root of the directory 
 
 ## Constitution
 
 1. The code should promote a world-class user experience.
-2. The code should be written with as little code duplication as possible. it should be written in a way that will allow the code to grow and scale if many more `ansible` subcommands are added.
+2. The code should be very well-structured for the problem at hand. Think carefully about the right code patterns that would be perfect for this problem. The code shouldn't be messy or have duplication. Duplication is bad because a developer might update one part of the code and forget to update another part of the code. In forgetting to update the other part of the code a bug could get introduced. The could should be written in a way that will allow the code to grow and scale if many more `ansible` subcommands are added.
