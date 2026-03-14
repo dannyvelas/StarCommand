@@ -76,10 +76,6 @@ func SSHAdd(ctx context.Context, c *models.Config, host string, preflight bool) 
 		return fmt.Errorf("error creating ssh config: %v", err)
 	}
 
-	if err := promptSensitiveFields(sshConfig, os.Stdin, os.Stdout); err != nil {
-		return fmt.Errorf("error prompting for sensitive fields: %v", err)
-	}
-
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return fmt.Errorf("error getting user home dir: %v", err)
