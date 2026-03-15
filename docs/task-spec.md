@@ -70,9 +70,17 @@ A short bulleted list of verifiable statements. Each item must be objectively tr
 
 The project must build and parse its config file before any command is implemented. These are always the first one or two tasks.
 
-### Shared infrastructure before dependent commands
+### Three patterns for handling structural dependencies between tasks
 
-If two or more commands share a significant piece of logic (host resolution, secret collection, a file writer), implement that shared logic as its own task before implementing either command. This prevents the logic from being written twice and then merged awkwardly.
+When task B will need logic that task A produces, there are three situations, each with a different response.
+
+**1. Obvious, extractable shared logic → dedicated shared-infrastructure task.** If two or more tasks will clearly share a significant piece of logic before either is implemented (e.g., both ansible commands need host resolution, secret collection, and playbook execution), extract it into its own independent task that comes before either command. This is *not* the same as writing task A with foresight of task B — the shared thing gets its own task that stands alone, has its own tests, and is not burdened with either command's specific requirements. The commands then depend on it, rather than on each other.
+
+**2. Structural coupling that is hard to see in advance → refactoring note in the later task.** If it is not clear at planning time that two things will need shared logic, do not try to anticipate it. Write each task straightforwardly. When a later task (task B) makes the coupling apparent, the refactoring note in task B says: review the code from task A, extract the shared logic, and eliminate duplication before or as part of implementing task B. This refactoring is costed into task B's estimate and is part of its Definition of Done.
+
+**3. Global architectural constraints → state once in the global notes.** When a rule must apply to every task (e.g., business logic must be callable without the CLI layer), stating it in the global notes is sufficient. Individual tasks do not need to repeat it.
+
+The key distinction between patterns 1 and 2 is predictability. If you can define the shared thing independently — write a task description for it, write tests for it, and deliver it before either command — use pattern 1. If you can't, use pattern 2.
 
 ### Simple commands before orchestrators
 
@@ -81,10 +89,6 @@ Commands that do one thing come before commands that coordinate other commands. 
 ### Core behavior before cross-cutting concerns
 
 Implement each command's core behavior (the happy path and error cases) before adding cross-cutting concerns like `--preflight`, `--dry-run`, or diagnostic output. This keeps early tasks focused and avoids forcing the implementor to design two behaviors simultaneously. Cross-cutting concerns get their own milestone after all commands exist.
-
-### Anticipate calling conventions
-
-When a later task will need to call into the logic of an earlier task (e.g., `stc setup` calling `inventory generate` logic), the earlier task cannot be written in isolation. State the global architectural rule in a "Notes for all tasks" section so every implementor knows it from the start. Do not bury this expectation only in the later task.
 
 ---
 
