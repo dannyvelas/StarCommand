@@ -12,7 +12,7 @@ The MVP delivers a fully working `stc setup` that provisions a set of Debian hos
 
 ## Notes for all tasks
 
-**Integration tests:** If your language of choosing has ergonomic support file-system based test (e.g. similar to how Go has `https://pkg.go.dev/github.com/rogpeppe/go-internal/testscript`), then command-level behavior must be covered by integration tests that compile (or run) the `stc` binary, invoke it inside a temporary directory populated with the necessary files, and assert on stdout, stderr, exit code, and generated file contents. However, if the language of your choosing doesn't have good support for this, then this requirement can be dropped. I'll let the "implementer" decide what "good" or "ergonomic" support means.
+**Integration tests:** Command-level behavior must be tested by invoking the compiled `stc` binary in a temporary directory populated with the necessary files and asserting on stdout, stderr, exit code, and generated file contents. The specific framework or format for writing these tests is up to the implementor — use whatever your language ecosystem provides. The requirement is the test coverage, not the mechanism.
 
 **Unit tests:** Business logic that does not involve running the binary (parsing, rendering, resolving) must be covered by unit tests.
 
@@ -59,7 +59,7 @@ Set up a new project for the `stc` CLI. Use a CLI framework appropriate for your
 **Required Tests**
 
 *Integration test — version subcommand:*
-- Run `stc version` with an empty `stc.yml` (`hosts: {}`) present
+- Run `stc version` with an empty `stc.yml` (`hosts: {}`) present in the working directory
 - Assert stdout contains `stc v0.1.0`
 - Assert exit code is 0
 
