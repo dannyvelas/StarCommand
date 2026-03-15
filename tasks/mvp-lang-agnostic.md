@@ -12,11 +12,7 @@ The MVP delivers a fully working `stc setup` that provisions a set of Debian hos
 
 ## Notes for all tasks
 
-**YAML parsing:** Use your language's idiomatic YAML library for all YAML parsing and marshaling.
-
-**Text generation:** All commands that generate text files or formatted output (inventory YAML, SSH config blocks, diagnostic table) should use your language's idiomatic templating mechanism. The goal is that the structure of generated output is immediately legible from reading the template source, rather than being assembled by string concatenation.
-
-**Integration tests:** Command-level behavior must be covered by integration tests that compile (or run) the `stc` binary, invoke it inside a temporary directory populated with the necessary files, and assert on stdout, stderr, exit code, and generated file contents.
+**Integration tests:** If your language of choosing has ergonomic support file-system based test (e.g. similar to how Go has `https://pkg.go.dev/github.com/rogpeppe/go-internal/testscript`), then command-level behavior must be covered by integration tests that compile (or run) the `stc` binary, invoke it inside a temporary directory populated with the necessary files, and assert on stdout, stderr, exit code, and generated file contents. However, if the language of your choosing doesn't have good support for this, then this requirement can be dropped. I'll let the "implementer" decide what "good" or "ergonomic" support means.
 
 **Unit tests:** Business logic that does not involve running the binary (parsing, rendering, resolving) must be covered by unit tests.
 
@@ -38,12 +34,7 @@ The project builds and `stc.yml` parses correctly.
 
 Set up a new project for the `stc` CLI. Use a CLI framework appropriate for your language — something that handles subcommands, flags, and `--help` generation automatically.
 
-**Suggested project structure:**
-```
-cmd/        # CLI entrypoint and command definitions
-internal/   # Business logic (no CLI concerns)
-tests/      # Integration tests
-```
+**Project structure:** organize the code so that CLI wiring (command definitions, flag parsing) is clearly separated from business logic. Follow the idiomatic conventions of your language and ecosystem for this separation.
 
 **Root command requirements:**
 - Binary name: `stc`
