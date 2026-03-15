@@ -19,16 +19,9 @@ end-to-end from a single command. It includes every command `stc setup` depends 
 **YAML library:** Use `github.com/goccy/go-yaml` for all YAML parsing and marshaling.
 `gopkg.in/yaml.v3` was archived in 2024 and should not be used.
 
-**Go templates:** All commands that generate text files or formatted output (inventory YAML,
-SSH config blocks, diagnostic table) must use `text/template` from the Go standard library.
-This makes the output format easy to read and modify — you can open the template and
-immediately see what the generated file will look like.
+**Go templates:** All commands that generate text files or formatted output (inventory YAML, SSH config blocks, diagnostic table) must use `text/template` from the Go standard library. This makes the output format easy to read and modify — you can open the template and immediately see what the generated file will look like.
 
-**Script tests:** Command-level behavior must be covered by txtar script tests using the
-`github.com/rogpeppe/go-internal/testscript` package. These tests compile the `stc` binary,
-run it inside a temporary directory populated with the files defined in the test, and assert
-on stdout, stderr, exit code, and generated file contents. Test files live in
-`testdata/scripts/`. Each `.txtar` file covers one scenario. The format is:
+**Script tests:** Command-level behavior must be covered by txtar script tests using the `github.com/rogpeppe/go-internal/testscript` package. These tests compile the `stc` binary, run it inside a temporary directory populated with the files defined in the test, and assert on stdout, stderr, exit code, and generated file contents. Test files live in `testdata/scripts/`. Each `.txtar` file covers one scenario. The format is:
 
 ```
 # Description of the test
@@ -97,9 +90,7 @@ the full usage/help text. Flag parsing errors (e.g. unknown flag) should still p
 **Makefile targets:** `all` (default, runs `build`), `build` (compiles to `./stc`),
 `clean` (removes `./stc`).
 
-**Testscript setup:** Wire up `github.com/rogpeppe/go-internal/testscript` so that txtar
-files placed in `testdata/scripts/` are run as part of `go test ./...`. All future command
-tasks depend on this infrastructure.
+**Testscript setup:** Wire up `github.com/rogpeppe/go-internal/testscript` so that txtar files placed in `testdata/scripts/` are run as part of `go test ./...`. All future command tasks depend on this infrastructure.
 
 **Required Tests**
 
@@ -112,19 +103,6 @@ stdout 'stc v0.1.0'
 -- stc.yml --
 hosts: {}
 ```
-
-The runtime-error-no-usage behavior must be verified once a command with a runtime error
-path exists. Add this test in task 3 alongside `inventory generate`:
-
-```
-# testdata/scripts/runtime-error-no-usage.txtar
-# Runtime errors do not print the usage block
-! exec stc inventory generate
-! stdout 'Usage:'
-stderr '.'
-```
-
-(No `-- stc.yml --` section so the file is absent, which triggers a runtime error.)
 
 **Definition of Done**
 - `make` produces `./stc`
@@ -258,10 +236,6 @@ that needs config. If loading fails, print a user-friendly error and exit 1.
 
 The `version` subcommand must NOT require a `stc.yml` — it must work without one.
 
-One clean approach: load config in `PersistentPreRunE` on the root command, but skip
-loading for commands that declare they don't need it (e.g. check a per-command flag or
-use a dedicated `PersistentPreRunE` override on the `version` subcommand).
-
 Error format: `error: could not load stc.yml: <reason>`
 
 **Required Tests**
@@ -282,9 +256,19 @@ stdout 'stc v0.1.0'
 ```
 (No `-- stc.yml --` section.)
 
+*Txtar test — `testdata/scripts/runtime-error-no-usage.txtar`:*
+```
+# Runtime errors do not print the usage block
+! exec stc inventory generate
+! stdout 'Usage:'
+stderr '.'
+```
+(No `-- stc.yml --` section, so the missing file triggers a runtime error.)
+
 **Definition of Done**
 - `./stc inventory generate` with no `stc.yml` prints an error mentioning `stc.yml` and exits 1
 - `./stc version` with no `stc.yml` exits 0
+- A runtime error does not print the usage block
 - All txtar tests pass
 
 ---
