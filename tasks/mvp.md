@@ -131,19 +131,20 @@ stdout 'stc v0.1.0'
 hosts: {}
 ```
 
-*Txtar test — `testdata/scripts/runtime-error-no-usage.txtar`:*
+The runtime-error-no-usage behavior must be implemented in task 1 (via `PersistentPreRunE`),
+but the txtar test for it should be added in the first task that introduces a command with a
+runtime error path (e.g. task 3 — `inventory generate` can produce a runtime error when
+`stc.yml` is missing). At that point, add:
+
 ```
-# Runtime errors do not print the usage block (tested with version, a known-good command,
-# to avoid referencing commands introduced in later tasks)
-! exec stc --unknown-flag
+# testdata/scripts/runtime-error-no-usage.txtar
+# Runtime errors do not print the usage block
+! exec stc inventory generate
 ! stdout 'Usage:'
-
--- stc.yml --
-hosts: {}
+stderr '.'
 ```
 
-Note: a more meaningful runtime-error test (e.g. host not found) should be added in whichever
-task first introduces a command that can produce a runtime error.
+(No `-- stc.yml --` section so the file is absent, which triggers a runtime error.)
 
 **Definition of Done**
 - `make` produces `./stc`
