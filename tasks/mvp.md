@@ -76,50 +76,32 @@ go.mod
 **Root command requirements:**
 - Binary name: `stc`
 - A `version` subcommand that prints `stc v0.1.0` to stdout and exits 0
-- The root command's long description (shown by `stc --help`) must be informative. It should
-  give a high-level sense of what `stc` does without being exhaustive — the README and `docs/`
-  cover the full details. Something like:
+- The root command's long description (shown by `stc --help`) must be informative. It should say what `stc` is and how it works at a high level — the subcommands describe themselves. Something like:
 
   ```
   stc is a CLI for provisioning and managing Debian servers.
 
   It treats stc.yml as the single source of truth for all infrastructure
-  configuration. Run 'stc setup' to provision all hosts end-to-end: it
-  generates an Ansible inventory, hardens the OS, installs host services
-  (Incus, WireGuard, Postfix), provisions VMs with Terraform, and registers
-  every host and VM in ~/.ssh/config — in the right order, automatically.
-
-  Run any subcommand with --preflight to preview its required config values
-  without executing anything.
+  configuration, so you don't have to manually maintain Ansible inventory
+  files, host_vars, or Terraform variable files. Run any subcommand with
+  --preflight to preview its required config values without executing anything.
   ```
 
-  The exact wording may vary, but the description must cover: what `stc` is,
-  `stc.yml` as the config source-of-truth, a brief summary of what `stc setup`
-  orchestrates, and `--preflight`.
+  The exact wording may vary, but the description must: (1) say what `stc` is,
+  (2) mention `stc.yml` as the config source-of-truth, (3) mention that it
+  abstracts both Ansible and Terraform, and (4) mention `--preflight`.
 
-**Suppress usage on runtime errors.** By default Cobra prints the full help text whenever
-any error is returned — this is noisy for runtime failures like "host not found". It should
-only appear for flag/grammar errors (e.g. unknown flag). Fix this with a
-`PersistentPreRunE` on the root command that sets `cmd.SilenceUsage = true`. This function
-runs after flags are parsed, so usage still appears for flag errors but is hidden for errors
-that happen during execution.
+**Suppress usage on runtime errors.** Runtime errors (e.g. host not found) must not print
+the full usage/help text. Flag parsing errors (e.g. unknown flag) should still print usage.
 
 **Makefile targets:** `all` (default, runs `build`), `build` (compiles to `./stc`),
 `clean` (removes `./stc`).
 
-**Testscript setup:** Add `github.com/rogpeppe/go-internal/testscript` as a dependency.
-Create `cmd/stc/script_test.go` containing a `TestScript` function that:
-1. Builds the `stc` binary
-2. Calls `testscript.Run` pointed at `testdata/scripts/`
-
-This test runner is used by all future txtar tests throughout the project.
+**Testscript setup:** Wire up `github.com/rogpeppe/go-internal/testscript` so that txtar
+files placed in `testdata/scripts/` are run as part of `go test ./...`. All future command
+tasks depend on this infrastructure.
 
 **Required Tests**
-
-*Unit test — `TestVersionOutput`:*
-- Run `./stc version`
-- Assert stdout contains `stc v0.1.0`
-- Assert exit code is 0
 
 *Txtar test — `testdata/scripts/version.txtar`:*
 ```
@@ -131,10 +113,8 @@ stdout 'stc v0.1.0'
 hosts: {}
 ```
 
-The runtime-error-no-usage behavior must be implemented in task 1 (via `PersistentPreRunE`),
-but the txtar test for it should be added in the first task that introduces a command with a
-runtime error path (e.g. task 3 — `inventory generate` can produce a runtime error when
-`stc.yml` is missing). At that point, add:
+The runtime-error-no-usage behavior must be verified once a command with a runtime error
+path exists. Add this test in task 3 alongside `inventory generate`:
 
 ```
 # testdata/scripts/runtime-error-no-usage.txtar
@@ -171,34 +151,34 @@ Names are not repeated inside the object — they are the map key.
 
 ```go
 type Config struct {
-    Hosts map[string]Host `yaml:"hosts"`
+	Hosts map[string]Host `yaml:"hosts"`
 }
 
 type Host struct {
-    IP                   string      `yaml:"ip"`
-    SSH                  SSHConfig   `yaml:"ssh"`
-    AutoUpdateRebootTime string      `yaml:"auto_update_reboot_time"`
-    WireguardEndpoint    bool        `yaml:"wireguard_endpoint"`
-    Incus                IncusConfig `yaml:"incus"`
-    VMs                  map[string]VM `yaml:"vms"`
+	IP                   string        `yaml:"ip"`
+	SSH                  SSHConfig     `yaml:"ssh"`
+	AutoUpdateRebootTime string        `yaml:"auto_update_reboot_time"`
+	WireguardEndpoint    bool          `yaml:"wireguard_endpoint"`
+	Incus                IncusConfig   `yaml:"incus"`
+	VMs                  map[string]VM `yaml:"vms"`
 }
 
 type VM struct {
-    IP                   string    `yaml:"ip"`
-    SSH                  SSHConfig `yaml:"ssh"`
-    AutoUpdateRebootTime string    `yaml:"auto_update_reboot_time"`
+	IP                   string    `yaml:"ip"`
+	SSH                  SSHConfig `yaml:"ssh"`
+	AutoUpdateRebootTime string    `yaml:"auto_update_reboot_time"`
 }
 
 type SSHConfig struct {
-    User           string `yaml:"user"`
-    Port           int    `yaml:"port"`
-    PrivateKeyPath string `yaml:"private_key_path"`
-    PublicKeyPath  string `yaml:"public_key_path"`
+	User           string `yaml:"user"`
+	Port           int    `yaml:"port"`
+	PrivateKeyPath string `yaml:"private_key_path"`
+	PublicKeyPath  string `yaml:"public_key_path"`
 }
 
 type IncusConfig struct {
-    StoragePoolName   string `yaml:"storage_pool_name"`
-    StoragePoolDriver string `yaml:"storage_pool_driver"`
+	StoragePoolName   string `yaml:"storage_pool_name"`
+	StoragePoolDriver string `yaml:"storage_pool_driver"`
 }
 ```
 
@@ -327,8 +307,8 @@ output in the CLI.
 **Types and methods:**
 ```go
 type Diagnostic struct {
-    Field  string
-    Status string
+	Field  string
+	Status string
 }
 
 type Diagnostics []Diagnostic
@@ -401,7 +381,7 @@ automatically available to every subcommand.
 ```go
 var preflight bool
 rootCmd.PersistentFlags().BoolVar(&preflight, "preflight", false,
-    "Print a diagnostic table without executing the command")
+	"Print a diagnostic table without executing the command")
 ```
 
 The `preflight` variable must be accessible to all command handler functions.
@@ -486,12 +466,12 @@ Write the file with `0644` permissions.
 Input:
 ```go
 Config{Hosts: map[string]Host{
-    "host-01": {IP: "192.168.1.10", SSH: SSHConfig{User: "admin"}, VMs: map[string]VM{
-        "host-01-vm-01": {IP: "10.0.100.10"},
-    }},
-    "host-02": {IP: "192.168.1.11", SSH: SSHConfig{User: "admin"}, VMs: map[string]VM{
-        "host-02-vm-01": {IP: "10.0.100.20"},
-    }},
+	"host-01": {IP: "192.168.1.10", SSH: SSHConfig{User: "admin"}, VMs: map[string]VM{
+		"host-01-vm-01": {IP: "10.0.100.10"},
+	}},
+	"host-02": {IP: "192.168.1.11", SSH: SSHConfig{User: "admin"}, VMs: map[string]VM{
+		"host-02-vm-01": {IP: "10.0.100.20"},
+	}},
 }}
 ```
 
@@ -672,14 +652,14 @@ func ResolveTargets(config *Config, names ...string) ([]Target, error)
 
 ```go
 type Target struct {
-    Name                 string
-    IP                   string
-    SSH                  SSHConfig
-    AutoUpdateRebootTime string
-    IsVM                 bool
-    ParentName           string // empty for top-level hosts
-    ParentIP             string
-    ParentSSHUser        string
+	Name                 string
+	IP                   string
+	SSH                  SSHConfig
+	AutoUpdateRebootTime string
+	IsVM                 bool
+	ParentName           string // empty for top-level hosts
+	ParentIP             string
+	ParentSSHUser        string
 }
 ```
 
@@ -736,6 +716,8 @@ that follows the tagging convention automatically gets the right behavior.
 **Functions to implement:**
 
 ```go
+import "io"
+
 // PromptSensitiveFields fills all fields tagged sensitive:"true" on the struct
 // that v points to. For each field, checks the env var first; if absent, reads
 // from r with a prompt written to w.
@@ -756,7 +738,7 @@ The argument `v` must be a pointer to a struct. Return an error if it is not.
 Input struct:
 ```go
 type testConfig struct {
-    Email string `json:"admin_email" sensitive:"true" prompt:"Admin email"`
+	Email string `json:"admin_email" sensitive:"true" prompt:"Admin email"`
 }
 ```
 Environment: `STC_ADMIN_EMAIL=test@example.com`
